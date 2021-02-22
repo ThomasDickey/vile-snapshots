@@ -1,4 +1,4 @@
-dnl $Id: aclocal.m4,v 1.339 2021/01/04 00:30:33 tom Exp $
+dnl $Id: aclocal.m4,v 1.342 2021/01/06 21:19:35 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2020,2021 by Thomas E. Dickey
@@ -1620,7 +1620,7 @@ AC_SUBST(SHOW_CC)
 AC_SUBST(ECHO_CC)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_DISABLE_RPATH_HACK version: 2 updated: 2011/02/13 13:31:33
+dnl CF_DISABLE_RPATH_HACK version: 3 updated: 2021/01/05 20:14:44
 dnl ---------------------
 dnl The rpath-hack makes it simpler to build programs, particularly with the
 dnl *BSD ports which may have essential libraries in unusual places.  But it
@@ -1631,10 +1631,13 @@ AC_DEFUN([CF_DISABLE_RPATH_HACK],
 AC_MSG_CHECKING(if rpath-hack should be disabled)
 CF_ARG_DISABLE(rpath-hack,
 	[  --disable-rpath-hack    don't add rpath options for additional libraries],
-	[cf_disable_rpath_hack=yes],
-	[cf_disable_rpath_hack=no])
+	[enable_rpath_hack=no],
+	[enable_rpath_hack=yes])
+dnl TODO - drop cf_disable_rpath_hack
+if test "x$enable_rpath_hack" = xno; then cf_disable_rpath_hack=yes; else cf_disable_rpath_hack=no; fi
 AC_MSG_RESULT($cf_disable_rpath_hack)
-if test "$cf_disable_rpath_hack" = no ; then
+
+if test "$enable_rpath_hack" = yes ; then
 	CF_RPATH_HACK
 fi
 ])
@@ -1666,7 +1669,7 @@ CF_ARG_OPTION(narrowproto,
 AC_MSG_RESULT($enable_narrowproto)
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_ENABLE_WARNINGS version: 8 updated: 2020/12/31 18:40:20
+dnl CF_ENABLE_WARNINGS version: 9 updated: 2021/01/05 19:40:50
 dnl ------------------
 dnl Configure-option to enable gcc warnings
 dnl
@@ -1684,10 +1687,10 @@ CF_FIX_WARNINGS(LDFLAGS)
 AC_MSG_CHECKING(if you want to turn on gcc warnings)
 CF_ARG_ENABLE(warnings,
 	[  --enable-warnings       test: turn on gcc compiler warnings],
-	[with_warnings=yes],
-	[with_warnings=no])
-AC_MSG_RESULT($with_warnings)
-if test "$with_warnings" = "yes"
+	[enable_warnings=yes],
+	[enable_warnings=no])
+AC_MSG_RESULT($enable_warnings)
+if test "$enable_warnings" = "yes"
 then
 	ifelse($2,,[CF_GCC_ATTRIBUTES])
 	CF_GCC_WARNINGS($1)
@@ -2732,7 +2735,7 @@ AC_CACHE_CHECK(if install accepts -p option, cf_cv_install_p,[
 ])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_INSTALL_OPT_S version: 2 updated: 2018/08/18 12:19:21
+dnl CF_INSTALL_OPT_S version: 3 updated: 2021/01/05 19:23:48
 dnl ----------------
 dnl By default, we should strip executables which are installed, but leave the
 dnl ability to suppress that for unit-testing.
@@ -2741,11 +2744,11 @@ AC_DEFUN([CF_INSTALL_OPT_S],
 AC_MSG_CHECKING(if you want to install stripped executables)
 CF_ARG_DISABLE(stripping,
 	[  --disable-stripping     do not strip (debug info) installed executables],
-	[with_stripping=no],
-	[with_stripping=yes])
-AC_MSG_RESULT($with_stripping)
+	[enable_stripping=no],
+	[enable_stripping=yes])
+AC_MSG_RESULT($enable_stripping)
 
-if test "$with_stripping" = yes
+if test "$enable_stripping" = yes
 then
 	INSTALL_OPT_S="-s"
 else
@@ -3169,7 +3172,7 @@ ifelse($1,,,[$1=$LIB_PREFIX])
 	AC_SUBST(LIB_PREFIX)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LINK_PREFIX version: 1 updated: 2010/09/13 05:56:50
+dnl CF_LINK_PREFIX version: 2 updated: 2021/01/06 16:19:35
 dnl --------------
 dnl Use xterm's plink.sh script as a link-prefix, to trim unneeded libraries.
 dnl This is optional since in some obscure cases of weak-linkage it may be
@@ -3179,10 +3182,10 @@ AC_DEFUN([CF_LINK_PREFIX],
 AC_MSG_CHECKING(if you want to trim unneeded libraries)
 CF_ARG_DISABLE(link-prefix,
 	[  --disable-link-prefix   do not trim unneeded libraries from link command],
-	[with_link_prefix=no],
-	[with_link_prefix=yes])
-AC_MSG_RESULT($with_link_prefix)
-if test $with_link_prefix = yes
+	[enable_link_prefix=no],
+	[enable_link_prefix=yes])
+AC_MSG_RESULT($enable_link_prefix)
+if test $enable_link_prefix = yes
 then
 	LINK_PREFIX='$(SHELL) $(top_srcdir)/plink.sh'
 else
@@ -3251,7 +3254,7 @@ CF_EOF
 AC_SUBST(cf_cv_makeflags)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAKE_PHONY version: 2 updated: 2020/12/31 20:19:42
+dnl CF_MAKE_PHONY version: 3 updated: 2021/01/08 16:08:21
 dnl -------------
 dnl Check if the make-program handles a ".PHONY" target, e.g,. a target which
 dnl acts as a placeholder.
@@ -3316,7 +3319,7 @@ CF_EOF
 					echo "no (case 5)" > ../conftest.tmp
 				else
 					echo yes > ../conftest.tmp
-					rm -f *.out
+					rm -f ./*.out
 					continue
 				fi
 			fi
@@ -3735,7 +3738,7 @@ AC_DEFINE(NCURSES,1,[Define to 1 if we are using ncurses headers/libraries])
 CF_NCURSES_VERSION
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NCURSES_HEADER version: 6 updated: 2021/01/02 09:31:20
+dnl CF_NCURSES_HEADER version: 7 updated: 2021/01/04 19:33:05
 dnl -----------------
 dnl Find a "curses" header file, e.g,. "curses.h", or one of the more common
 dnl variations of ncurses' installs.
@@ -3762,7 +3765,7 @@ AC_CACHE_CHECK(for $cf_ncuhdr_root include-path, cf_cv_ncurses_h2,[
 			CF_NCURSES_CC_CHECK(cf_cv_ncurses_h2,$cf_header,$1)
 			if test "$cf_cv_ncurses_h2" != no ; then
 				cf_cv_ncurses_h2=$cf_incdir/$cf_header
-				test -n "$verbose" && echo $ac_n "	... found $ac_c" 1>&AC_FD_MSG
+				test -n "$verbose" && echo $ECHO_N "	... found $ECHO_C" 1>&AC_FD_MSG
 				break
 			fi
 			test -n "$verbose" && echo "	... tested $cf_incdir/$cf_header" 1>&AC_FD_MSG
@@ -3931,7 +3934,7 @@ EOF
 test "$cf_cv_ncurses_version" = no || AC_DEFINE(NCURSES,1,[Define to 1 if we are using ncurses headers/libraries])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NO_LEAKS_OPTION version: 7 updated: 2020/12/31 18:40:20
+dnl CF_NO_LEAKS_OPTION version: 8 updated: 2021/01/05 20:05:09
 dnl ------------------
 dnl see CF_WITH_NO_LEAKS
 AC_DEFUN([CF_NO_LEAKS_OPTION],[
@@ -3942,7 +3945,7 @@ AC_ARG_WITH($1,
 	 $4
 ])
 	: "${with_cflags:=-g}"
-	: "${with_no_leaks:=yes}"
+	: "${enable_leaks:=no}"
 	 with_$1=yes],
 	[with_$1=])
 AC_MSG_RESULT(${with_$1:-no})
@@ -5889,7 +5892,7 @@ AC_SUBST(MAN2HTML_PATH)
 AC_SUBST(MAN2HTML_TEMP)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_NO_LEAKS version: 3 updated: 2015/05/10 19:52:14
+dnl CF_WITH_NO_LEAKS version: 4 updated: 2021/01/05 20:08:11
 dnl ----------------
 AC_DEFUN([CF_WITH_NO_LEAKS],[
 
@@ -5907,8 +5910,10 @@ AC_ARG_WITH(no-leaks,
 	 (*yes*) ;;
 	 (*) AC_DEFINE(DOALLOC,10000,[Define to size of malloc-array]) ;;
 	 esac
-	 with_no_leaks=yes],
-	[with_no_leaks=])
+	 enable_leaks=no],
+	[enable_leaks=yes])
+dnl TODO - drop with_no_leaks
+if test "x$enable_leaks" = xno; then with_no_leaks=yes; else with_no_leaks=no; fi
 AC_MSG_RESULT($with_no_leaks)
 ])dnl
 dnl ---------------------------------------------------------------------------

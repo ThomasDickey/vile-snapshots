@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.92 2013/12/02 01:33:56 tom Exp $
+ * $Id: c-filt.c,v 1.99 2021/02/22 00:10:30 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -30,7 +30,7 @@ DefineOptFilter(c, "jops#");
 		     || (FltOptions('o') && (c) == '@'))
 #define isNamex(c)  (isIdent(c) || isdigit(CharOf(c)))
 
-#define isQuote(c)  ((c) == DQUOTE || (c) == SQUOTE)
+#define isQuote(c)  ((c) == DQUOTE || (c) == SQUOTE || (FltOptions('j') && (c) == BQUOTE))
 
 static char *Comment_attr;
 static char *Error_attr;
@@ -101,7 +101,7 @@ has_endofliteral(char *s, int delim, int verbatim, int *escaped)
 		++i;
 		++s;
 	    } else {
-		result = i;
+		result = i + 2;	/* include quote chars */
 		break;
 	    }
 	}
@@ -329,7 +329,7 @@ write_number(char *s)
 static char *
 write_literal(char *s, int *literal, int *verbatim, int escaped)
 {
-    int c_length = has_endofliteral(s, *literal, *verbatim, &escaped);
+    int c_length = has_endofliteral(s + 1, *literal, *verbatim, &escaped);
     if (c_length < 0)
 	c_length = (int) strlen(s);
     else
@@ -343,8 +343,6 @@ write_literal(char *s, int *literal, int *verbatim, int escaped)
     }
     s += c_length;
     if (!*literal) {
-	if (*s)
-	    flt_putc(*s++);
 	*verbatim = 0;
     }
     return s;
@@ -375,6 +373,7 @@ write_regexp(char *s)
     char *base = s;
     int escape = 0;
     int adjust = 0;
+    int ranges = 0;
 
     do {
 	int ch = *s;
@@ -382,16 +381,28 @@ write_regexp(char *s)
 	    ++s;
 	    escape = 0;
 	} else {
+	    if (ch == L_BLOCK)
+		ranges = 1;
+	    if (ch == R_BLOCK)
+		ranges = 0;
 	    if (ch == BACKSLASH)
 		escape = 1;
 	    ++s;
 	}
-    } while ((*s != '\0') && (escape || (*s != '/')));
+    } while ((*s != '\0') && (escape || ranges || (!ranges && (*s != '/'))));
     if (*s == '/') {
 	++s;
 	adjust = 1;
     }
-    while (*s == 'i' || *s == 'g') {
+    /*
+     * g = global
+     * i = case-insensitive
+     * m = multiline
+     * s = dot matches newline
+     * u = unicode
+     * y = sticky search, matches starting point.
+     */
+    while (*s != '\0' && strchr("gimsuy", *s) != 0) {
 	++s;
 	adjust = 1;
     }
@@ -485,7 +496,7 @@ do_filter(FILE *input GCC_UNUSED)
     int escaped;
     int literal;
     int verbatim;
-    int was_eql;
+    int maybeRX;
     int was_esc;
     unsigned len;
 
@@ -501,7 +512,7 @@ do_filter(FILE *input GCC_UNUSED)
     comment = 0;
     literal = 0;
     verbatim = 0;
-    was_eql = 0;
+    maybeRX = 0;
     was_esc = 0;
 
     while (flt_gets(&line, &used) != NULL) {
@@ -533,7 +544,7 @@ do_filter(FILE *input GCC_UNUSED)
 		       && set_symbol_table("cpre")) {
 		s = parse_prepro(s, &literal);
 		set_symbol_table(default_table);
-		was_eql = 0;
+		maybeRX = 0;
 	    } else if (comment && *s) {
 		if ((c_length = has_endofcomment(s)) > 0) {
 		    write_comment(s, c_length, 0);
@@ -558,34 +569,35 @@ do_filter(FILE *input GCC_UNUSED)
 		    flt_error("illegal escape");
 		    s = write_escape(s, Error_attr);
 		}
-		was_eql = 0;
+		maybeRX = 0;
 	    } else if (FltOptions('#') && *s == '@' && s[1] == DQUOTE) {
 		verbatim = 1;
 		flt_putc(*s++);
 	    } else if (isQuote(*s)) {
 		literal = (literal == 0) ? *s : 0;
-		flt_putc(*s++);
 		if (literal) {
 		    s = write_literal(s, &literal, &verbatim, 1);
 		}
-		was_eql = 0;
+		maybeRX = 0;
+		if (FltOptions('j'))
+		    was_esc = (literal == BQUOTE);
 	    } else if (isIdent(*s)) {
 		s = extract_identifier(s);
-		was_eql = 0;
+		maybeRX = 0;
 	    } else if (isdigit(CharOf(*s))
 		       || (*s == '.'
 			   && (isdigit(CharOf(s[1])) || s[1] == '.'))) {
 		s = write_number(s);
-		was_eql = 0;
+		maybeRX = 0;
 	    } else if (*s == '#') {
 		char *t = s;
 		while (*s == '#')
 		    s++;
 		flt_puts(t, (int) (s - t), ((s - t) > 2) ?
 			 Error_attr : Preproc_attr);
-		was_eql = 0;
+		maybeRX = 0;
 	    } else if (ispunct(CharOf(*s))) {
-		if (FltOptions('s') && was_eql && *s == '/') {
+		if (FltOptions('s') && maybeRX && *s == '/') {
 		    s = write_regexp(s);
 		} else {
 		    /*
@@ -593,12 +605,15 @@ do_filter(FILE *input GCC_UNUSED)
 		     * right of an assignment, or as a parameter to new()
 		     * or match().
 		     */
-		    was_eql = (*s == '=' || *s == L_PAREN || *s == ',');
+		    maybeRX = (*s == '=' ||
+			       *s == ':' ||
+			       *s == L_PAREN ||
+			       *s == ',');
 		    flt_putc(*s++);
 		}
 	    } else {
 		if (!isspace(CharOf(*s)))
-		    was_eql = 0;
+		    maybeRX = 0;
 		flt_putc(*s++);
 	    }
 	}

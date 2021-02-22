@@ -1,9 +1,31 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20210103 (v)
+ 20210221 (v)
+ 	> Mark Robinson:
+	+ modify c-filt.c
+	  + include the quote chars in the literal colouring for C/C++/Java/etc
+	    to make it the same as most other syntax highlighting
+	  + add backquote "`" as a quoting character for JavaScript, e.g., for
+	    multi-line quotes.
+	+ modify sh-filt.l
+	  + improve parsing of the beginning of here-document to allow for
+	    here-documents piped to programs, e.g.,
+	    	cat <<EOF | pr
+		something
+		EOF
+	    or
+	    	cat <<EOF && date
+		something
+		EOF
+	  + do not treat "#" as a comment marker if it is adjacent to nonblank
+	    text.
  	> Stephan Schulz:
 	+ add popup-choices mode (Savannah #58999)
 	> Tom Dickey:
+	+ improve c-filt.c support for JavaScript
+	  + handle ranges, i.e., to avoid stopping on "/"
+	  + check for regex after ":"
+	  + add m,s,u,y to permissable flags ending regex
 	+ quoting-fixes in autoconf macros, per shellcheck warnings.
 	+ add check for 'U' in read_quoted() needed to make ^VUxxxx work.
 	+ modify lins_chars() to handle a case where a script inserts a UTF-8
