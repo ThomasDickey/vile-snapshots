@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Id: makefile.in,v 1.290 2020/09/09 00:22:49 tom Exp $
+# $Id: makefile.in,v 1.291 2021/02/22 08:56:41 tom Exp $
 
 SHELL		= @SHELL@
 
@@ -360,14 +360,14 @@ ALL =	$(PROGRAM)
 @MAKE_FILTERS@install-full \
 @MAKE_FILTERS@uninstall-full \
 @MAKE_FILTERS@install :: $(BUILTHDRS)
-@MAKE_FILTERS@	cd filters && $(MAKE) $(MAKE_RECUR) $@
+@MAKE_FILTERS@	( cd filters && $(MAKE) $(MAKE_RECUR) $@ )
 
 all ::	$(ALL)
 
 sources : $(BUILTHDRS)
 
 filters/@LIB_PREFIX@vlflt.a : $(BUILTHDRS)
-	cd filters && $(MAKE) $(MAKE_RECUR) @LIB_PREFIX@vlflt.a
+	( cd filters && $(MAKE) $(MAKE_RECUR) @LIB_PREFIX@vlflt.a )
 
 $(PROGRAM): $(BUILTHDRS) $(OBJ) $(OBJ2) $(BUILTLIBS)
 	- $(SHELL) -c "if test -f $(PROGRAM); then mv $(PROGRAM) o$(PROGRAM); fi"
@@ -739,7 +739,7 @@ uninstall \
 mostlyclean \
 clean \
 distclean ::
-	- test -f filters/makefile && cd filters && $(MAKE) $(MAKE_RECUR) $@
+	- ( test -f filters/makefile && cd filters && $(MAKE) $(MAKE_RECUR) $@ )
 
 mostlyclean ::
 	-@ $(RM) -rf *.dSYM

@@ -1,12 +1,14 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20210221 (v)
+ 20210312 (v)
  	> Mark Robinson:
 	+ modify c-filt.c
 	  + include the quote chars in the literal colouring for C/C++/Java/etc
 	    to make it the same as most other syntax highlighting
 	  + add backquote "`" as a quoting character for JavaScript, e.g., for
 	    multi-line quotes.
+	  + highlight embedded "${xxx}" markers in JavaScript strings using the
+	    Ident2 color.
 	+ modify sh-filt.l
 	  + improve parsing of the beginning of here-document to allow for
 	    here-documents piped to programs, e.g.,
@@ -22,6 +24,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
  	> Stephan Schulz:
 	+ add popup-choices mode (Savannah #58999)
 	> Tom Dickey:
+	+ modify makefile.in, wrapping cd commands in a subshell to work around
+	  "jobs" misfeature of pmake.
 	+ improve c-filt.c support for JavaScript
 	  + handle ranges, i.e., to avoid stopping on "/"
 	  + check for regex after ":"
