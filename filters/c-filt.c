@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Id: c-filt.c,v 1.99 2021/02/22 00:10:30 tom Exp $
+ * $Id: c-filt.c,v 1.100 2021/03/13 01:24:46 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -35,6 +35,7 @@ DefineOptFilter(c, "jops#");
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident_attr;
+static char *Ident2_attr;
 static char *Literal_attr;
 static char *Number_attr;
 static char *Preproc_attr;
@@ -327,15 +328,41 @@ write_number(char *s)
 }
 
 static char *
-write_literal(char *s, int *literal, int *verbatim, int escaped)
+write_literal(char *s, int *literal, int *verbatim, int escaped, int skip)
 {
-    int c_length = has_endofliteral(s + 1, *literal, *verbatim, &escaped);
-    if (c_length < 0)
+    int c_length = has_endofliteral(s + skip, *literal, *verbatim, &escaped);
+    if (c_length < 0) {
 	c_length = (int) strlen(s);
-    else
+    } else {
+	c_length -= (1 - skip);
 	*literal = 0;
+    }
     if (escaped || *verbatim) {
-	flt_puts(s, c_length, Literal_attr);
+	if (FltOptions('j')) {
+	    int l = 0;
+	    char *p = s;
+	    while (l < c_length) {
+		if (*(s + l) == '$' && *(s + l + 1) == '{') {
+		    if (l > 0) {
+			flt_puts(p, l - (p - s), Literal_attr);
+			p = s + l;
+		    }
+		    while (++l < c_length && *(s + l) != '}' && *(s + l) != '$') ;
+		    if (*(s + l) == '}') {
+			flt_puts(p, ++l - (p - s), Ident2_attr);
+		    } else {
+			flt_error("expected a '}'");
+			flt_puts(p, l - (p - s), Error_attr);
+		    }
+		    p = s + l;
+		} else {
+		    l++;
+		}
+	    }
+	    flt_puts(p, l - (p - s), Literal_attr);
+	} else {
+	    flt_puts(s, c_length, Literal_attr);
+	}
     } else {
 	flt_error("expected an escape");
 	flt_puts(s, c_length, Error_attr);
@@ -505,6 +532,7 @@ do_filter(FILE *input GCC_UNUSED)
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);
     Ident_attr = class_attr(NAME_IDENT);
+    Ident2_attr = class_attr(NAME_IDENT2);
     Literal_attr = class_attr(NAME_LITERAL);
     Number_attr = class_attr(NAME_NUMBER);
     Preproc_attr = FltOptions('p') ? Error_attr : class_attr(NAME_PREPROC);
@@ -520,7 +548,8 @@ do_filter(FILE *input GCC_UNUSED)
 	was_esc = 0;
 	s = line;
 	if (literal) {
-	    s = write_literal(s, &literal, &verbatim, escaped);
+	    s = write_literal(s, &literal, &verbatim, escaped, 0);
+	    was_esc = (literal == BQUOTE);
 	}
 	s = skip_white(s);
 	while (*s) {
@@ -576,7 +605,8 @@ do_filter(FILE *input GCC_UNUSED)
 	    } else if (isQuote(*s)) {
 		literal = (literal == 0) ? *s : 0;
 		if (literal) {
-		    s = write_literal(s, &literal, &verbatim, 1);
+		    s = write_literal(s, &literal, &verbatim, 1, 1);
+		    was_esc = (literal == BQUOTE);
 		}
 		maybeRX = 0;
 		if (FltOptions('j'))
