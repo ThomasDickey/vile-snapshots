@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20210312 (v)
+ 20210322 (v)
  	> Mark Robinson:
 	+ modify c-filt.c
 	  + include the quote chars in the literal colouring for C/C++/Java/etc
@@ -24,6 +24,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
  	> Stephan Schulz:
 	+ add popup-choices mode (Savannah #58999)
 	> Tom Dickey:
+	+ update configure script to work with _Noreturn changes in ncurses
+	  20210320 development version.
 	+ modify makefile.in, wrapping cd commands in a subshell to work around
 	  "jobs" misfeature of pmake.
 	+ improve c-filt.c support for JavaScript

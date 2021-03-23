@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Id: c-filt.c,v 1.100 2021/03/13 01:24:46 tom Exp $
+ * $Id: c-filt.c,v 1.101 2021/03/22 23:24:30 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -344,22 +344,22 @@ write_literal(char *s, int *literal, int *verbatim, int escaped, int skip)
 	    while (l < c_length) {
 		if (*(s + l) == '$' && *(s + l + 1) == '{') {
 		    if (l > 0) {
-			flt_puts(p, l - (p - s), Literal_attr);
+			flt_puts(p, l - (int) (p - s), Literal_attr);
 			p = s + l;
 		    }
 		    while (++l < c_length && *(s + l) != '}' && *(s + l) != '$') ;
 		    if (*(s + l) == '}') {
-			flt_puts(p, ++l - (p - s), Ident2_attr);
+			flt_puts(p, ++l - (int) (p - s), Ident2_attr);
 		    } else {
 			flt_error("expected a '}'");
-			flt_puts(p, l - (p - s), Error_attr);
+			flt_puts(p, l - (int) (p - s), Error_attr);
 		    }
 		    p = s + l;
 		} else {
 		    l++;
 		}
 	    }
-	    flt_puts(p, l - (p - s), Literal_attr);
+	    flt_puts(p, l - (int) (p - s), Literal_attr);
 	} else {
 	    flt_puts(s, c_length, Literal_attr);
 	}
