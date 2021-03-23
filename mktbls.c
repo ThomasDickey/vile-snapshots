@@ -5,7 +5,7 @@
  *	included in main.c
  *
  *	Copyright (c) 1990 by Paul Fox
- *	Copyright (c) 1995-2020 by Paul Fox and Thomas Dickey
+ *	Copyright (c) 1995-2021 by Paul Fox and Thomas Dickey
  *
  *	See the file "cmdtbl" for input data formats, and "estruct.h" for
  *	the output structures.
@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Id: mktbls.c,v 1.198 2020/03/29 23:29:53 tom Exp $
+ * $Id: mktbls.c,v 1.200 2021/03/22 23:21:55 tom Exp $
  *
  */
 
@@ -177,7 +177,7 @@ static LIST *all_qmodes;	/* data for QUALIFIER modes */
 static LIST *all_bmodes;	/* data for BUFFER modes */
 static LIST *all_wmodes;	/* data for WINDOW modes */
 
-static void badfmt(const char *) GCC_NORETURN;
+static GCC_NORETURN void badfmt(const char *);
 static void save_all_modes(const char *type, char *normal, const char
 			   *abbrev, const char *cond);
 static void save_all_submodes(const char *type, char *normal, const char

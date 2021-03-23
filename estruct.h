@@ -12,7 +12,7 @@
 */
 
 /*
- * $Id: estruct.h,v 1.758 2020/11/29 22:41:44 tom Exp $
+ * $Id: estruct.h,v 1.759 2021/03/22 23:19:44 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -302,6 +302,11 @@ typedef unsigned short	mode_t;
 #endif
 
 #include <vl_stdio.h>
+
+#ifdef HAVE_STDNORETURN_H
+#undef GCC_NORETURN
+#define GCC_NORETURN _Noreturn
+#endif
 
 #if SYS_VMS && (! defined(__DECC_VER))
 # include <types.h>

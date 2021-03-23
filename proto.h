@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Id: proto.h,v 1.752 2020/12/01 23:24:17 tom Exp $
+ * $Id: proto.h,v 1.753 2021/03/22 23:18:23 tom Exp $
  */
 
 #ifndef VILE_PROTO_H
@@ -27,13 +27,13 @@ extern int no_memory (const char *s);
 extern int rdonly (void);
 extern int writeall (int f, int n, int promptuser, int leaving, int autowriting, int all);
 extern void do_repeats (int *cp, int *fp, int *np);
-extern void exit_program (int code) GCC_NORETURN;
+extern GCC_NORETURN void exit_program (int code);
 extern void init_mode_value (struct VAL *, MODECLASS c, int n);
 extern void not_interrupted (void);
 extern void setup_handler (int sig, void (*disp) (int ACTUAL_SIG_ARGS));
 extern void tcap_init_fkeys (void);
 extern void tcap_setup_locale (char *real_locale, char *fake_locale);
-extern void tidy_exit (int code) GCC_NORETURN;
+extern GCC_NORETURN void tidy_exit (int code);
 
 #ifndef interrupted
 extern int interrupted (void);
@@ -600,7 +600,7 @@ extern int more_named_cmd (void);
 extern int user_operator (void);
 
 /* file.c */
-extern SIGT imdying (int ACTUAL_SIG_ARGS) GCC_NORETURN;
+extern GCC_NORETURN SIGT imdying (int ACTUAL_SIG_ARGS);
 extern int bp2readin (BUFFER *bp, int lockfl);
 extern int fileuid_compare (FUID *fuid1, FUID *fuid2);
 extern int fileuid_get (const char *fname, FUID *fuid);
@@ -1421,7 +1421,7 @@ extern void toss_to_undo (LINE *lp);
 /* version.c */
 extern const char * getversion (void);
 extern const char * non_filename (void);
-extern void print_usage (int code) GCC_NORETURN;
+extern GCC_NORETURN void print_usage (int code);
 
 /* vms2unix.c */
 #if OPT_VMS_PATH
@@ -1501,7 +1501,7 @@ extern int  is_winnt(void);
 extern char *mk_shell_cmd_str(const char *cmd, int *allocd_mem, int prepend_shc);
 extern char *ntwinio_current_font(void);
 extern int  ntwinio_font_frm_str(const char *fontstr, int use_mb);
-extern void ntwinio_oleauto_reg(void) GCC_NORETURN;
+extern GCC_NORETURN void ntwinio_oleauto_reg(void);
 extern void ntwinio_redirect_hwnd(int redirect);
 extern void oleauto_exit(int code);
 extern int  oleauto_init(OLEAUTO_OPTIONS *opts);

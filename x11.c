@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11.c,v 1.401 2020/05/24 19:04:01 tom Exp $
+ * $Id: x11.c,v 1.402 2021/03/22 23:20:12 tom Exp $
  */
 
 /*
@@ -1500,7 +1500,7 @@ static XtResource pointer_resources[] =
 	    else if ((v) < (min))	\
 		(v) = (min);		\
 	} one_time
-static void initial_error_handler(String message) GCC_NORETURN;
+static GCC_NORETURN void initial_error_handler(String message);
 static void
 initial_error_handler(String message)
 {
@@ -1508,7 +1508,8 @@ initial_error_handler(String message)
     fprintf(stderr, "%s: %s\n", prog_arg, NonNull(message));
     print_usage(BADEXIT);
 }
-static void runtime_error_handler(String message) GCC_NORETURN;
+
+static GCC_NORETURN void runtime_error_handler(String message);
 static void
 runtime_error_handler(String message)
 {
