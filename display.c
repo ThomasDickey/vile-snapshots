@@ -4,7 +4,7 @@
  * physical display screen the same as the virtual display screen. These
  * functions use hints that are left in the windows by the commands.
  *
- * $Id: display.c,v 1.579 2018/10/26 01:24:20 tom Exp $
+ * $Id: display.c,v 1.580 2021/05/09 21:32:16 Lois.Mansot Exp $
  */
 
 #include	"estruct.h"
@@ -4246,6 +4246,9 @@ update(int force /* force update past type ahead? */ )
     /* look for scratch-buffers that should be recomputed.  */
 #if OPT_UPBUFF
     for_each_visible_window(wp) {
+	if (wp->w_flag) {
+	    reframe_cursor_position(wp);	/* check the framing */
+	}
 	if (b_is_obsolete(wp->w_bufp))
 	    recompute_buffer(wp->w_bufp);
     }
@@ -4284,7 +4287,6 @@ update(int force /* force update past type ahead? */ )
 		if ((wp->w_flag & ~(WFMOVE)) && !updated++)
 		    term.cursorvis(FALSE);
 		/* if the window has changed, service it */
-		reframe_cursor_position(wp);	/* check the framing */
 		if (wp->w_flag & (WFKILLS | WFINS)) {
 		    scrflags |= (wp->w_flag & (WFINS | WFKILLS));
 		    clr_typed_flags(wp->w_flag, USHORT, WFKILLS | WFINS);

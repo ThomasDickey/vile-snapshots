@@ -1,6 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20210322 (v)
+ 20210509 (v)
+	> Lois Mansot
+	+ corrected range for &random function.
+	+ move the reframe_cursor_position() in update() to ensure that $cwline
+	  is shown correctly when viewing [Variables] while showvariables is
+	  set.
  	> Mark Robinson:
 	+ modify c-filt.c
 	  + include the quote chars in the literal colouring for C/C++/Java/etc
