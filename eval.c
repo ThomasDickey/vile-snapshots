@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Id: eval.c,v 1.468 2020/01/17 22:30:00 tom Exp $
+ * $Id: eval.c,v 1.469 2021/05/09 21:32:16 Lois.Mansot Exp $
  */
 
 #include	<estruct.h>
@@ -1478,9 +1478,10 @@ run_func(int fnum)
 	break;
     case UFRANDOM:		/* FALLTHRU */
     case UFRND:
+	if (nums[0] < 1)
+	    is_error = TRUE;
 	if (!is_error)
-	    value = rand() % (1 + absol(nums[0]));
-	value++;		/* return 1 to N */
+	    value = rand() % nums[0] + 1;	/* return 1 to N */
 	break;
     case UFABS:
 	value = absol(nums[0]);
