@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.71 2019/07/24 20:04:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.72 2021/09/04 20:25:32 tom Exp $
  *
  */
 
@@ -472,7 +472,12 @@ static void
 ansi_CUF(int code)
 {
     if (code > 0) {
-	size_t col = cur_line->l_this + (size_t) code;
+	size_t col;
+
+	if (cur_line == 0)
+	    cur_line = allocate_line();
+
+	col = cur_line->l_this + (size_t) code;
 	while (col > cur_line->l_last) {
 	    extend_line(col);
 	}
@@ -489,6 +494,8 @@ ansi_DCH(int code)
     size_t src;
 
     if (code > 0) {
+	if (cur_line == 0)
+	    cur_line = allocate_line();
 	for (dst = cur_line->l_this; dst < cur_line->l_used; ++dst) {
 	    src = dst + (size_t) code;
 	    if (src < cur_line->l_used) {
@@ -505,6 +512,9 @@ static void
 ansi_EL(int code)
 {
     size_t col;
+
+    if (cur_line == 0)
+	cur_line = allocate_line();
 
     switch (code) {
     case 0:			/* Erase to Right (default) */
@@ -526,7 +536,12 @@ ansi_ICH(int code)
     size_t src;
 
     if (code > 0) {
-	size_t last = cur_line->l_last - 1;
+	size_t last;
+
+	if (cur_line == 0)
+	    cur_line = allocate_line();
+
+	last = cur_line->l_last - 1;
 	for (dst = last; dst >= cur_line->l_this; --dst) {
 	    src = dst - (size_t) code;
 	    if (src >= cur_line->l_this) {
@@ -544,7 +559,12 @@ static void
 ansi_HPA(int code)
 {
     if (code > 0) {
-	size_t col = (size_t) code - 1;
+	size_t col;
+
+	if (cur_line == 0)
+	    cur_line = allocate_line();
+
+	col = (size_t) code - 1;
 	while (col > cur_line->l_last) {
 	    extend_line(col);
 	}

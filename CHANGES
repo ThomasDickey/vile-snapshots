@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20210704 (v)
+ 20210904 (v)
 	> Lois Mansot
 	+ corrected range for &random function.
 	+ move the reframe_cursor_position() in update() to ensure that $cwline
@@ -29,6 +29,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
  	> Stephan Schulz:
 	+ add popup-choices mode (Savannah #58999)
 	> Tom Dickey:
+	+ fix a case in vile-manfilt where cur_line may not have been allocated
+	  before first use.
 	+ update configure script to work with _Noreturn changes in ncurses
 	  20210320 development version.
 	+ modify makefile.in, wrapping cd commands in a subshell to work around
