@@ -3,7 +3,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11plain.c,v 1.7 2020/05/24 21:11:47 tom Exp $
+ * $Id: x11plain.c,v 1.9 2021/11/19 21:29:23 tom Exp $
  */
 
 #include <x11vile.h>
@@ -93,8 +93,8 @@ get_color_gc(Display *dpy, TextWindow win, int n, Bool normal)
 	    : &(win->back_color[n]));
     if (win->screen_depth == 1) {
 	data->gc = (normal
-		    ? win->textgc
-		    : win->reversegc);
+		    ? win->text_gc
+		    : win->reverse_gc);
     } else if (data->reset) {
 	XGCValues gcvals;
 	ULONG gcmask;
@@ -248,15 +248,15 @@ xvileDraw(Display *dpy,
     int fontchanged = FALSE;
 
     if (attr == 0) {		/* This is the most common case, so we list it first */
-	fore_gc = win->textgc;
-	back_gc = win->reversegc;
+	fore_gc = win->text_gc;
+	back_gc = win->reverse_gc;
     } else if ((attr & VACURS) && win->is_color_cursor) {
-	fore_gc = win->cursgc;
-	back_gc = win->revcursgc;
+	fore_gc = win->cursor_gc;
+	back_gc = win->revcur_gc;
 	attr &= ~VACURS;
     } else if (attr & VASEL) {
-	fore_gc = win->selgc;
-	back_gc = win->revselgc;
+	fore_gc = win->select_gc;
+	back_gc = win->revsel_gc;
     } else if (attr & VAMLFOC) {
 	fore_gc = back_gc = win->modeline_focus_gc;
     } else if (attr & VAML) {
@@ -274,8 +274,8 @@ xvileDraw(Display *dpy,
 	    back_gc = get_color_gc(dpy, win, bg, False);
 	}
     } else {
-	fore_gc = win->textgc;
-	back_gc = win->reversegc;
+	fore_gc = win->text_gc;
+	back_gc = win->reverse_gc;
     }
 
     if (attr & (VAREV | VACURS)) {
