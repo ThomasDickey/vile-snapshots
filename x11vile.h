@@ -1,7 +1,7 @@
 /*
  * Common definitions for xvile modules.
  *
- * $Id: x11vile.h,v 1.5 2020/05/24 16:51:15 tom Exp $
+ * $Id: x11vile.h,v 1.11 2021/11/19 21:29:23 tom Exp $
  */
 
 /*
@@ -215,7 +215,7 @@
 
 #define TRACE_RES_I(res,val) TRACE(("\t%s: %d\n", res, cur_win->val));
 #define TRACE_RES_B(res,val) TRACE(("\t%s: %s\n", res, cur_win->val ? "true" : "false"));
-#define TRACE_RES_P(res,val) TRACE(("\t%s: %#lx\n", res, cur_win->val));
+#define TRACE_RES_P(res,val) TRACE(("\t%s: %06lx\n", res, cur_win->val));
 #define TRACE_RES_S(res,val) TRACE(("\t%s: %s\n", res, cur_win->val));
 
 #define IsPrimary(s)    ((s) == XA_PRIMARY)
@@ -343,37 +343,37 @@ typedef struct _text_win {
     int nscrollbars;		/* number of currently active scroll bars */
 
 #if OPT_MENUS_COLORED
-    Pixel menubar_fg;		/* color of the menubar */
-    Pixel menubar_bg;
+    Pixel menubar_fg;		/* XRES: color of the menubar */
+    Pixel menubar_bg;		/* XRES */
 #endif
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
     Pixel scrollbar_fg;
     Pixel scrollbar_bg;
     Bool slider_is_solid;
     Bool slider_is_3D;
-    GC scrollbargc;		/* graphics context for scrollbar "thumb" */
+    GC scrollbar_gc;		/* graphics context for scrollbar "thumb" */
     Pixmap trough_pixmap;
     Pixmap slider_pixmap;
     ScrollInfo *scrollinfo;
     Widget *grips;		/* grips for resizing scrollbars */
     XtIntervalId scroll_repeat_id;
-    int scroll_repeat_timeout;
+    int scroll_repeat_timeout;	/* XRES */
 #endif				/* OPT_KEV_SCROLLBARS */
 #if OPT_XAW_SCROLLBARS
     Pixmap thumb_bm;		/* bitmap for scrollbar thumb */
 #endif
-    int scroll_repeat_interval;
-    Bool reverse_video;
+    int scroll_repeat_interval;	/* XRES */
+    Bool reverse_video;		/* XRES */
     XtIntervalId blink_id;
     int blink_status;
-    int blink_interval;
+    int blink_interval;		/* XRES */
     Bool exposed;		/* Have we received any expose events? */
     int visibility;		/* How visible is the window? */
 
     int base_width;		/* width with screen widgets' width zero */
     int base_height;
     UINT pane_width;		/* full width of scrollbar pane */
-    Dimension menu_height;	/* height of menu-bar */
+    Dimension menu_height;	/* XRES: height of menu-bar */
     Dimension top_width;	/* width of top widget as of last resize */
     Dimension top_height;	/* height of top widget as of last resize */
 
@@ -384,71 +384,70 @@ typedef struct _text_win {
     XVileFont *pfont_bold;
     XVileFont *pfont_ital;
     XVileFont *pfont_boldital;
-    GC textgc;
-    GC reversegc;
-    GC selgc;
-    GC revselgc;
+    XVileFont *curfont;		/* Current font */
+    GC text_gc;
+    GC reverse_gc;
+    GC select_gc;
+    GC revsel_gc;
     int is_color_cursor;
-    GC cursgc;
-    GC revcursgc;
+    GC cursor_gc;
+    GC revcur_gc;
     GC modeline_focus_gc;	/* GC for modeline w/ focus */
     GC modeline_gc;		/* GC for other modelines  */
     ColorGC fore_color[NCOLORS];
     ColorGC back_color[NCOLORS];
     Boolean bg_follows_fg;
-    Pixel fg;
-    Pixel bg;
-    Pixel default_fg;
-    Pixel default_bg;
-    Pixel colors_fg[NCOLORS];
-    Pixel colors_bg[NCOLORS];
-    Pixel modeline_fg;
-    Pixel modeline_bg;
-    Pixel modeline_focus_fg;
-    Pixel modeline_focus_bg;
-    Pixel selection_fg;
-    Pixel selection_bg;
+    Pixel fg;			/* XRES: window's foreground */
+    Pixel bg;			/* XRES: window's background */
+    Pixel default_fg;		/* actual foreground, accounting for reverse */
+    Pixel default_bg;		/* actual background, accounting for reverse */
+    Pixel colors_fg[NCOLORS];	/* XRES: text foreground colors */
+    Pixel colors_bg[NCOLORS];	/* XRES: text background colors */
+    Pixel modeline_fg;		/* XRES: modeline foreground color */
+    Pixel modeline_bg;		/* XRES: modeline background color */
+    Pixel modeline_focus_fg;	/* XRES: modeline focus-foreground color */
+    Pixel modeline_focus_bg;	/* XRES: modeline focus-background color */
+    Pixel selection_fg;		/* XRES: selection foreground color */
+    Pixel selection_bg;		/* XRES: selection background color */
     int char_width;
     int char_ascent;
     int char_descent;
     int char_height;
     Bool left_ink;		/* font has "ink" past bounding box on left */
     Bool right_ink;		/* font has "ink" past bounding box on right */
-    int wheel_scroll_amount;
-    char *iconname;
-    char *geometry;
-    char *starting_fontname;	/* name of font at startup */
+    int wheel_scroll_amount;	/* XRES */
+    char *iconname;		/* XRES */
+    char *geometry;		/* XRES */
+    char *starting_fontname;	/* XRES name of font at startup */
     char *fontname;		/* name of current font */
-    Bool focus_follows_mouse;
-    Bool fork_on_startup;
-    Bool scrollbar_on_left;
-    Bool update_window_name;
-    Bool update_icon_name;
-    Bool persistent_selections;
-    Bool selection_sets_DOT;
+    Bool focus_follows_mouse;	/* XRES */
+    Bool fork_on_startup;	/* XRES */
+    Bool scrollbar_on_left;	/* XRES */
+    Bool persistent_selections;	/* XRES */
+    Bool selection_sets_DOT;	/* XRES */
 
     /* text stuff */
-    Bool reverse;
+    Bool reverse;		/* true if window is currently reversed */
     UINT rows, cols;
-    Bool show_cursor;
+    Bool show_cursor;		/* true if cursor is currently in-focus/shown */
 
     /* cursor stuff */
-    Pixel cursor_fg;
-    Pixel cursor_bg;
+    Pixel cursor_fg;		/* XRES */
+    Pixel cursor_bg;		/* XRES */
 
     /* pointer stuff */
-    Pixel pointer_fg;
-    Pixel pointer_bg;
-    Cursor normal_pointer;
+    Pixel pointer_fg;		/* XRES */
+    Pixel pointer_bg;		/* XRES */
+    Cursor normal_pointer;	/* XRES */
 #if OPT_WORKING
-    Cursor watch_pointer;
-    Bool want_to_work;
+    Cursor watch_pointer;	/* XRES */
+    Bool want_to_work;		/* true if "working..." */
 #endif
 
     /* selection stuff */
-    String multi_click_char_class;	/* ?? */
+    String multi_click_char_class;	/* XRES */
+    unsigned click_timeout;	/* XRES */
     Time lasttime;		/* for multi-click */
-    unsigned click_timeout;
     int numclicks;
     int last_getc;
     Bool have_selection;
@@ -670,5 +669,7 @@ extern XVileFont *xvileQueryFont(Display *, TextWindow, const char *);
 extern void x_set_font_encoding(ENC_CHOICES);
 extern void x_set_fontname(TextWindow, const char *);
 extern void xvileDraw(Display *, TextWindow, VIDEO_TEXT *, int, UINT, int, int);
+
+#define NotImpl() fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__)
 
 #endif /* _x11vile_h */

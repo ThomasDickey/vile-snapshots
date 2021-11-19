@@ -1,7 +1,7 @@
 /*
  * Xft text-output, Thomas Dickey 2020
  *
- * $Id: xftplain.c,v 1.12 2020/05/25 09:46:56 tom Exp $
+ * $Id: xftplain.c,v 1.32 2021/11/19 21:29:23 tom Exp $
  *
  * Some of this was adapted from xterm, of course.
  */
@@ -17,17 +17,11 @@
 #define GetFcTxt(pattern, what) \
     (FcPatternGetString(pattern, what, 0, &fc_txt) == FcResultMatch)
 
-#ifdef FC_COLOR
 #define NormXftPattern \
 	    XFT_FAMILY,     XftTypeString, "mono", \
 	    FC_COLOR,       XftTypeBool,   FcFalse, \
 	    FC_OUTLINE,     XftTypeBool,   FcTrue, \
 	    XFT_SIZE,       XftTypeDouble, face_size
-#else
-#define NormXftPattern \
-	    XFT_FAMILY,     XftTypeString, "mono", \
-	    XFT_SIZE,       XftTypeDouble, face_size
-#endif
 
 #define BoldXftPattern(font) \
 	    XFT_WEIGHT,     XftTypeInteger, XFT_WEIGHT_BOLD, \
@@ -42,88 +36,115 @@
 	    XFT_SLANT,      XftTypeInteger, XFT_SLANT_ITALIC, \
 	    XFT_CHAR_WIDTH, XftTypeInteger, (font)->max_advance_width
 
+#define MAX_FONTNAME 1024
+
+static double face_size = 12.0;	/* FIXME - make this configurable */
+
 static XVileFont *
-alternate_font(Display *dpy, TextWindow win, const char *weight, const char *slant)
+open_font(Display *dpy, XftPattern *temper, char *fullname)
 {
-#ifdef XRENDERFONT
+    XftPattern *match;
+    XftResult status;
+    XVileFont *result = NULL;
+
+    if (fullname != NULL)
+	*fullname = '\0';
+
+    FcConfigSubstitute(NULL, temper, FcMatchPattern);
+    XftDefaultSubstitute(dpy, DefaultScreen(dpy), temper);
+
+    match = FcFontMatch(NULL, temper, &status);
+    if (match != NULL) {
+	int fc_int = -1;
+	result = XftFontOpenPattern(dpy, match);
+
+	if (!GetFcInt(temper, FC_SPACING) || fc_int != FC_MONO) {
+	    fprintf(stderr, "fc_int:%d\n", fc_int);
+	    (void) fprintf(stderr,
+			   "proportional font, things will be miserable\n");
+	}
+	/*
+	 * Xft is a layer over fontconfig.  The latter's documentation
+	 * is composed of circular definitions which never get around
+	 * to defining the format returned by FcNameUnparse.  The value
+	 * returned via Xft has (also undocumented) the fontname that
+	 * we want first in the buffer.
+	 */
+	if (fullname != NULL && XftNameUnparse(match, fullname, MAX_FONTNAME)) {
+	    char *colon = strchr(fullname, ':');
+	    if (colon != NULL)
+		*colon = '\0';
+	}
+    }
+    return result;
+}
+
+static XVileFont *
+open_font_pattern(Display *dpy, char *fullname, ...)
+{
+    XftPattern *pat;
+    XVileFont *result = NULL;
+
+    if ((pat = XftNameParse(fullname)) != 0) {
+	XftPattern *temper;
+
+	if ((temper = XftPatternDuplicate(pat)) != NULL) {
+	    va_list ap;
+	    va_start(ap, fullname);
+	    XftPatternVaBuild(temper, ap);
+	    va_end(ap);
+
+	    result = open_font(dpy, temper, fullname);
+
+	    /* FIXME xterm retains the pattern to (try to) make the
+	     * bold/italic versions follow the same pattern as normal -
+	     * should xvile?
+	     */
+	    XftPatternDestroy(temper);
+	}
+    }
+    return result;
+}
+
+static XVileFont *
+alternate_font(Display *dpy, TextWindow win, int bold, int slant)
+{
+    XVileFont *result = NULL;
+    char fullname[MAX_FONTNAME];
+    char *fn = strcpy(fullname, x_current_fontname());
     (void) dpy;
-    (void) win;
-    (void) weight;
-    (void) slant;
-    fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__);
-    return NULL;
-#else
-    char *newname, *np, *op;
-    int cnt;
-    XVileFont *fsp = NULL;
 
-    if (win->fontname == NULL
-	|| win->fontname[0] != '-'
-	|| (newname = castalloc(char, strlen(win->fontname) + 32))
-	== NULL)
-	  return NULL;
-
-    /* copy initial two fields */
-    for (cnt = 3, np = newname, op = win->fontname; *op && cnt > 0;) {
-	if (*op == '-')
-	    cnt--;
-	*np++ = *op++;
+    if (bold) {
+	if (slant) {
+	    if ((result = win->pfont_boldital) == NULL) {
+		result = open_font_pattern(dpy, fn,
+					   NormXftPattern,
+					   BtalXftPattern(win->pfont),
+					   NULL);
+	    }
+	} else {
+	    if ((result = win->pfont_bold) == NULL) {
+		result = open_font_pattern(dpy, fn,
+					   NormXftPattern,
+					   BoldXftPattern(win->pfont),
+					   NULL);
+	    }
+	}
+    } else {
+	if (slant) {
+	    if ((result = win->pfont_ital) == NULL) {
+		result = open_font_pattern(dpy, fn,
+					   NormXftPattern,
+					   ItalXftPattern(win->pfont),
+					   NULL);
+	    }
+	} else {
+	    if ((result = win->pfont) == NULL) {
+		result = open_font_pattern(dpy, fn, NormXftPattern, NULL);
+	    }
+	}
     }
-    if (!*op)
-	goto done;
-
-    /* substitute new weight and slant as appropriate */
-#define SUBST_FIELD(field)				\
-    do {						\
-	if ((field) != NULL) {				\
-	    const char *fp = (field);			\
-	    if (nocase_eq(*fp, *op))			\
-		goto done;				\
-	    while ((*np++ = *fp++))			\
-		;					\
-	    *(np-1) = '-';				\
-	    while (*op && *op++ != '-')			\
-		;					\
-	}						\
-	else {						\
-	    while (*op && (*np++ = *op++) != '-')	\
-		;					\
-	}						\
-	if (!*op)					\
-	    goto done;					\
-    } one_time
-
-    SUBST_FIELD(weight);
-    SUBST_FIELD(slant);
-#undef SUBST_FIELD
-
-    /* copy rest of name */
-    while ((*np++ = *op++)) {
-	;			/*nothing */
-    }
-
-    TRACE(("x11:alternate_font(weight=%s, slant=%s)\n -> %s\n",
-	   NONNULL(weight),
-	   NONNULL(slant), newname));
-
-#if XRENDERFONT
-    (void) dpy;
-    fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__);
-#else
-    if ((fsp = XLoadQueryFont(dpy, newname)) != NULL) {
-	win->left_ink = win->left_ink || (fsp->min_bounds.lbearing < 0);
-	win->right_ink = win->right_ink
-	    || (fsp->max_bounds.rbearing > win->char_width);
-	TRACE(("...found left:%d, right:%d\n",
-	       win->left_ink,
-	       win->right_ink));
-    }
-#endif
-
-  done:
-    free(newname);
-    return fsp;
-#endif
+    return result;
 }
 
 static GC
@@ -140,13 +161,13 @@ get_color_gc(Display *dpy, TextWindow win, int n, Bool normal)
 	    : &(win->back_color[n]));
     if (win->screen_depth == 1) {
 	data->gc = (normal
-		    ? win->textgc
-		    : win->reversegc);
+		    ? win->text_gc
+		    : win->reverse_gc);
     } else if (data->reset) {
 	XGCValues gcvals;
 	ULONG gcmask;
 
-	gcmask = GCForeground | GCBackground | GCFont | GCGraphicsExposures;
+	gcmask = GCForeground | GCBackground | GCGraphicsExposures;
 	if (win->bg_follows_fg) {
 	    gcvals.foreground = (normal
 				 ? win->colors_fg[n]
@@ -167,25 +188,20 @@ get_color_gc(Display *dpy, TextWindow win, int n, Bool normal)
 	    gcvals.foreground = normal ? win->fg : win->bg;
 	    gcvals.background = normal ? win->bg : win->fg;
 	}
-#if XRENDERFONT
-	fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__);
-#else
-	gcvals.font = win->pfont->fid;
-#endif
 	gcvals.graphics_exposures = False;
-
-	TRACE(("get_color_gc(%d,%s) %#lx/%#lx\n",
-	       n,
-	       normal ? "fg" : "bg",
-	       (long) gcvals.foreground,
-	       (long) gcvals.background));
 
 	if (data->gc == 0)
 	    data->gc = XCreateGC(dpy, DefaultRootWindow(dpy), gcmask, &gcvals);
 	else
 	    XChangeGC(dpy, data->gc, gcmask, &gcvals);
 
-	TRACE(("... gc %#lx\n", (long) data->gc));
+	TRACE(("get_color_gc(%d,%s) %06lx/%06lx -> %p\n",
+	       n,
+	       normal ? "fg" : "bg",
+	       (long) gcvals.foreground,
+	       (long) gcvals.background,
+	       data->gc));
+
 	data->reset = False;
     }
     return data->gc;
@@ -204,12 +220,12 @@ really_draw(Display *dpy,
 #define MYSIZE 1024
     XftColor color;
     int y = text_y_pos(win, sr);
-    int x = x_pos(win, sr);
+    int x = x_pos(win, sc);
     XftCharSpec buffer[MYSIZE];
     static XftDraw *renderDraw;
 
-    fprintf(stderr, "really_draw [%d,%d] %s\n", sr, sc, visible_video_text(text, tlen));
-    memset(&color, 0xff, sizeof(color)); /* FIXME - computed and cached in xterm */
+    TRACE(("really_draw [%d,%d] %s\n", sr, sc, visible_video_text(text, tlen)));
+    memset(&color, 0xff, sizeof(color));	/* FIXME - computed and cached in xterm */
     if (renderDraw == 0) {
 	int scr = DefaultScreen(dpy);
 	Visual *visual = DefaultVisual(dpy, scr);
@@ -228,7 +244,7 @@ really_draw(Display *dpy,
 
 	XftDrawCharSpec(renderDraw,
 			&color,
-			win->pfont,
+			win->curfont,
 			buffer,
 			(int) n);
 
@@ -277,16 +293,19 @@ xvileDraw(Display *dpy,
     int cc, tlen, i, startcol;
     int fontchanged = FALSE;
 
+    if (win->curfont == NULL)
+	win->curfont = win->pfont;
+
     if (attr == 0) {		/* This is the most common case, so we list it first */
-	fore_gc = win->textgc;
-	back_gc = win->reversegc;
+	fore_gc = win->text_gc;
+	back_gc = win->reverse_gc;
     } else if ((attr & VACURS) && win->is_color_cursor) {
-	fore_gc = win->cursgc;
-	back_gc = win->revcursgc;
+	fore_gc = win->cursor_gc;
+	back_gc = win->revcur_gc;
 	attr &= ~VACURS;
     } else if (attr & VASEL) {
-	fore_gc = win->selgc;
-	back_gc = win->revselgc;
+	fore_gc = win->select_gc;
+	back_gc = win->revsel_gc;
     } else if (attr & VAMLFOC) {
 	fore_gc = back_gc = win->modeline_focus_gc;
     } else if (attr & VAML) {
@@ -304,8 +323,8 @@ xvileDraw(Display *dpy,
 	    back_gc = get_color_gc(dpy, win, bg, False);
 	}
     } else {
-	fore_gc = win->textgc;
-	back_gc = win->reversegc;
+	fore_gc = win->text_gc;
+	back_gc = win->reverse_gc;
     }
 
     if (attr & (VAREV | VACURS)) {
@@ -318,17 +337,13 @@ xvileDraw(Display *dpy,
 	XVileFont *fsp = NULL;
 	if ((attr & (VABOLD | VAITAL)) == (VABOLD | VAITAL)) {
 	    if (!(win->fsrch_flags & FSRCH_BOLDITAL)) {
-		if ((fsp = alternate_font(dpy, win, "bold", "i")) != NULL
-		    || (fsp = alternate_font(dpy, win, "bold", "o")) != NULL)
+		if ((fsp = alternate_font(dpy, win, TRUE, TRUE)) != NULL
+		    || (fsp = alternate_font(dpy, win, TRUE, FALSE)) != NULL)
 		    win->pfont_boldital = fsp;
 		win->fsrch_flags |= FSRCH_BOLDITAL;
 	    }
 	    if (win->pfont_boldital != NULL) {
-#if XRENDERFONT
-		fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__);
-#else
-		XSetFont(dpy, fore_gc, win->pfont_boldital->fid);
-#endif
+		win->curfont = win->pfont_boldital;;
 		fontchanged = TRUE;
 		attr &= ~(VABOLD | VAITAL);	/* don't use fallback */
 	    } else
@@ -336,18 +351,14 @@ xvileDraw(Display *dpy,
 	} else if (attr & VAITAL) {
 	  tryital:
 	    if (!(win->fsrch_flags & FSRCH_ITAL)) {
-		if ((fsp = alternate_font(dpy, win, (char *) 0, "i")) != NULL
-		    || (fsp = alternate_font(dpy, win, (char *) 0, "o"))
+		if ((fsp = alternate_font(dpy, win, FALSE, TRUE)) != NULL
+		    || (fsp = alternate_font(dpy, win, FALSE, FALSE))
 		    != NULL)
 		    win->pfont_ital = fsp;
 		win->fsrch_flags |= FSRCH_ITAL;
 	    }
 	    if (win->pfont_ital != NULL) {
-#if XRENDERFONT
-		fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__);
-#else
-		XSetFont(dpy, fore_gc, win->pfont_ital->fid);
-#endif
+		win->curfont = win->pfont_ital;
 		fontchanged = TRUE;
 		attr &= ~VAITAL;	/* don't use fallback */
 	    } else if (attr & VABOLD)
@@ -355,20 +366,21 @@ xvileDraw(Display *dpy,
 	} else if (attr & VABOLD) {
 	  trybold:
 	    if (!(win->fsrch_flags & FSRCH_BOLD)) {
-		win->pfont_bold = alternate_font(dpy, win, "bold", NULL);
+		win->pfont_bold = alternate_font(dpy, win, TRUE, FALSE);
 		win->fsrch_flags |= FSRCH_BOLD;
 	    }
 	    if (win->pfont_bold != NULL) {
-#if XRENDERFONT
-		fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__);
-#else
-		XSetFont(dpy, fore_gc, win->pfont_bold->fid);
-#endif
+		win->curfont = win->pfont_bold;
 		fontchanged = TRUE;
 		attr &= ~VABOLD;	/* don't use fallback */
 	    }
 	}
     }
+
+    XFillRectangle(dpy, win->win, back_gc,
+		   x_pos(win, sc), back_yy,
+		   (UINT) (len * win->char_width),
+		   (UINT) (win->char_height));
 
     /* break line into TextStrings and FillRects */
     p = text;
@@ -414,11 +426,7 @@ xvileDraw(Display *dpy,
 		  x_pos(win, startcol + len) - 1, fore_yy);
     }
     if (fontchanged) {
-#if XRENDERFONT
-	fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__);
-#else
-	XSetFont(dpy, fore_gc, win->pfont->fid);
-#endif
+	win->curfont = win->pfont;
     }
 }
 
@@ -492,14 +500,8 @@ setRenderFontsize(TextWindow tw, XftFont *font, const char *tag)
 	    tw->char_height = height;
 	    tw->char_ascent = ascent;
 	    tw->char_descent = descent;
-#ifdef TODO_XRENDERFONT
-	    tw->left_ink = (pf->min_bounds.lbearing < 0);
-	    tw->right_ink = (pf->max_bounds.rbearing > tw->char_width);
-	    TRACE(("...success left:%d, right:%d\n", tw->left_ink, tw->right_ink));
-#else
 	    tw->left_ink = 0;
 	    tw->right_ink = 0;
-#endif
 	}
     }
 }
@@ -535,67 +537,12 @@ XVileFont *
 xvileQueryFont(Display *dpy, TextWindow tw, const char *fname)
 {
     XVileFont *pf;
-    char fullname[1024];
+    char fullname[MAX_FONTNAME + 2];
 
     TRACE(("x11:query_font(%s)\n", fname));
     pf = NULL;
-    if (TRUE) {
-	XftPattern *pat;
-
-	if ((pat = XftNameParse(fname)) != 0) {
-	    XftPattern *match;
-	    XftResult status;
-
-#ifdef TODO_XRENDERFONT
-	    /*
-	     * xterm has this chunk, i.e., varargs list for each font,
-	     * but XftPatternBuild==FcPatternBuild, and there's an alternative
-	     * FcPatternVaBuild which would let me refactor this opening code.
-	     */
-	    norm.pattern = XftPatternDuplicate(pat);
-	    XftPatternBuild(norm.pattern,
-			    NormXftPattern,
-			    (void *) 0);
-#endif
-	    FcConfigSubstitute(NULL, pat, FcMatchPattern);
-	    XftDefaultSubstitute(dpy, DefaultScreen(dpy), pat);
-
-	    match = FcFontMatch(NULL, pat, &status);
-	    if (match != NULL) {
-		int fc_int = -1;
-		pf = XftFontOpenPattern(dpy, match);
-
-#ifdef TODO_XRENDERFONT
-		if (!GetFcInt(pat, FC_SPACING) || fc_int != FC_MONO) {
-		    fprintf(stderr, "fc_int:%d\n", fc_int);
-		    (void) fprintf(stderr,
-				   "proportional font, things will be miserable\n");
-		}
-#else
-		(void) fc_int;
-#endif
-		/*
-		 * Xft is a layer over fontconfig.  The latter's documentation
-		 * is composed of circular definitions which never get around
-		 * to defining the format returned by FcNameUnparse.  The value
-		 * returned via Xft has (also undocumented) the fontname that
-		 * we want first in the buffer.
-		 */
-		if (XftNameUnparse(match, fullname, (int) sizeof(fullname))) {
-		    char *colon = strchr(fullname, ':');
-		    if (colon != NULL)
-			*colon = '\0';
-		    fname = fullname;
-		}
-	    }
-
-#ifdef TODO_XRENDERFONT
-	    /* xterm retains the pattern to (try to) make the bold/italic
-	     * versions follow the same pattern as normal - should xvile? */
-#endif
-	    XftPatternDestroy(pat);
-	}
-    }
+    sprintf(fullname, "%.*s", MAX_FONTNAME, fname);
+    pf = open_font_pattern(dpy, fullname, NormXftPattern, NULL);
     if (pf != NULL) {
 	/*
 	 * Free resources associated with any presently loaded fonts.
