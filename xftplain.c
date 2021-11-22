@@ -1,7 +1,7 @@
 /*
  * Xft text-output, Thomas Dickey 2020
  *
- * $Id: xftplain.c,v 1.32 2021/11/19 21:29:23 tom Exp $
+ * $Id: xftplain.c,v 1.48 2021/11/21 23:34:23 tom Exp $
  *
  * Some of this was adapted from xterm, of course.
  */
@@ -58,7 +58,7 @@ open_font(Display *dpy, XftPattern *temper, char *fullname)
 	int fc_int = -1;
 	result = XftFontOpenPattern(dpy, match);
 
-	if (!GetFcInt(temper, FC_SPACING) || fc_int != FC_MONO) {
+	if (GetFcInt(temper, FC_SPACING) && fc_int != FC_MONO) {
 	    fprintf(stderr, "fc_int:%d\n", fc_int);
 	    (void) fprintf(stderr,
 			   "proportional font, things will be miserable\n");
@@ -147,70 +147,10 @@ alternate_font(Display *dpy, TextWindow win, int bold, int slant)
     return result;
 }
 
-static GC
-get_color_gc(Display *dpy, TextWindow win, int n, Bool normal)
-{
-    ColorGC *data;
-
-    assert(n >= 0 && n < NCOLORS);
-
-    if (n < 0 || n >= NCOLORS)
-	n = 0;			/* shouldn't happen */
-    data = (normal
-	    ? &(win->fore_color[n])
-	    : &(win->back_color[n]));
-    if (win->screen_depth == 1) {
-	data->gc = (normal
-		    ? win->text_gc
-		    : win->reverse_gc);
-    } else if (data->reset) {
-	XGCValues gcvals;
-	ULONG gcmask;
-
-	gcmask = GCForeground | GCBackground | GCGraphicsExposures;
-	if (win->bg_follows_fg) {
-	    gcvals.foreground = (normal
-				 ? win->colors_fg[n]
-				 : win->colors_bg[n]);
-	    gcvals.background = (normal
-				 ? win->colors_bg[n]
-				 : win->colors_fg[n]);
-	} else {
-	    if (normal) {
-		gcvals.foreground = win->colors_fg[n];
-		gcvals.background = win->bg;
-	    } else {
-		gcvals.foreground = win->bg;
-		gcvals.background = win->colors_fg[n];
-	    }
-	}
-	if (gcvals.foreground == gcvals.background) {
-	    gcvals.foreground = normal ? win->fg : win->bg;
-	    gcvals.background = normal ? win->bg : win->fg;
-	}
-	gcvals.graphics_exposures = False;
-
-	if (data->gc == 0)
-	    data->gc = XCreateGC(dpy, DefaultRootWindow(dpy), gcmask, &gcvals);
-	else
-	    XChangeGC(dpy, data->gc, gcmask, &gcvals);
-
-	TRACE(("get_color_gc(%d,%s) %06lx/%06lx -> %p\n",
-	       n,
-	       normal ? "fg" : "bg",
-	       (long) gcvals.foreground,
-	       (long) gcvals.background,
-	       data->gc));
-
-	data->reset = False;
-    }
-    return data->gc;
-}
-
 static void
 really_draw(Display *dpy,
 	    TextWindow win,
-	    GC fore_gc,
+	    ColorGC * fore_ptr,
 	    VIDEO_TEXT * text,
 	    int tlen,
 	    unsigned attr,
@@ -218,14 +158,15 @@ really_draw(Display *dpy,
 	    int sc)
 {
 #define MYSIZE 1024
-    XftColor color;
+    XftColor color = ((attr & VAREV)
+		      ? fore_ptr->xft.reverse
+		      : fore_ptr->xft.normal);
     int y = text_y_pos(win, sr);
     int x = x_pos(win, sc);
     XftCharSpec buffer[MYSIZE];
     static XftDraw *renderDraw;
 
     TRACE(("really_draw [%d,%d] %s\n", sr, sc, visible_video_text(text, tlen)));
-    memset(&color, 0xff, sizeof(color));	/* FIXME - computed and cached in xterm */
     if (renderDraw == 0) {
 	int scr = DefaultScreen(dpy);
 	Visual *visual = DefaultVisual(dpy, scr);
@@ -285,8 +226,8 @@ xvileDraw(Display *dpy,
 	  int sr,
 	  int sc)
 {
-    GC fore_gc;
-    GC back_gc;
+    ColorGC *fore_ptr;
+    ColorGC *back_ptr;
     int fore_yy = text_y_pos(win, sr);
     int back_yy = y_pos(win, sr);
     VIDEO_TEXT *p;
@@ -297,40 +238,42 @@ xvileDraw(Display *dpy,
 	win->curfont = win->pfont;
 
     if (attr == 0) {		/* This is the most common case, so we list it first */
-	fore_gc = win->text_gc;
-	back_gc = win->reverse_gc;
+	fore_ptr = &(win->tt_info);
+	back_ptr = &(win->rt_info);
     } else if ((attr & VACURS) && win->is_color_cursor) {
-	fore_gc = win->cursor_gc;
-	back_gc = win->revcur_gc;
+	fore_ptr = &(win->cc_info);
+	back_ptr = &(win->rc_info);
 	attr &= ~VACURS;
     } else if (attr & VASEL) {
-	fore_gc = win->select_gc;
-	back_gc = win->revsel_gc;
+	fore_ptr = &(win->ss_info);
+	back_ptr = &(win->rs_info);
     } else if (attr & VAMLFOC) {
-	fore_gc = back_gc = win->modeline_focus_gc;
+	fore_ptr = &(win->mm_info);
+	back_ptr = &(win->mm_info);
     } else if (attr & VAML) {
-	fore_gc = back_gc = win->modeline_gc;
+	fore_ptr = &(win->rm_info);
+	back_ptr = &(win->rm_info);
     } else if (attr & (VACOLOR)) {
 	int fg = ctrans[VCOLORNUM(attr)];
 	int bg = (gbcolor == ENUM_FCOLOR) ? fg : ctrans[gbcolor];
 
 	if (attr & (VAREV)) {
-	    fore_gc = get_color_gc(dpy, win, fg, False);
-	    back_gc = get_color_gc(dpy, win, bg, True);
+	    fore_ptr = x_get_color_gc(win, fg, False);
+	    back_ptr = x_get_color_gc(win, bg, True);
 	    attr &= ~(VAREV);
 	} else {
-	    fore_gc = get_color_gc(dpy, win, fg, True);
-	    back_gc = get_color_gc(dpy, win, bg, False);
+	    fore_ptr = x_get_color_gc(win, fg, True);
+	    back_ptr = x_get_color_gc(win, bg, False);
 	}
     } else {
-	fore_gc = win->text_gc;
-	back_gc = win->reverse_gc;
+	fore_ptr = &(win->tt_info);
+	back_ptr = &(win->rt_info);
     }
 
     if (attr & (VAREV | VACURS)) {
-	GC tmp_gc = fore_gc;
-	fore_gc = back_gc;
-	back_gc = tmp_gc;
+	ColorGC *temp_ptr = fore_ptr;
+	fore_ptr = back_ptr;
+	back_ptr = temp_ptr;
     }
 
     if (attr & (VABOLD | VAITAL)) {
@@ -343,7 +286,7 @@ xvileDraw(Display *dpy,
 		win->fsrch_flags |= FSRCH_BOLDITAL;
 	    }
 	    if (win->pfont_boldital != NULL) {
-		win->curfont = win->pfont_boldital;;
+		win->curfont = win->pfont_boldital;
 		fontchanged = TRUE;
 		attr &= ~(VABOLD | VAITAL);	/* don't use fallback */
 	    } else
@@ -377,7 +320,7 @@ xvileDraw(Display *dpy,
 	}
     }
 
-    XFillRectangle(dpy, win->win, back_gc,
+    XFillRectangle(dpy, win->win, back_ptr->gc,
 		   x_pos(win, sc), back_yy,
 		   (UINT) (len * win->char_width),
 		   (UINT) (win->char_height));
@@ -394,10 +337,10 @@ xvileDraw(Display *dpy,
 	} else {
 	    if (cc >= CLEAR_THRESH) {
 		tlen -= cc;
-		really_draw(dpy, win, fore_gc, p, tlen, attr, sr, sc);
+		really_draw(dpy, win, fore_ptr, p, tlen, attr, sr, sc);
 		p += tlen + cc;
 		sc += tlen;
-		XFillRectangle(dpy, win->win, back_gc,
+		XFillRectangle(dpy, win->win, back_ptr->gc,
 			       x_pos(win, sc), back_yy,
 			       (UINT) (cc * win->char_width),
 			       (UINT) (win->char_height));
@@ -410,18 +353,18 @@ xvileDraw(Display *dpy,
     }
     if (cc >= CLEAR_THRESH) {
 	tlen -= cc;
-	really_draw(dpy, win, fore_gc, p, tlen, attr, sr, sc);
+	really_draw(dpy, win, fore_ptr, p, tlen, attr, sr, sc);
 	sc += tlen;
-	XFillRectangle(dpy, win->win, back_gc,
+	XFillRectangle(dpy, win->win, back_ptr->gc,
 		       x_pos(win, sc), back_yy,
 		       (UINT) (cc * win->char_width),
 		       (UINT) (win->char_height));
     } else if (tlen > 0) {
-	really_draw(dpy, win, fore_gc, p, tlen, attr, sr, sc);
+	really_draw(dpy, win, fore_ptr, p, tlen, attr, sr, sc);
     }
     if (attr & (VAUL | VAITAL)) {
 	fore_yy += win->char_descent - 1;
-	XDrawLine(dpy, win->win, fore_gc,
+	XDrawLine(dpy, win->win, fore_ptr->gc,
 		  x_pos(win, startcol), fore_yy,
 		  x_pos(win, startcol + len) - 1, fore_yy);
     }
