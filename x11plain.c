@@ -3,7 +3,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11plain.c,v 1.9 2021/11/19 21:29:23 tom Exp $
+ * $Id: x11plain.c,v 1.14 2021/11/21 23:26:45 tom Exp $
  */
 
 #include <x11vile.h>
@@ -77,67 +77,6 @@ alternate_font(Display *dpy, TextWindow win, const char *weight, const char *sla
     free(newname);
     return fsp;
 
-}
-
-static GC
-get_color_gc(Display *dpy, TextWindow win, int n, Bool normal)
-{
-    ColorGC *data;
-
-    assert(n >= 0 && n < NCOLORS);
-
-    if (n < 0 || n >= NCOLORS)
-	n = 0;			/* shouldn't happen */
-    data = (normal
-	    ? &(win->fore_color[n])
-	    : &(win->back_color[n]));
-    if (win->screen_depth == 1) {
-	data->gc = (normal
-		    ? win->text_gc
-		    : win->reverse_gc);
-    } else if (data->reset) {
-	XGCValues gcvals;
-	ULONG gcmask;
-
-	gcmask = GCForeground | GCBackground | GCFont | GCGraphicsExposures;
-	if (win->bg_follows_fg) {
-	    gcvals.foreground = (normal
-				 ? win->colors_fg[n]
-				 : win->colors_bg[n]);
-	    gcvals.background = (normal
-				 ? win->colors_bg[n]
-				 : win->colors_fg[n]);
-	} else {
-	    if (normal) {
-		gcvals.foreground = win->colors_fg[n];
-		gcvals.background = win->bg;
-	    } else {
-		gcvals.foreground = win->bg;
-		gcvals.background = win->colors_fg[n];
-	    }
-	}
-	if (gcvals.foreground == gcvals.background) {
-	    gcvals.foreground = normal ? win->fg : win->bg;
-	    gcvals.background = normal ? win->bg : win->fg;
-	}
-	gcvals.font = win->pfont->fid;
-	gcvals.graphics_exposures = False;
-
-	TRACE(("get_color_gc(%d,%s) %#lx/%#lx\n",
-	       n,
-	       normal ? "fg" : "bg",
-	       (long) gcvals.foreground,
-	       (long) gcvals.background));
-
-	if (data->gc == 0)
-	    data->gc = XCreateGC(dpy, DefaultRootWindow(dpy), gcmask, &gcvals);
-	else
-	    XChangeGC(dpy, data->gc, gcmask, &gcvals);
-
-	TRACE(("... gc %#lx\n", (long) data->gc));
-	data->reset = False;
-    }
-    return data->gc;
 }
 
 #define DRAW_WITH(func,buffer,offset) \
@@ -248,34 +187,34 @@ xvileDraw(Display *dpy,
     int fontchanged = FALSE;
 
     if (attr == 0) {		/* This is the most common case, so we list it first */
-	fore_gc = win->text_gc;
-	back_gc = win->reverse_gc;
+	fore_gc = win->tt_info.gc;
+	back_gc = win->rt_info.gc;
     } else if ((attr & VACURS) && win->is_color_cursor) {
-	fore_gc = win->cursor_gc;
-	back_gc = win->revcur_gc;
+	fore_gc = win->cc_info.gc;
+	back_gc = win->rc_info.gc;
 	attr &= ~VACURS;
     } else if (attr & VASEL) {
-	fore_gc = win->select_gc;
-	back_gc = win->revsel_gc;
+	fore_gc = win->ss_info.gc;
+	back_gc = win->rs_info.gc;
     } else if (attr & VAMLFOC) {
-	fore_gc = back_gc = win->modeline_focus_gc;
+	fore_gc = back_gc = win->mm_info.gc;
     } else if (attr & VAML) {
-	fore_gc = back_gc = win->modeline_gc;
+	fore_gc = back_gc = win->rm_info.gc;
     } else if (attr & (VACOLOR)) {
 	int fg = ctrans[VCOLORNUM(attr)];
 	int bg = (gbcolor == ENUM_FCOLOR) ? fg : ctrans[gbcolor];
 
 	if (attr & (VAREV)) {
-	    fore_gc = get_color_gc(dpy, win, fg, False);
-	    back_gc = get_color_gc(dpy, win, bg, True);
+	    fore_gc = x_get_color_gc(win, fg, False)->gc;
+	    back_gc = x_get_color_gc(win, bg, True)->gc;
 	    attr &= ~(VAREV);
 	} else {
-	    fore_gc = get_color_gc(dpy, win, fg, True);
-	    back_gc = get_color_gc(dpy, win, bg, False);
+	    fore_gc = x_get_color_gc(win, fg, True)->gc;
+	    back_gc = x_get_color_gc(win, bg, False)->gc;
 	}
     } else {
-	fore_gc = win->text_gc;
-	back_gc = win->reverse_gc;
+	fore_gc = win->tt_info.gc;
+	back_gc = win->rt_info.gc;
     }
 
     if (attr & (VAREV | VACURS)) {

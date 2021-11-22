@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20211114 (v)
+ 20211121 (v)
 	> Lois Mansot
 	+ corrected range for &random function.
 	+ move the reframe_cursor_position() in update() to ensure that $cwline
@@ -29,6 +29,13 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
  	> Stephan Schulz:
 	+ add popup-choices mode (Savannah #58999)
 	> Tom Dickey:
+	+ continue development of xftplain.c (--enable-freetype).  The current
+	  driver is able to display a single TrueType font using Xft.  Some of
+	  the remaining issues:
+	  + correct logic for reverse-video
+	  + provide conversion for X displays other than 24-bit TrueColor
+	  + implement fallback fonts, i.e., --enable-fontsets
+	  + integrate the new driver with xvile's menus.
 	+ modify configure script to check for ssp library, needed for some
 	  misconfigured libraries when cross-compiling to MinGW.
 	+ fix a case in vile-manfilt where cur_line may not have been allocated

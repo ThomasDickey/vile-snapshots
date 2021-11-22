@@ -1,7 +1,7 @@
 /*
  * Common definitions for xvile modules.
  *
- * $Id: x11vile.h,v 1.11 2021/11/19 21:29:23 tom Exp $
+ * $Id: x11vile.h,v 1.18 2021/11/21 23:26:33 tom Exp $
  */
 
 /*
@@ -319,7 +319,15 @@ typedef struct _scroll_info {
 
 typedef struct _text_gc {
     GC gc;
+    XGCValues gcvals;
+    ULONG gcmask;
     Boolean reset;
+#ifdef XRENDERFONT
+    struct {
+	XftColor normal;
+	XftColor reverse;
+    } xft;
+#endif
 } ColorGC;
 
 typedef struct _text_win {
@@ -347,9 +355,9 @@ typedef struct _text_win {
     Pixel menubar_bg;		/* XRES */
 #endif
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
-    Pixel scrollbar_fg;
-    Pixel scrollbar_bg;
-    Bool slider_is_solid;
+    Pixel scrollbar_fg;		/* XRES */
+    Pixel scrollbar_bg;		/* XRES */
+    Bool slider_is_solid;	/* XRES */
     Bool slider_is_3D;
     GC scrollbar_gc;		/* graphics context for scrollbar "thumb" */
     Pixmap trough_pixmap;
@@ -372,7 +380,7 @@ typedef struct _text_win {
 
     int base_width;		/* width with screen widgets' width zero */
     int base_height;
-    UINT pane_width;		/* full width of scrollbar pane */
+    UINT pane_width;		/* XRES: full width of scrollbar pane */
     Dimension menu_height;	/* XRES: height of menu-bar */
     Dimension top_width;	/* width of top widget as of last resize */
     Dimension top_height;	/* height of top widget as of last resize */
@@ -385,17 +393,17 @@ typedef struct _text_win {
     XVileFont *pfont_ital;
     XVileFont *pfont_boldital;
     XVileFont *curfont;		/* Current font */
-    GC text_gc;
-    GC reverse_gc;
-    GC select_gc;
-    GC revsel_gc;
-    int is_color_cursor;
-    GC cursor_gc;
-    GC revcur_gc;
-    GC modeline_focus_gc;	/* GC for modeline w/ focus */
-    GC modeline_gc;		/* GC for other modelines  */
-    ColorGC fore_color[NCOLORS];
-    ColorGC back_color[NCOLORS];
+    ColorGC tt_info;		/* normal/uncolored text GC, related state */
+    ColorGC rt_info;		/* reverse/uncolored text GC, related state */
+    ColorGC ss_info;		/* normal/selected text GC, related state */
+    ColorGC rs_info;		/* reverse/selected text GC, related state */
+    Boolean is_color_cursor;
+    ColorGC mm_info;		/* modeline w/ focus */
+    ColorGC rm_info;		/* other modelines  */
+    ColorGC cc_info;		/* cursor GC and related state */
+    ColorGC rc_info;		/* reverse cursor GC and related state */
+    ColorGC fg_info[NCOLORS];	/* foreground GC and related state */
+    ColorGC bg_info[NCOLORS];	/* background GC and related state */
     Boolean bg_follows_fg;
     Pixel fg;			/* XRES: window's foreground */
     Pixel bg;			/* XRES: window's background */
@@ -469,11 +477,11 @@ typedef struct _text_win {
     XtTranslations my_resizeGrip_trans;
 #endif
 #if OPT_INPUT_METHOD
-    Bool open_im;
+    Bool open_im;		/* XRES: XtNopenIm */
     Bool cannot_im;
-    char *rs_imFont;		/* XtNximFont */
-    char *rs_inputMethod;	/* XtNinputMethod */
-    char *rs_preeditType;	/* XtNpreeditType */
+    char *rs_imFont;		/* XRES: XtNximFont */
+    char *rs_inputMethod;	/* XRES: XtNinputMethod */
+    char *rs_preeditType;	/* XRES: XtNpreeditType */
     XFontSet imFontSet;
     int imFontHeight;
     XIC imInputContext;		/* input context */
@@ -665,6 +673,7 @@ typedef enum {
 #define GetAtom(name) xvileAtom(ae ## name)
 
 extern Atom xvileAtom(XVileAtom);
+extern ColorGC *x_get_color_gc(TextWindow, int, Bool);
 extern XVileFont *xvileQueryFont(Display *, TextWindow, const char *);
 extern void x_set_font_encoding(ENC_CHOICES);
 extern void x_set_fontname(TextWindow, const char *);

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11.c,v 1.405 2021/11/19 21:29:42 tom Exp $
+ * $Id: x11.c,v 1.421 2021/11/22 00:32:32 tom Exp $
  */
 
 /*
@@ -70,11 +70,11 @@ static void x_flush(void);
 static void x_beep(void);
 
 #if OPT_COLOR
-static void x_ccol(int);
+static void x_set_cursor_color(int);
 #else
-#define	x_fcol	nullterm_setfore
-#define	x_bcol	nullterm_setback
-#define	x_ccol	nullterm_setccol
+#define	x_set_foreground	nullterm_setfore
+#define	x_set_background	nullterm_setback
+#define	x_set_cursor_color	nullterm_setccol
 #endif
 
 static int set_character_class(const char *s);
@@ -1559,50 +1559,96 @@ SamePixel(Pixel a, Pixel b)
     return result;
 }
 
+#ifdef XRENDERFONT
+static void
+hackXftColor(XftColor *target, Pixel source)
+{
+    /* *INDENT-EQLS* */
+    target->pixel       = source;
+    target->color.red   = ((source >> 16) & 0xff) << 8;
+    target->color.green = ((source >> 8) & 0xff) << 8;
+    target->color.blue  = (source & 0xff) << 8;
+    target->color.alpha = 0xffff;
+
+    TRACE((".. hackXftColor %06lx -> %04x/%04x/%04x\n",
+	   source,
+	   target->color.red,
+	   target->color.green,
+	   target->color.blue));
+}
+#endif
+
+static void
+initColorGC(TextWindow win, ColorGC * data, const char *which, Pixel new_fg, Pixel new_bg)
+{
+    Boolean changed = True;
+
+    (void) win;
+    (void) which;
+
+    data->gcmask = GCForeground | GCBackground | GCGraphicsExposures;
+#ifndef XRENDERFONT
+    data->gcmask |= GCFont;
+    data->gcvals.font = win->pfont->fid;
+#endif
+    data->gcvals.graphics_exposures = False;
+
+    if (data->gc == 0) {
+	data->gcvals.foreground = new_fg;
+	data->gcvals.background = new_bg;
+	data->gc = XCreateGC(dpy, DefaultRootWindow(dpy), data->gcmask, &data->gcvals);
+    } else if (new_fg != data->gcvals.foreground &&
+	       new_bg != data->gcvals.background) {
+	data->gcvals.foreground = new_fg;
+	data->gcvals.background = new_bg;
+	XChangeGC(dpy, data->gc, data->gcmask, &data->gcvals);
+    } else {
+	changed = False;
+    }
+
+    (void) changed;
+
+    TRACE(("initColorGC(%s) %06lx/%06lx -> %p\n",
+	   which,
+	   (long) data->gcvals.foreground,
+	   (long) data->gcvals.background,
+	   data->gc));
+
+    data->reset = False;
+#ifdef XRENDERFONT
+    if (changed) {
+	hackXftColor(&data->xft.normal, data->gcvals.foreground);
+	hackXftColor(&data->xft.reverse, data->gcvals.background);
+    }
+#endif
+}
+
 static void
 monochrome_cursor(void)
 {
-    cur_win->is_color_cursor = FALSE;
+    cur_win->is_color_cursor = False;
     cur_win->cursor_fg = cur_win->bg;	/* undo our trickery */
     cur_win->cursor_bg = cur_win->fg;
-    cur_win->cursor_gc = cur_win->reverse_gc;
-    cur_win->revcur_gc = cur_win->text_gc;
+    cur_win->cc_info.gc = cur_win->rt_info.gc;
+    cur_win->rc_info.gc = cur_win->tt_info.gc;
 }
 
 static int
-color_cursor(void)
+color_cursor(TextWindow win)
 {
-    ULONG gcmask;
-    XGCValues gcvals;
+    initColorGC(win, &cur_win->cc_info, "cc_info", cur_win->fg, cur_win->bg);
+    initColorGC(win, &cur_win->rc_info, "rc_info", cur_win->fg, cur_win->bg);
 
-    gcmask = GCForeground | GCBackground | GCGraphicsExposures;
-    gcvals.foreground = cur_win->fg;
-    gcvals.background = cur_win->bg;
-#if XRENDERFONT
-    NotImpl();
-#else
-    gcmask |= GCFont;
-    gcvals.font = cur_win->pfont->fid;
-#endif
-    gcvals.graphics_exposures = False;
-
-    cur_win->cursor_gc = XCreateGC(dpy,
-				   DefaultRootWindow(dpy),
-				   gcmask, &gcvals);
-    cur_win->revcur_gc = XCreateGC(dpy,
-				   DefaultRootWindow(dpy),
-				   gcmask, &gcvals);
-
-    if (cur_win->cursor_gc == 0
-	|| cur_win->revcur_gc == 0) {
-	if (cur_win->cursor_gc != 0)
-	    XFreeGC(dpy, cur_win->cursor_gc);
-	if (cur_win->revcur_gc != 0)
-	    XFreeGC(dpy, cur_win->revcur_gc);
+    if (cur_win->cc_info.gc == 0
+	|| cur_win->rc_info.gc == 0) {
+	if (cur_win->cc_info.gc != 0)
+	    XFreeGC(dpy, cur_win->cc_info.gc);
+	if (cur_win->rc_info.gc != 0)
+	    XFreeGC(dpy, cur_win->rc_info.gc);
 	monochrome_cursor();
     }
 
-    cur_win->is_color_cursor = TRUE;
+    cur_win->is_color_cursor = True;
     return TRUE;
 }
 
@@ -1612,9 +1658,55 @@ reset_color_gcs(void)
     int n;
 
     for (n = 0; n < NCOLORS; n++) {
-	cur_win->fore_color[n].reset = True;
-	cur_win->back_color[n].reset = True;
+	cur_win->fg_info[n].reset = True;
+	cur_win->bg_info[n].reset = True;
     }
+}
+
+ColorGC *
+x_get_color_gc(TextWindow win, int n, Bool normal)
+{
+    ColorGC *data;
+
+    assert(n >= 0 && n < NCOLORS);
+
+    if (n < 0 || n >= NCOLORS)
+	n = 0;			/* shouldn't happen */
+    data = (normal
+	    ? &(win->fg_info[n])
+	    : &(win->bg_info[n]));
+    if (win->screen_depth == 1) {
+	data->gc = (normal
+		    ? win->tt_info.gc
+		    : win->rt_info.gc);
+    } else if (data->reset) {
+	Pixel new_fg = data->gcvals.foreground;
+	Pixel new_bg = data->gcvals.background;
+
+	if (win->bg_follows_fg) {
+	    new_fg = (normal
+		      ? win->colors_fg[n]
+		      : win->colors_bg[n]);
+	    new_bg = (normal
+		      ? win->colors_bg[n]
+		      : win->colors_fg[n]);
+	} else {
+	    if (normal) {
+		new_fg = win->colors_fg[n];
+		new_bg = win->bg;
+	    } else {
+		new_fg = win->bg;
+		new_fg = win->colors_fg[n];
+	    }
+	}
+	if (new_fg == new_bg) {
+	    new_fg = normal ? win->fg : win->bg;
+	    new_bg = normal ? win->bg : win->fg;
+	}
+	initColorGC(win, data, normal ? "fg" : "bg", new_fg, new_bg);
+	data->reset = False;
+    }
+    return data;
 }
 
 #if OPT_TRACE
@@ -2365,36 +2457,16 @@ x_preparse_args(int *pargc, char ***pargv)
 #endif /* LESSTIF_VERSION */
 
     /* Initialize graphics context for display of normal and reverse text */
-    gcmask = GCForeground | GCBackground | GCGraphicsExposures;
-    gcvals.foreground = cur_win->fg;
-    gcvals.background = cur_win->bg;
-#if XRENDERFONT
-    NotImpl();
-#else
-    gcmask |= GCFont;
-    gcvals.font = cur_win->pfont->fid;
-#endif
-    gcvals.graphics_exposures = False;
-    cur_win->text_gc = XCreateGC(dpy,
-				 DefaultRootWindow(dpy),
-				 gcmask, &gcvals);
+    initColorGC(cur_win, &cur_win->tt_info, "normal", cur_win->fg, cur_win->bg);
+
     cur_win->exposed = FALSE;
     cur_win->visibility = VisibilityUnobscured;
 
-    gcvals.foreground = cur_win->bg;
-    gcvals.background = cur_win->fg;
-#if XRENDERFONT
-    NotImpl();
-#else
-    gcvals.font = cur_win->pfont->fid;
-#endif
-    cur_win->reverse_gc = XCreateGC(dpy,
-				    DefaultRootWindow(dpy),
-				    gcmask, &gcvals);
+    initColorGC(cur_win, &cur_win->rt_info, "reverse", cur_win->bg, cur_win->fg);
 
     cur_win->bg_follows_fg = (Boolean) (gbcolor == ENUM_FCOLOR);
 
-#define COLOR_FMT " %#8lx %s"
+#define COLOR_FMT " %06lx %s"
 #define COLOR_ARG(name) name, ColorsOf(name)
 #define COLOR_ONE(name) "%-20s " COLOR_FMT "\n", #name, COLOR_ARG(cur_win->name)
 
@@ -2420,20 +2492,14 @@ x_preparse_args(int *pargc, char ***pargv)
 	    && SamePixel(cur_win->bg, cur_win->selection_bg))
 	|| (SamePixel(cur_win->fg, cur_win->selection_bg)
 	    && SamePixel(cur_win->bg, cur_win->selection_fg))) {
-	cur_win->select_gc = cur_win->reverse_gc;
-	cur_win->revsel_gc = cur_win->text_gc;
+	cur_win->ss_info.gc = cur_win->rt_info.gc;
+	cur_win->rs_info.gc = cur_win->tt_info.gc;
 	TRACE(("...Forcing selection GC to reverse\n"));
     } else {
-	gcvals.foreground = cur_win->selection_fg;
-	gcvals.background = cur_win->selection_bg;
-	cur_win->select_gc = XCreateGC(dpy,
-				       DefaultRootWindow(dpy),
-				       gcmask, &gcvals);
-	gcvals.foreground = cur_win->selection_bg;
-	gcvals.background = cur_win->selection_fg;
-	cur_win->revsel_gc = XCreateGC(dpy,
-				       DefaultRootWindow(dpy),
-				       gcmask, &gcvals);
+	initColorGC(cur_win, &cur_win->ss_info, "select",
+		    cur_win->selection_fg, cur_win->selection_bg);
+	initColorGC(cur_win, &cur_win->rs_info, "revsel",
+		    cur_win->selection_bg, cur_win->selection_fg);
 	TRACE(("...Created selection GC\n"));
     }
 
@@ -2451,14 +2517,11 @@ x_preparse_args(int *pargc, char ***pargv)
 	    && SamePixel(cur_win->bg, cur_win->modeline_bg))
 	|| (SamePixel(cur_win->fg, cur_win->modeline_bg)
 	    && SamePixel(cur_win->bg, cur_win->modeline_fg))) {
-	cur_win->modeline_gc = cur_win->reverse_gc;
+	cur_win->rm_info.gc = cur_win->rt_info.gc;
 	TRACE(("...Forcing modeline GC to reverse\n"));
     } else {
-	gcvals.foreground = cur_win->modeline_fg;
-	gcvals.background = cur_win->modeline_bg;
-	cur_win->modeline_gc = XCreateGC(dpy,
-					 DefaultRootWindow(dpy),
-					 gcmask, &gcvals);
+	initColorGC(cur_win, &cur_win->rm_info, "rev-mode",
+		    cur_win->modeline_fg, cur_win->modeline_bg);
 	TRACE(("...Created modeline GC\n"));
     }
 
@@ -2475,14 +2538,11 @@ x_preparse_args(int *pargc, char ***pargv)
 	    && SamePixel(cur_win->bg, cur_win->modeline_focus_bg))
 	|| (SamePixel(cur_win->fg, cur_win->modeline_focus_bg)
 	    && SamePixel(cur_win->bg, cur_win->modeline_focus_fg))) {
-	cur_win->modeline_focus_gc = cur_win->reverse_gc;
+	cur_win->mm_info.gc = cur_win->rt_info.gc;
 	TRACE(("...Forcing modeline focus GC to reverse\n"));
     } else {
-	gcvals.foreground = cur_win->modeline_focus_fg;
-	gcvals.background = cur_win->modeline_focus_bg;
-	cur_win->modeline_focus_gc = XCreateGC(dpy,
-					       DefaultRootWindow(dpy),
-					       gcmask, &gcvals);
+	initColorGC(cur_win, &cur_win->mm_info, "modeline",
+		    cur_win->modeline_focus_fg, cur_win->modeline_focus_bg);
 	TRACE(("...Created modeline focus GC\n"));
     }
 
@@ -2500,9 +2560,9 @@ x_preparse_args(int *pargc, char ***pargv)
 	    && SamePixel(cur_win->bg, cur_win->cursor_fg))) {
 	monochrome_cursor();
 	TRACE(("...Forcing monochrome cursor\n"));
-    } else if (color_cursor()) {
+    } else if (color_cursor(cur_win)) {
 	TRACE(("...Created color cursor\n"));
-	x_ccol(-1);
+	x_set_cursor_color(-1);
     }
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
     if (SamePixel(cur_win->scrollbar_bg, cur_win->scrollbar_fg)) {
@@ -3030,20 +3090,18 @@ x_setfont(const char *fname)
 	oldw = (Dimension) x_width(cur_win);
 	oldh = (Dimension) x_height(cur_win);
 	if ((pfont = xvileQueryFont(dpy, cur_win, fname)) != 0) {
-#if XRENDERFONT
-	    NotImpl();
-#else
-	    XSetFont(dpy, cur_win->text_gc, pfont->fid);
-	    XSetFont(dpy, cur_win->reverse_gc, pfont->fid);
-	    XSetFont(dpy, cur_win->select_gc, pfont->fid);
-	    XSetFont(dpy, cur_win->revsel_gc, pfont->fid);
-	    XSetFont(dpy, cur_win->cursor_gc, pfont->fid);
-	    XSetFont(dpy, cur_win->revcur_gc, pfont->fid);
-	    XSetFont(dpy, cur_win->modeline_focus_gc, pfont->fid);
-	    XSetFont(dpy, cur_win->modeline_gc, pfont->fid);
-	    if (cur_win->text_gc != cur_win->revsel_gc) {
-		XSetFont(dpy, cur_win->select_gc, pfont->fid);
-		XSetFont(dpy, cur_win->revsel_gc, pfont->fid);
+#ifndef XRENDERFONT
+	    XSetFont(dpy, cur_win->tt_info.gc, pfont->fid);
+	    XSetFont(dpy, cur_win->rt_info.gc, pfont->fid);
+	    XSetFont(dpy, cur_win->ss_info.gc, pfont->fid);
+	    XSetFont(dpy, cur_win->rs_info.gc, pfont->fid);
+	    XSetFont(dpy, cur_win->cc_info.gc, pfont->fid);
+	    XSetFont(dpy, cur_win->rc_info.gc, pfont->fid);
+	    XSetFont(dpy, cur_win->mm_info.gc, pfont->fid);
+	    XSetFont(dpy, cur_win->rm_info.gc, pfont->fid);
+	    if (cur_win->tt_info.gc != cur_win->rs_info.gc) {
+		XSetFont(dpy, cur_win->ss_info.gc, pfont->fid);
+		XSetFont(dpy, cur_win->rs_info.gc, pfont->fid);
 	    }
 #endif
 	    reset_color_gcs();
@@ -3204,11 +3262,11 @@ wait_for_scroll(TextWindow tw)
 }
 
 static int
-x_setpal(const char *thePalette)
+x_set_palette(const char *thePalette)
 {
     int rc;
 
-    TRACE(("x_setpal(%s)\n", thePalette));
+    TRACE(("x_set_palette(%s)\n", thePalette));
     rc = set_ctrans(thePalette);
     x_touch(cur_win, 0, 0, cur_win->cols, cur_win->rows);
     x_flush();
@@ -3225,7 +3283,7 @@ x_scroll(int from, int to, int count)
     if (from == to)
 	return;			/* shouldn't happen */
 
-    XCopyArea(dpy, cur_win->win, cur_win->win, cur_win->text_gc,
+    XCopyArea(dpy, cur_win->win, cur_win->win, cur_win->tt_info.gc,
 	      x_pos(cur_win, 0), y_pos(cur_win, from),
 	      x_width(cur_win), (UINT) (count * cur_win->char_height),
 	      x_pos(cur_win, 0), y_pos(cur_win, to));
@@ -4375,7 +4433,7 @@ x_process_event(Widget w GCC_UNUSED,
 
     case VisibilityNotify:
 	cur_win->visibility = ev->xvisibility.state;
-	XSetGraphicsExposures(dpy, cur_win->text_gc,
+	XSetGraphicsExposures(dpy, cur_win->tt_info.gc,
 			      cur_win->visibility != VisibilityUnobscured);
 	break;
 
@@ -5079,8 +5137,8 @@ display_cursor(XtPointer client_data GCC_UNUSED, XtIntervalId * idp)
 		  (UINT) VATTRIB(CELL_ATTR(ttrow, the_col)), ttrow, the_col);
 	XDrawRectangle(dpy, cur_win->win,
 		       (IS_REVERSED(ttrow, the_col)
-			? cur_win->cursor_gc
-			: cur_win->revcur_gc),
+			? cur_win->cc_info.gc
+			: cur_win->rc_info.gc),
 		       x_pos(cur_win, ttcol), y_pos(cur_win, ttrow),
 		       (UINT) (cur_win->char_width - 1),
 		       (UINT) (cur_win->char_height - 1));
@@ -5475,26 +5533,26 @@ x_rev(UINT state)
 
 #if OPT_COLOR
 static void
-x_fcol(int color)
+x_set_foreground(int color)
 {
-    TRACE(("x_fcol(%d), cur_win->fg was %#lx\n", color, cur_win->fg));
+    TRACE(("x_set_foreground(%d), cur_win->fg was %#lx\n", color, cur_win->fg));
     cur_win->fg = (color >= 0 && color < NCOLORS)
 	? cur_win->colors_fg[color]
 	: cur_win->default_fg;
     TRACE(("...cur_win->fg = %#lx%s\n", cur_win->fg, cur_win->fg ==
 	   cur_win->default_fg ? " (default)" : ""));
 
-    XSetForeground(dpy, cur_win->text_gc, cur_win->fg);
-    XSetBackground(dpy, cur_win->reverse_gc, cur_win->fg);
+    XSetForeground(dpy, cur_win->tt_info.gc, cur_win->fg);
+    XSetBackground(dpy, cur_win->rt_info.gc, cur_win->fg);
 
     x_touch(cur_win, 0, 0, cur_win->cols, cur_win->rows);
     x_flush();
 }
 
 static void
-x_bcol(int color)
+x_set_background(int color)
 {
-    TRACE(("x_bcol(%d), cur_win->bg was %#lx\n", color, cur_win->bg));
+    TRACE(("x_set_background(%d), cur_win->bg was %#lx\n", color, cur_win->bg));
     cur_win->bg = (color >= 0 && color < NCOLORS)
 	? (SamePixel(cur_win->colors_bg[color], cur_win->default_bg)
 	   ? cur_win->colors_fg[color]
@@ -5505,11 +5563,11 @@ x_bcol(int color)
 	   cur_win->bg == cur_win->default_bg ? " (default)" : ""));
 
     if (color == ENUM_FCOLOR) {
-	XSetBackground(dpy, cur_win->text_gc, cur_win->default_bg);
-	XSetForeground(dpy, cur_win->reverse_gc, cur_win->default_bg);
+	XSetBackground(dpy, cur_win->tt_info.gc, cur_win->default_bg);
+	XSetForeground(dpy, cur_win->rt_info.gc, cur_win->default_bg);
     } else {
-	XSetBackground(dpy, cur_win->text_gc, cur_win->bg);
-	XSetForeground(dpy, cur_win->reverse_gc, cur_win->bg);
+	XSetBackground(dpy, cur_win->tt_info.gc, cur_win->bg);
+	XSetForeground(dpy, cur_win->rt_info.gc, cur_win->bg);
     }
     cur_win->bg_follows_fg = (Boolean) (color == ENUM_FCOLOR);
     TRACE(("...cur_win->bg_follows_fg = %#x\n", cur_win->bg_follows_fg));
@@ -5525,15 +5583,15 @@ x_bcol(int color)
 }
 
 static void
-x_ccol(int color)
+x_set_cursor_color(int color)
 {
     XGCValues gcvals;
     ULONG gcmask;
     Pixel fg, bg;
 
-    TRACE(("x_ccol(%d)\n", color));
-    if (cur_win->is_color_cursor == FALSE) {
-	if (!color_cursor()) {
+    TRACE(("x_set_cursor_color(%d)\n", color));
+    if (cur_win->is_color_cursor == False) {
+	if (!color_cursor(cur_win)) {
 	    gccolor = -1;
 	    return;
 	}
@@ -5554,11 +5612,11 @@ x_ccol(int color)
     gcmask = GCForeground | GCBackground;
     gcvals.background = bg;
     gcvals.foreground = fg;
-    XChangeGC(dpy, cur_win->cursor_gc, gcmask, &gcvals);
+    XChangeGC(dpy, cur_win->cc_info.gc, gcmask, &gcvals);
 
     gcvals.foreground = bg;
     gcvals.background = fg;
-    XChangeGC(dpy, cur_win->revcur_gc, gcmask, &gcvals);
+    XChangeGC(dpy, cur_win->rc_info.gc, gcmask, &gcvals);
 }
 
 #endif
@@ -5571,19 +5629,19 @@ x_beep(void)
     if (global_g_val(GMDFLASH)) {
 	beginDisplay();
 	XGrabServer(dpy);
-	XSetFunction(dpy, cur_win->text_gc, GXxor);
-	XSetBackground(dpy, cur_win->text_gc, 0L);
-	XSetForeground(dpy, cur_win->text_gc, cur_win->fg ^ cur_win->bg);
-	XFillRectangle(dpy, cur_win->win, cur_win->text_gc,
+	XSetFunction(dpy, cur_win->tt_info.gc, GXxor);
+	XSetBackground(dpy, cur_win->tt_info.gc, 0L);
+	XSetForeground(dpy, cur_win->tt_info.gc, cur_win->fg ^ cur_win->bg);
+	XFillRectangle(dpy, cur_win->win, cur_win->tt_info.gc,
 		       0, 0, x_width(cur_win), x_height(cur_win));
 	XFlush(dpy);
 	catnap(90, FALSE);
-	XFillRectangle(dpy, cur_win->win, cur_win->text_gc,
+	XFillRectangle(dpy, cur_win->win, cur_win->tt_info.gc,
 		       0, 0, x_width(cur_win), x_height(cur_win));
 	XFlush(dpy);
-	XSetFunction(dpy, cur_win->text_gc, GXcopy);
-	XSetBackground(dpy, cur_win->text_gc, cur_win->bg);
-	XSetForeground(dpy, cur_win->text_gc, cur_win->fg);
+	XSetFunction(dpy, cur_win->tt_info.gc, GXcopy);
+	XSetBackground(dpy, cur_win->tt_info.gc, cur_win->bg);
+	XSetForeground(dpy, cur_win->tt_info.gc, cur_win->fg);
 	XUngrabServer(dpy);
 	endofDisplay();
     } else
@@ -5770,9 +5828,7 @@ gui_isprint(int ch)
     int result = TRUE;
 
     if (ch >= 0 && pf != NULL) {
-#if XRENDERFONT
-	NotImpl();
-#else
+#ifndef XRENDERFONT
 	static XCharStruct dft, *tmp = &dft;
 	XCharStruct *pc = 0;
 
@@ -6204,10 +6260,10 @@ TERM term =
     x_beep,
     x_rev,
     nullterm_setdescrip,
-    x_fcol,
-    x_bcol,
-    x_setpal,
-    x_ccol,
+    x_set_foreground,
+    x_set_background,
+    x_set_palette,
+    x_set_cursor_color,
     x_scroll,
     x_flush,
     nullterm_icursor,
