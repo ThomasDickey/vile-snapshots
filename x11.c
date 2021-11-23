@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11.c,v 1.421 2021/11/22 00:32:32 tom Exp $
+ * $Id: x11.c,v 1.422 2021/11/23 22:56:30 tom Exp $
  */
 
 /*
@@ -1617,8 +1617,7 @@ initColorGC(TextWindow win, ColorGC * data, const char *which, Pixel new_fg, Pix
     data->reset = False;
 #ifdef XRENDERFONT
     if (changed) {
-	hackXftColor(&data->xft.normal, data->gcvals.foreground);
-	hackXftColor(&data->xft.reverse, data->gcvals.background);
+	hackXftColor(&data->xft, data->gcvals.foreground);
     }
 #endif
 }
@@ -2486,12 +2485,16 @@ x_preparse_args(int *pargc, char ***pargv)
     TRACE((COLOR_ONE(selection_bg)));
 
     /* Initialize graphics context for display of selections */
-    if (cur_win->screen_depth == 1
-	|| SamePixel(cur_win->selection_bg, cur_win->selection_fg)
-	|| (SamePixel(cur_win->fg, cur_win->selection_fg)
-	    && SamePixel(cur_win->bg, cur_win->selection_bg))
-	|| (SamePixel(cur_win->fg, cur_win->selection_bg)
-	    && SamePixel(cur_win->bg, cur_win->selection_fg))) {
+    if (
+#ifdef XRENDERFONT
+	   0 &&			/* FIXME - difference should not exist */
+#endif
+	   (cur_win->screen_depth == 1
+	    || SamePixel(cur_win->selection_bg, cur_win->selection_fg)
+	    || (SamePixel(cur_win->fg, cur_win->selection_fg)
+		&& SamePixel(cur_win->bg, cur_win->selection_bg))
+	    || (SamePixel(cur_win->fg, cur_win->selection_bg)
+		&& SamePixel(cur_win->bg, cur_win->selection_fg)))) {
 	cur_win->ss_info.gc = cur_win->rt_info.gc;
 	cur_win->rs_info.gc = cur_win->tt_info.gc;
 	TRACE(("...Forcing selection GC to reverse\n"));
@@ -2517,11 +2520,14 @@ x_preparse_args(int *pargc, char ***pargv)
 	    && SamePixel(cur_win->bg, cur_win->modeline_bg))
 	|| (SamePixel(cur_win->fg, cur_win->modeline_bg)
 	    && SamePixel(cur_win->bg, cur_win->modeline_fg))) {
-	cur_win->rm_info.gc = cur_win->rt_info.gc;
+	cur_win->oo_info.gc = cur_win->rt_info.gc;
+	cur_win->ro_info.gc = cur_win->tt_info.gc;
 	TRACE(("...Forcing modeline GC to reverse\n"));
     } else {
-	initColorGC(cur_win, &cur_win->rm_info, "rev-mode",
+	initColorGC(cur_win, &cur_win->oo_info, "rev-mode",
 		    cur_win->modeline_fg, cur_win->modeline_bg);
+	initColorGC(cur_win, &cur_win->ro_info, "rev-mode",
+		    cur_win->modeline_bg, cur_win->modeline_fg);
 	TRACE(("...Created modeline GC\n"));
     }
 
@@ -2539,10 +2545,13 @@ x_preparse_args(int *pargc, char ***pargv)
 	|| (SamePixel(cur_win->fg, cur_win->modeline_focus_bg)
 	    && SamePixel(cur_win->bg, cur_win->modeline_focus_fg))) {
 	cur_win->mm_info.gc = cur_win->rt_info.gc;
+	cur_win->rm_info.gc = cur_win->tt_info.gc;
 	TRACE(("...Forcing modeline focus GC to reverse\n"));
     } else {
 	initColorGC(cur_win, &cur_win->mm_info, "modeline",
 		    cur_win->modeline_focus_fg, cur_win->modeline_focus_bg);
+	initColorGC(cur_win, &cur_win->rm_info, "modeline",
+		    cur_win->modeline_focus_bg, cur_win->modeline_focus_fg);
 	TRACE(("...Created modeline focus GC\n"));
     }
 
@@ -3099,6 +3108,8 @@ x_setfont(const char *fname)
 	    XSetFont(dpy, cur_win->rc_info.gc, pfont->fid);
 	    XSetFont(dpy, cur_win->mm_info.gc, pfont->fid);
 	    XSetFont(dpy, cur_win->rm_info.gc, pfont->fid);
+	    XSetFont(dpy, cur_win->oo_info.gc, pfont->fid);
+	    XSetFont(dpy, cur_win->ro_info.gc, pfont->fid);
 	    if (cur_win->tt_info.gc != cur_win->rs_info.gc) {
 		XSetFont(dpy, cur_win->ss_info.gc, pfont->fid);
 		XSetFont(dpy, cur_win->rs_info.gc, pfont->fid);

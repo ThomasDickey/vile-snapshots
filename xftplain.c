@@ -1,7 +1,7 @@
 /*
  * Xft text-output, Thomas Dickey 2020
  *
- * $Id: xftplain.c,v 1.48 2021/11/21 23:34:23 tom Exp $
+ * $Id: xftplain.c,v 1.49 2021/11/23 22:18:57 tom Exp $
  *
  * Some of this was adapted from xterm, of course.
  */
@@ -153,20 +153,20 @@ really_draw(Display *dpy,
 	    ColorGC * fore_ptr,
 	    VIDEO_TEXT * text,
 	    int tlen,
-	    unsigned attr,
 	    int sr,
 	    int sc)
 {
 #define MYSIZE 1024
-    XftColor color = ((attr & VAREV)
-		      ? fore_ptr->xft.reverse
-		      : fore_ptr->xft.normal);
+    XftColor color = fore_ptr->xft;
     int y = text_y_pos(win, sr);
     int x = x_pos(win, sc);
     XftCharSpec buffer[MYSIZE];
     static XftDraw *renderDraw;
 
-    TRACE(("really_draw [%d,%d] %s\n", sr, sc, visible_video_text(text, tlen)));
+    TRACE(("DRAW %06lx [%2d,%2d] %s\n",
+	   color.pixel,
+	   sr, sc,
+	   visible_video_text(text, tlen)));
     if (renderDraw == 0) {
 	int scr = DefaultScreen(dpy);
 	Visual *visual = DefaultVisual(dpy, scr);
@@ -241,30 +241,24 @@ xvileDraw(Display *dpy,
 	fore_ptr = &(win->tt_info);
 	back_ptr = &(win->rt_info);
     } else if ((attr & VACURS) && win->is_color_cursor) {
-	fore_ptr = &(win->cc_info);
+	fore_ptr = &(win->rt_info);
 	back_ptr = &(win->rc_info);
 	attr &= ~VACURS;
     } else if (attr & VASEL) {
-	fore_ptr = &(win->ss_info);
-	back_ptr = &(win->rs_info);
+	fore_ptr = &(win->rs_info);
+	back_ptr = &(win->ss_info);
     } else if (attr & VAMLFOC) {
-	fore_ptr = &(win->mm_info);
+	fore_ptr = &(win->rm_info);
 	back_ptr = &(win->mm_info);
     } else if (attr & VAML) {
-	fore_ptr = &(win->rm_info);
-	back_ptr = &(win->rm_info);
+	fore_ptr = &(win->ro_info);
+	back_ptr = &(win->oo_info);
     } else if (attr & (VACOLOR)) {
 	int fg = ctrans[VCOLORNUM(attr)];
 	int bg = (gbcolor == ENUM_FCOLOR) ? fg : ctrans[gbcolor];
 
-	if (attr & (VAREV)) {
-	    fore_ptr = x_get_color_gc(win, fg, False);
-	    back_ptr = x_get_color_gc(win, bg, True);
-	    attr &= ~(VAREV);
-	} else {
-	    fore_ptr = x_get_color_gc(win, fg, True);
-	    back_ptr = x_get_color_gc(win, bg, False);
-	}
+	fore_ptr = x_get_color_gc(win, fg, True);
+	back_ptr = x_get_color_gc(win, bg, False);
     } else {
 	fore_ptr = &(win->tt_info);
 	back_ptr = &(win->rt_info);
@@ -274,6 +268,8 @@ xvileDraw(Display *dpy,
 	ColorGC *temp_ptr = fore_ptr;
 	fore_ptr = back_ptr;
 	back_ptr = temp_ptr;
+	attr &= ~(VAREV | VACURS);
+	TRACE(("swap %p/%p...\n", fore_ptr->gc, back_ptr->gc));
     }
 
     if (attr & (VABOLD | VAITAL)) {
@@ -320,6 +316,7 @@ xvileDraw(Display *dpy,
 	}
     }
 
+    TRACE(("FILL %06lx (%2d)\n", back_ptr->xft.pixel, len));
     XFillRectangle(dpy, win->win, back_ptr->gc,
 		   x_pos(win, sc), back_yy,
 		   (UINT) (len * win->char_width),
@@ -337,7 +334,7 @@ xvileDraw(Display *dpy,
 	} else {
 	    if (cc >= CLEAR_THRESH) {
 		tlen -= cc;
-		really_draw(dpy, win, fore_ptr, p, tlen, attr, sr, sc);
+		really_draw(dpy, win, fore_ptr, p, tlen, sr, sc);
 		p += tlen + cc;
 		sc += tlen;
 		XFillRectangle(dpy, win->win, back_ptr->gc,
@@ -353,14 +350,14 @@ xvileDraw(Display *dpy,
     }
     if (cc >= CLEAR_THRESH) {
 	tlen -= cc;
-	really_draw(dpy, win, fore_ptr, p, tlen, attr, sr, sc);
+	really_draw(dpy, win, fore_ptr, p, tlen, sr, sc);
 	sc += tlen;
 	XFillRectangle(dpy, win->win, back_ptr->gc,
 		       x_pos(win, sc), back_yy,
 		       (UINT) (cc * win->char_width),
 		       (UINT) (win->char_height));
     } else if (tlen > 0) {
-	really_draw(dpy, win, fore_ptr, p, tlen, attr, sr, sc);
+	really_draw(dpy, win, fore_ptr, p, tlen, sr, sc);
     }
     if (attr & (VAUL | VAITAL)) {
 	fore_yy += win->char_descent - 1;
