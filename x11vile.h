@@ -1,7 +1,7 @@
 /*
  * Common definitions for xvile modules.
  *
- * $Id: x11vile.h,v 1.18 2021/11/21 23:26:33 tom Exp $
+ * $Id: x11vile.h,v 1.19 2021/11/23 21:33:56 tom Exp $
  */
 
 /*
@@ -323,10 +323,7 @@ typedef struct _text_gc {
     ULONG gcmask;
     Boolean reset;
 #ifdef XRENDERFONT
-    struct {
-	XftColor normal;
-	XftColor reverse;
-    } xft;
+    XftColor xft;
 #endif
 } ColorGC;
 
@@ -399,7 +396,9 @@ typedef struct _text_win {
     ColorGC rs_info;		/* reverse/selected text GC, related state */
     Boolean is_color_cursor;
     ColorGC mm_info;		/* modeline w/ focus */
-    ColorGC rm_info;		/* other modelines  */
+    ColorGC rm_info;		/* reverse/modeline w/ focus  */
+    ColorGC oo_info;		/* other modelines  */
+    ColorGC ro_info;		/* reverse/other modelines  */
     ColorGC cc_info;		/* cursor GC and related state */
     ColorGC rc_info;		/* reverse cursor GC and related state */
     ColorGC fg_info[NCOLORS];	/* foreground GC and related state */

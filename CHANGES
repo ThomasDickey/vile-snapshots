@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20211121 (v)
+ 20211123 (v)
 	> Lois Mansot
 	+ corrected range for &random function.
 	+ move the reframe_cursor_position() in update() to ensure that $cwline
@@ -32,7 +32,6 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ continue development of xftplain.c (--enable-freetype).  The current
 	  driver is able to display a single TrueType font using Xft.  Some of
 	  the remaining issues:
-	  + correct logic for reverse-video
 	  + provide conversion for X displays other than 24-bit TrueColor
 	  + implement fallback fonts, i.e., --enable-fontsets
 	  + integrate the new driver with xvile's menus.

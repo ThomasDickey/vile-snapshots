@@ -3,7 +3,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11plain.c,v 1.14 2021/11/21 23:26:45 tom Exp $
+ * $Id: x11plain.c,v 1.15 2021/11/23 21:19:09 tom Exp $
  */
 
 #include <x11vile.h>
@@ -199,7 +199,7 @@ xvileDraw(Display *dpy,
     } else if (attr & VAMLFOC) {
 	fore_gc = back_gc = win->mm_info.gc;
     } else if (attr & VAML) {
-	fore_gc = back_gc = win->rm_info.gc;
+	fore_gc = back_gc = win->oo_info.gc;
     } else if (attr & (VACOLOR)) {
 	int fg = ctrans[VCOLORNUM(attr)];
 	int bg = (gbcolor == ENUM_FCOLOR) ? fg : ctrans[gbcolor];
