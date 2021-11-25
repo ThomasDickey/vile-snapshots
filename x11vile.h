@@ -1,7 +1,7 @@
 /*
  * Common definitions for xvile modules.
  *
- * $Id: x11vile.h,v 1.19 2021/11/23 21:33:56 tom Exp $
+ * $Id: x11vile.h,v 1.20 2021/11/24 23:18:35 tom Exp $
  */
 
 /*
@@ -317,11 +317,18 @@ typedef struct _scroll_info {
 #endif
 #endif
 
+typedef enum {
+    sgNONE = 0
+    ,sgREDO
+    ,sgINIT
+    ,sgMADE
+} XVileStateGC;
+
 typedef struct _text_gc {
     GC gc;
     XGCValues gcvals;
     ULONG gcmask;
-    Boolean reset;
+    XVileStateGC state;
 #ifdef XRENDERFONT
     XftColor xft;
 #endif
@@ -450,6 +457,14 @@ typedef struct _text_win {
     Cursor watch_pointer;	/* XRES */
     Bool want_to_work;		/* true if "working..." */
 #endif
+
+    /* color conversions */
+    Colormap colormap;
+    XVisualInfo *visInfo;
+    int numVisuals;
+    Bool has_rgb;
+    unsigned rgb_shifts[3];
+    unsigned rgb_widths[3];
 
     /* selection stuff */
     String multi_click_char_class;	/* XRES */
@@ -673,6 +688,7 @@ typedef enum {
 
 extern Atom xvileAtom(XVileAtom);
 extern ColorGC *x_get_color_gc(TextWindow, int, Bool);
+extern ColorGC *makeColorGC(TextWindow, ColorGC *);
 extern XVileFont *xvileQueryFont(Display *, TextWindow, const char *);
 extern void x_set_font_encoding(ENC_CHOICES);
 extern void x_set_fontname(TextWindow, const char *);

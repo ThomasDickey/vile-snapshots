@@ -3,7 +3,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11plain.c,v 1.15 2021/11/23 21:19:09 tom Exp $
+ * $Id: x11plain.c,v 1.16 2021/11/25 15:27:34 tom Exp $
  */
 
 #include <x11vile.h>
@@ -80,14 +80,14 @@ alternate_font(Display *dpy, TextWindow win, const char *weight, const char *sla
 }
 
 #define DRAW_WITH(func,buffer,offset) \
-	    func(dpy, win->win, fore_gc, \
+	    func(dpy, win->win, fore_ptr->gc, \
 		 (int) x_pos(win, sc) + offset, fore_yy, \
 		 buffer, tlen)
 
 static void
 really_draw(Display *dpy,
 	    TextWindow win,
-	    GC fore_gc,
+	    ColorGC * fore_ptr,
 	    VIDEO_TEXT * text,
 	    int tlen,
 	    unsigned attr,
@@ -97,6 +97,11 @@ really_draw(Display *dpy,
     int fore_yy = text_y_pos(win, sr);
     char buffer[BUFSIZ];
     XChar2b buffer2[sizeof(buffer)];
+
+    TRACE(("DRAW %06lx [%2d,%2d] %s\n",
+	   fore_ptr->gcvals.foreground,
+	   sr, sc,
+	   visible_video_text(text, tlen)));
 
     while (tlen > 0) {
 	Boolean wide = False;
@@ -178,8 +183,8 @@ xvileDraw(Display *dpy,
 	  int sr,
 	  int sc)
 {
-    GC fore_gc;
-    GC back_gc;
+    ColorGC *fore_ptr;
+    ColorGC *back_ptr;
     int fore_yy = text_y_pos(win, sr);
     int back_yy = y_pos(win, sr);
     VIDEO_TEXT *p;
@@ -187,41 +192,45 @@ xvileDraw(Display *dpy,
     int fontchanged = FALSE;
 
     if (attr == 0) {		/* This is the most common case, so we list it first */
-	fore_gc = win->tt_info.gc;
-	back_gc = win->rt_info.gc;
+	fore_ptr = &win->tt_info;
+	back_ptr = &win->rt_info;
     } else if ((attr & VACURS) && win->is_color_cursor) {
-	fore_gc = win->cc_info.gc;
-	back_gc = win->rc_info.gc;
+	fore_ptr = &win->cc_info;
+	back_ptr = &win->rc_info;
 	attr &= ~VACURS;
     } else if (attr & VASEL) {
-	fore_gc = win->ss_info.gc;
-	back_gc = win->rs_info.gc;
+	fore_ptr = &win->ss_info;
+	back_ptr = &win->rs_info;
     } else if (attr & VAMLFOC) {
-	fore_gc = back_gc = win->mm_info.gc;
+	fore_ptr = back_ptr = &win->mm_info;
     } else if (attr & VAML) {
-	fore_gc = back_gc = win->oo_info.gc;
+	fore_ptr = back_ptr = &win->oo_info;
     } else if (attr & (VACOLOR)) {
 	int fg = ctrans[VCOLORNUM(attr)];
 	int bg = (gbcolor == ENUM_FCOLOR) ? fg : ctrans[gbcolor];
 
 	if (attr & (VAREV)) {
-	    fore_gc = x_get_color_gc(win, fg, False)->gc;
-	    back_gc = x_get_color_gc(win, bg, True)->gc;
+	    fore_ptr = x_get_color_gc(win, fg, False);
+	    back_ptr = x_get_color_gc(win, bg, True);
 	    attr &= ~(VAREV);
 	} else {
-	    fore_gc = x_get_color_gc(win, fg, True)->gc;
-	    back_gc = x_get_color_gc(win, bg, False)->gc;
+	    fore_ptr = x_get_color_gc(win, fg, True);
+	    back_ptr = x_get_color_gc(win, bg, False);
 	}
     } else {
-	fore_gc = win->tt_info.gc;
-	back_gc = win->rt_info.gc;
+	fore_ptr = &win->tt_info;
+	back_ptr = &win->rt_info;
     }
 
     if (attr & (VAREV | VACURS)) {
-	GC tmp_gc = fore_gc;
-	fore_gc = back_gc;
-	back_gc = tmp_gc;
+	ColorGC *tmp_ptr = fore_ptr;
+	fore_ptr = back_ptr;
+	back_ptr = tmp_ptr;
     }
+
+    makeColorGC(win, fore_ptr);
+    makeColorGC(win, back_ptr);
+    TRACE(("FILL %06lx (%2d)\n", back_ptr->gcvals.foreground, len));
 
     if (attr & (VABOLD | VAITAL)) {
 	XVileFont *fsp = NULL;
@@ -233,7 +242,7 @@ xvileDraw(Display *dpy,
 		win->fsrch_flags |= FSRCH_BOLDITAL;
 	    }
 	    if (win->pfont_boldital != NULL) {
-		XSetFont(dpy, fore_gc, win->pfont_boldital->fid);
+		XSetFont(dpy, fore_ptr->gc, win->pfont_boldital->fid);
 		fontchanged = TRUE;
 		attr &= ~(VABOLD | VAITAL);	/* don't use fallback */
 	    } else
@@ -248,7 +257,7 @@ xvileDraw(Display *dpy,
 		win->fsrch_flags |= FSRCH_ITAL;
 	    }
 	    if (win->pfont_ital != NULL) {
-		XSetFont(dpy, fore_gc, win->pfont_ital->fid);
+		XSetFont(dpy, fore_ptr->gc, win->pfont_ital->fid);
 		fontchanged = TRUE;
 		attr &= ~VAITAL;	/* don't use fallback */
 	    } else if (attr & VABOLD)
@@ -260,7 +269,7 @@ xvileDraw(Display *dpy,
 		win->fsrch_flags |= FSRCH_BOLD;
 	    }
 	    if (win->pfont_bold != NULL) {
-		XSetFont(dpy, fore_gc, win->pfont_bold->fid);
+		XSetFont(dpy, fore_ptr->gc, win->pfont_bold->fid);
 		fontchanged = TRUE;
 		attr &= ~VABOLD;	/* don't use fallback */
 	    }
@@ -279,10 +288,10 @@ xvileDraw(Display *dpy,
 	} else {
 	    if (cc >= CLEAR_THRESH) {
 		tlen -= cc;
-		really_draw(dpy, win, fore_gc, p, tlen, attr, sr, sc);
+		really_draw(dpy, win, fore_ptr, p, tlen, attr, sr, sc);
 		p += tlen + cc;
 		sc += tlen;
-		XFillRectangle(dpy, win->win, back_gc,
+		XFillRectangle(dpy, win->win, back_ptr->gc,
 			       x_pos(win, sc), back_yy,
 			       (UINT) (cc * win->char_width),
 			       (UINT) (win->char_height));
@@ -295,24 +304,24 @@ xvileDraw(Display *dpy,
     }
     if (cc >= CLEAR_THRESH) {
 	tlen -= cc;
-	really_draw(dpy, win, fore_gc, p, tlen, attr, sr, sc);
+	really_draw(dpy, win, fore_ptr, p, tlen, attr, sr, sc);
 	sc += tlen;
-	XFillRectangle(dpy, win->win, back_gc,
+	XFillRectangle(dpy, win->win, back_ptr->gc,
 		       x_pos(win, sc), back_yy,
 		       (UINT) (cc * win->char_width),
 		       (UINT) (win->char_height));
     } else if (tlen > 0) {
-	really_draw(dpy, win, fore_gc, p, tlen, attr, sr, sc);
+	really_draw(dpy, win, fore_ptr, p, tlen, attr, sr, sc);
     }
     if (attr & (VAUL | VAITAL)) {
 	fore_yy += win->char_descent - 1;
-	XDrawLine(dpy, win->win, fore_gc,
+	XDrawLine(dpy, win->win, fore_ptr->gc,
 		  x_pos(win, startcol), fore_yy,
 		  x_pos(win, startcol + len) - 1, fore_yy);
     }
 
     if (fontchanged)
-	XSetFont(dpy, fore_gc, win->pfont->fid);
+	XSetFont(dpy, fore_ptr->gc, win->pfont->fid);
 }
 
 XVileFont *

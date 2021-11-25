@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11.c,v 1.422 2021/11/23 22:56:30 tom Exp $
+ * $Id: x11.c,v 1.426 2021/11/25 18:51:34 tom Exp $
  */
 
 /*
@@ -1518,6 +1518,96 @@ runtime_error_handler(String message)
     imdying(SIGINT);		/* save files and exit, do not abort() */
 }
 
+/***====================================================================***/
+
+#ifdef XRENDERFONT
+static unsigned
+maskToShift(unsigned long mask)
+{
+    unsigned result = 0;
+    if (mask != 0) {
+	while ((mask & 1) == 0) {
+	    mask >>= 1;
+	    ++result;
+	}
+    }
+    return result;
+}
+
+static unsigned
+maskToWidth(unsigned long mask)
+{
+    unsigned result = 0;
+    while (mask != 0) {
+	if ((mask & 1) != 0)
+	    ++result;
+	mask >>= 1;
+    }
+    return result;
+}
+
+static XVisualInfo *
+getVisualInfo(TextWindow tw)
+{
+#define MYFMT "getVisualInfo \
+depth %d, \
+type %d (%s), \
+size %d \
+rgb masks (%04lx/%04lx/%04lx)\n"
+#define MYARG \
+       vi->depth,\
+       vi->class,\
+       ((vi->class & 1) ? "dynamic" : "static"),\
+       vi->colormap_size,\
+       vi->red_mask,\
+       vi->green_mask,\
+       vi->blue_mask
+
+    XVisualInfo myTemplate;
+
+    if (tw->visInfo == 0 && tw->numVisuals == 0) {
+	myTemplate.visualid = XVisualIDFromVisual(DefaultVisual(dpy,
+								XDefaultScreen(dpy)));
+	tw->visInfo = XGetVisualInfo(dpy, (long) VisualIDMask,
+				     &myTemplate, &tw->numVisuals);
+
+	if ((tw->visInfo != 0) && (tw->numVisuals > 0)) {
+	    XVisualInfo *vi = tw->visInfo;
+	    tw->rgb_widths[0] = maskToWidth(vi->red_mask);
+	    tw->rgb_widths[1] = maskToWidth(vi->green_mask);
+	    tw->rgb_widths[2] = maskToWidth(vi->blue_mask);
+	    tw->rgb_shifts[0] = maskToShift(vi->red_mask);
+	    tw->rgb_shifts[1] = maskToShift(vi->green_mask);
+	    tw->rgb_shifts[2] = maskToShift(vi->blue_mask);
+
+	    tw->has_rgb = ((vi->red_mask != 0) &&
+			   (vi->green_mask != 0) &&
+			   (vi->blue_mask != 0) &&
+			   ((vi->red_mask & vi->green_mask) == 0) &&
+			   ((vi->green_mask & vi->blue_mask) == 0) &&
+			   ((vi->blue_mask & vi->red_mask) == 0) &&
+			   (vi->class == TrueColor
+			    || vi->class == DirectColor));
+
+	    TRACE((MYFMT, MYARG));
+	    TRACE(("...shifts %u/%u/%u\n",
+		   tw->rgb_shifts[0],
+		   tw->rgb_shifts[1],
+		   tw->rgb_shifts[2]));
+	    TRACE(("...widths %u/%u/%u\n",
+		   tw->rgb_widths[0],
+		   tw->rgb_widths[1],
+		   tw->rgb_widths[2]));
+	}
+    }
+    return (tw->visInfo != 0) && (tw->numVisuals > 0) ? tw->visInfo : NULL;
+#undef MYFMT
+#undef MYARG
+}
+#endif /* XRENDERFONT */
+
+/***====================================================================***/
+
 #define MIN_UDIFF  0x1000
 #define UDIFF(a,b) ((a)>(b)?(a)-(b):(b)-(a))
 
@@ -1531,20 +1621,15 @@ SamePixel(Pixel a, Pixel b)
     Boolean result = True;
     XColor a_color;
     XColor b_color;
-    Colormap colormap;
 
     if (a != b) {
 	result = False;
 	if (cur_win->top_widget != 0) {
-	    XtVaGetValues(cur_win->top_widget,
-			  XtNcolormap, &colormap,
-			  NULL);
-
 	    a_color.pixel = a;
 	    b_color.pixel = b;
 
-	    if (XQueryColor(dpy, colormap, &a_color)
-		&& XQueryColor(dpy, colormap, &b_color)) {
+	    if (XQueryColor(dpy, cur_win->colormap, &a_color)
+		&& XQueryColor(dpy, cur_win->colormap, &b_color)) {
 		if (UDIFF(a_color.red, b_color.red) < MIN_UDIFF
 		    && UDIFF(a_color.green, b_color.green) < MIN_UDIFF
 		    && UDIFF(a_color.blue, b_color.blue) < MIN_UDIFF)
@@ -1561,30 +1646,92 @@ SamePixel(Pixel a, Pixel b)
 
 #ifdef XRENDERFONT
 static void
-hackXftColor(XftColor *target, Pixel source)
+pixelToXftColor(TextWindow tw, XftColor *target, Pixel source)
 {
-    /* *INDENT-EQLS* */
-    target->pixel       = source;
-    target->color.red   = ((source >> 16) & 0xff) << 8;
-    target->color.green = ((source >> 8) & 0xff) << 8;
-    target->color.blue  = (source & 0xff) << 8;
-    target->color.alpha = 0xffff;
+#define UnMaskIt(name,nn) \
+	((unsigned short)((def.pixel & tw->visInfo->name ##_mask) >> tw->rgb_shifts[nn]))
+#define UnMaskIt2(name,nn) \
+	(unsigned short)((((UnMaskIt(name,nn) << 8) \
+			   |UnMaskIt(name,nn))) << (8 - tw->rgb_widths[nn]))
+    XColor def;
+    Boolean result = True;
 
-    TRACE((".. hackXftColor %06lx -> %04x/%04x/%04x\n",
-	   source,
-	   target->color.red,
-	   target->color.green,
-	   target->color.blue));
+    memset(&def, 0, sizeof(def));
+    def.pixel = source;
+
+    if ((tw->visInfo = getVisualInfo(tw)) != NULL && tw->has_rgb) {
+	/* *INDENT-EQLS* */
+	def.red   = UnMaskIt2(red, 0);
+	def.green = UnMaskIt2(green, 1);
+	def.blue  = UnMaskIt2(blue, 2);
+    } else if (!XQueryColor(dpy, tw->colormap, &def)) {
+	result    = False;
+    }
+
+    if (result) {
+	/* *INDENT-EQLS* */
+	target->pixel       = source;
+	target->color.red   = def.red;
+	target->color.green = def.green;
+	target->color.blue  = def.blue;
+	target->color.alpha = 0xffff;
+    } else {
+	memset(target, 0, sizeof(*target));
+    }
+
+    TRACE2((".. pixelToXftColor %06lx -> %04x/%04x/%04x\n",
+	    source,
+	    target->color.red,
+	    target->color.green,
+	    target->color.blue));
 }
 #endif
 
-static void
-initColorGC(TextWindow win, ColorGC * data, const char *which, Pixel new_fg, Pixel new_bg)
-{
-    Boolean changed = True;
+/***====================================================================***/
 
+#if OPT_TRACE
+static const char *
+traceColorGC(TextWindow win, ColorGC * source)
+{
+    static char temp[20];
+    const char *result = "?";
+
+#define if_CASE(name) \
+    	if (source == &win->name) \
+		result = #name
+
+#define if_MANY(name) \
+	if (source >= &win->name[0] && \
+	    source < &win->name[NCOLORS]) { \
+	    sprintf(temp, "%s[%d]", #name, (int)(source - win->name)); \
+	    result = temp; \
+	}
+    /* *INDENT-OFF* */
+    if_CASE(tt_info);
+    else if_CASE(rt_info);
+    else if_CASE(ss_info);
+    else if_CASE(rs_info);
+    else if_CASE(mm_info);
+    else if_CASE(rm_info);
+    else if_CASE(oo_info);
+    else if_CASE(ro_info);
+    else if_CASE(cc_info);
+    else if_CASE(rc_info);
+    else if_MANY(fg_info)
+    else if_MANY(bg_info)
+    /* *INDENT-ON* */
+    return result;
+}
+#endif
+
+/*
+ * Set parameters in a ColorGC so that a subsequent makeColorGC can evaluate
+ * the parameters to allocate a GC.
+ */
+static void
+initColorGC(TextWindow win, ColorGC * data, Pixel new_fg, Pixel new_bg)
+{
     (void) win;
-    (void) which;
 
     data->gcmask = GCForeground | GCBackground | GCGraphicsExposures;
 #ifndef XRENDERFONT
@@ -1593,62 +1740,100 @@ initColorGC(TextWindow win, ColorGC * data, const char *which, Pixel new_fg, Pix
 #endif
     data->gcvals.graphics_exposures = False;
 
-    if (data->gc == 0) {
-	data->gcvals.foreground = new_fg;
-	data->gcvals.background = new_bg;
-	data->gc = XCreateGC(dpy, DefaultRootWindow(dpy), data->gcmask, &data->gcvals);
-    } else if (new_fg != data->gcvals.foreground &&
-	       new_bg != data->gcvals.background) {
-	data->gcvals.foreground = new_fg;
-	data->gcvals.background = new_bg;
-	XChangeGC(dpy, data->gc, data->gcmask, &data->gcvals);
-    } else {
-	changed = False;
-    }
-
-    (void) changed;
-
-    TRACE(("initColorGC(%s) %06lx/%06lx -> %p\n",
-	   which,
-	   (long) data->gcvals.foreground,
-	   (long) data->gcvals.background,
-	   data->gc));
-
-    data->reset = False;
-#ifdef XRENDERFONT
-    if (changed) {
-	hackXftColor(&data->xft, data->gcvals.foreground);
-    }
-#endif
+    data->gcvals.foreground = new_fg;
+    data->gcvals.background = new_bg;
+    data->state = sgINIT;
 }
 
 static void
-monochrome_cursor(void)
+freeColorGC(ColorGC * target)
 {
-    cur_win->is_color_cursor = False;
-    cur_win->cursor_fg = cur_win->bg;	/* undo our trickery */
-    cur_win->cursor_bg = cur_win->fg;
-    cur_win->cc_info.gc = cur_win->rt_info.gc;
-    cur_win->rc_info.gc = cur_win->tt_info.gc;
+    if (target->gc != 0) {
+	XFreeGC(dpy, target->gc);
+	memset(target, 0, sizeof(*target));
+    }
+}
+
+static void
+copyColorGC(TextWindow win, ColorGC * target, ColorGC * source)
+{
+    if (target != source) {
+	(void) win;
+	TRACE(("copyColorGC %s", traceColorGC(win, source)));
+	TRACE((" -> %s\n", traceColorGC(win, target)));
+	*target = *source;
+	target->gc = NULL;
+	if (target->state >= sgINIT)
+	    target->state = sgREDO;
+    }
+}
+
+/*
+ * Given the parameters in gcmask/gcvals, allocate a GC if none exists, and
+ * return pointer to the target.
+ */
+ColorGC *
+makeColorGC(TextWindow win, ColorGC * target)
+{
+    int changed = 0;
+
+    (void) win;
+
+    if (target->gc == 0) {
+	target->gc = XCreateGC(dpy, DefaultRootWindow(dpy), target->gcmask, &target->gcvals);
+	changed = 1;
+    } else if (target->state < sgMADE) {
+	XChangeGC(dpy, target->gc, target->gcmask, &target->gcvals);
+	changed = 2;
+    }
+
+    if (changed) {
+	(void) changed;
+
+	TRACE(("makeColorGC(%s) %06lx/%06lx -> %p (%s)\n",
+	       traceColorGC(win, target),
+	       (long) target->gcvals.foreground,
+	       (long) target->gcvals.background,
+	       target->gc,
+	       (changed == 1) ? "created" : "changed"));
+    }
+#ifdef XRENDERFONT
+    if (changed) {
+	pixelToXftColor(win, &target->xft, target->gcvals.foreground);
+    }
+#endif
+    target->state = sgMADE;
+    return target;
+}
+
+static void
+monochrome_cursor(TextWindow win)
+{
+    TRACE((T_CALLED "monochrome_cursor\n"));
+    win->is_color_cursor = False;
+    win->cursor_fg = cur_win->bg;	/* undo our trickery */
+    win->cursor_bg = cur_win->fg;
+    copyColorGC(win, &win->cc_info, &win->rt_info);
+    copyColorGC(win, &win->rc_info, &win->tt_info);
+    returnVoid();
 }
 
 static int
 color_cursor(TextWindow win)
 {
-    initColorGC(win, &cur_win->cc_info, "cc_info", cur_win->fg, cur_win->bg);
-    initColorGC(win, &cur_win->rc_info, "rc_info", cur_win->fg, cur_win->bg);
+    TRACE((T_CALLED "color_cursor\n"));
+    initColorGC(win, &cur_win->cc_info, cur_win->fg, cur_win->bg);
+    initColorGC(win, &cur_win->rc_info, cur_win->fg, cur_win->bg);
 
-    if (cur_win->cc_info.gc == 0
-	|| cur_win->rc_info.gc == 0) {
-	if (cur_win->cc_info.gc != 0)
-	    XFreeGC(dpy, cur_win->cc_info.gc);
-	if (cur_win->rc_info.gc != 0)
-	    XFreeGC(dpy, cur_win->rc_info.gc);
-	monochrome_cursor();
+    if (win->cc_info.gc == 0
+	|| win->rc_info.gc == 0) {
+	freeColorGC(&win->cc_info);
+	freeColorGC(&win->rc_info);
+	monochrome_cursor(win);
     }
 
-    cur_win->is_color_cursor = True;
-    return TRUE;
+    win->is_color_cursor = True;
+    returnCode(TRUE);
 }
 
 static void
@@ -1657,8 +1842,8 @@ reset_color_gcs(void)
     int n;
 
     for (n = 0; n < NCOLORS; n++) {
-	cur_win->fg_info[n].reset = True;
-	cur_win->bg_info[n].reset = True;
+	cur_win->fg_info[n].state = sgREDO;
+	cur_win->bg_info[n].state = sgREDO;
     }
 }
 
@@ -1675,10 +1860,8 @@ x_get_color_gc(TextWindow win, int n, Bool normal)
 	    ? &(win->fg_info[n])
 	    : &(win->bg_info[n]));
     if (win->screen_depth == 1) {
-	data->gc = (normal
-		    ? win->tt_info.gc
-		    : win->rt_info.gc);
-    } else if (data->reset) {
+	copyColorGC(win, data, (normal ? &win->tt_info : &win->rt_info));
+    } else if (data->state == sgREDO) {
 	Pixel new_fg = data->gcvals.foreground;
 	Pixel new_bg = data->gcvals.background;
 
@@ -1702,8 +1885,7 @@ x_get_color_gc(TextWindow win, int n, Bool normal)
 	    new_fg = normal ? win->fg : win->bg;
 	    new_bg = normal ? win->bg : win->fg;
 	}
-	initColorGC(win, data, normal ? "fg" : "bg", new_fg, new_bg);
-	data->reset = False;
+	initColorGC(win, data, new_fg, new_bg);
     }
     return data;
 }
@@ -1715,14 +1897,9 @@ ColorsOf(Pixel pixel)
     static char result[80];
 
     XColor color;
-    Colormap colormap;
-
-    XtVaGetValues(cur_win->screen,
-		  XtNcolormap, &colormap,
-		  NULL);
 
     color.pixel = pixel;
-    XQueryColor(dpy, colormap, &color);
+    XQueryColor(dpy, cur_win->colormap, &color);
     sprintf(result, "%4X/%4X/%4X", color.red, color.green, color.blue);
     return result;
 }
@@ -2070,6 +2247,10 @@ x_preparse_args(int *pargc, char ***pargv)
 					    NULL);
     XtSetErrorHandler(runtime_error_handler);
     dpy = XtDisplay(cur_win->top_widget);
+
+    XtVaGetValues(cur_win->top_widget,
+		  XtNcolormap, &cur_win->colormap,
+		  NULL);
 
     XtVaGetValues(cur_win->top_widget,
 		  XtNdepth, &cur_win->screen_depth,
@@ -2456,12 +2637,12 @@ x_preparse_args(int *pargc, char ***pargv)
 #endif /* LESSTIF_VERSION */
 
     /* Initialize graphics context for display of normal and reverse text */
-    initColorGC(cur_win, &cur_win->tt_info, "normal", cur_win->fg, cur_win->bg);
+    initColorGC(cur_win, &cur_win->tt_info, cur_win->fg, cur_win->bg);
 
     cur_win->exposed = FALSE;
     cur_win->visibility = VisibilityUnobscured;
 
-    initColorGC(cur_win, &cur_win->rt_info, "reverse", cur_win->bg, cur_win->fg);
+    initColorGC(cur_win, &cur_win->rt_info, cur_win->bg, cur_win->fg);
 
     cur_win->bg_follows_fg = (Boolean) (gbcolor == ENUM_FCOLOR);
 
@@ -2495,13 +2676,13 @@ x_preparse_args(int *pargc, char ***pargv)
 		&& SamePixel(cur_win->bg, cur_win->selection_bg))
 	    || (SamePixel(cur_win->fg, cur_win->selection_bg)
 		&& SamePixel(cur_win->bg, cur_win->selection_fg)))) {
-	cur_win->ss_info.gc = cur_win->rt_info.gc;
-	cur_win->rs_info.gc = cur_win->tt_info.gc;
 	TRACE(("...Forcing selection GC to reverse\n"));
+	copyColorGC(cur_win, &cur_win->ss_info, &cur_win->rt_info);
+	copyColorGC(cur_win, &cur_win->rs_info, &cur_win->tt_info);
     } else {
-	initColorGC(cur_win, &cur_win->ss_info, "select",
+	initColorGC(cur_win, &cur_win->ss_info,
 		    cur_win->selection_fg, cur_win->selection_bg);
-	initColorGC(cur_win, &cur_win->rs_info, "revsel",
+	initColorGC(cur_win, &cur_win->rs_info,
 		    cur_win->selection_bg, cur_win->selection_fg);
 	TRACE(("...Created selection GC\n"));
     }
@@ -2520,13 +2701,13 @@ x_preparse_args(int *pargc, char ***pargv)
 	    && SamePixel(cur_win->bg, cur_win->modeline_bg))
 	|| (SamePixel(cur_win->fg, cur_win->modeline_bg)
 	    && SamePixel(cur_win->bg, cur_win->modeline_fg))) {
-	cur_win->oo_info.gc = cur_win->rt_info.gc;
-	cur_win->ro_info.gc = cur_win->tt_info.gc;
+	copyColorGC(cur_win, &cur_win->oo_info, &cur_win->rt_info);
+	copyColorGC(cur_win, &cur_win->ro_info, &cur_win->tt_info);
 	TRACE(("...Forcing modeline GC to reverse\n"));
     } else {
-	initColorGC(cur_win, &cur_win->oo_info, "rev-mode",
+	initColorGC(cur_win, &cur_win->oo_info,
 		    cur_win->modeline_fg, cur_win->modeline_bg);
-	initColorGC(cur_win, &cur_win->ro_info, "rev-mode",
+	initColorGC(cur_win, &cur_win->ro_info,
 		    cur_win->modeline_bg, cur_win->modeline_fg);
 	TRACE(("...Created modeline GC\n"));
     }
@@ -2544,13 +2725,13 @@ x_preparse_args(int *pargc, char ***pargv)
 	    && SamePixel(cur_win->bg, cur_win->modeline_focus_bg))
 	|| (SamePixel(cur_win->fg, cur_win->modeline_focus_bg)
 	    && SamePixel(cur_win->bg, cur_win->modeline_focus_fg))) {
-	cur_win->mm_info.gc = cur_win->rt_info.gc;
-	cur_win->rm_info.gc = cur_win->tt_info.gc;
+	copyColorGC(cur_win, &cur_win->mm_info, &cur_win->rt_info);
+	copyColorGC(cur_win, &cur_win->rm_info, &cur_win->tt_info);
 	TRACE(("...Forcing modeline focus GC to reverse\n"));
     } else {
-	initColorGC(cur_win, &cur_win->mm_info, "modeline",
+	initColorGC(cur_win, &cur_win->mm_info,
 		    cur_win->modeline_focus_fg, cur_win->modeline_focus_bg);
-	initColorGC(cur_win, &cur_win->rm_info, "modeline",
+	initColorGC(cur_win, &cur_win->rm_info,
 		    cur_win->modeline_focus_bg, cur_win->modeline_focus_fg);
 	TRACE(("...Created modeline focus GC\n"));
     }
@@ -2567,7 +2748,7 @@ x_preparse_args(int *pargc, char ***pargv)
 	    && SamePixel(cur_win->bg, cur_win->cursor_bg))
 	|| (SamePixel(cur_win->fg, cur_win->cursor_bg)
 	    && SamePixel(cur_win->bg, cur_win->cursor_fg))) {
-	monochrome_cursor();
+	monochrome_cursor(cur_win);
 	TRACE(("...Forcing monochrome cursor\n"));
     } else if (color_cursor(cur_win)) {
 	TRACE(("...Created color cursor\n"));
@@ -2949,14 +3130,9 @@ static Boolean
 too_light_or_too_dark(Pixel pixel)
 {
     XColor color;
-    Colormap colormap;
-
-    XtVaGetValues(cur_win->screen,
-		  XtNcolormap, &colormap,
-		  NULL);
 
     color.pixel = pixel;
-    XQueryColor(dpy, colormap, &color);
+    XQueryColor(dpy, cur_win->colormap, &color);
 
     return (Boolean) ((TooLight(color.red) &&
 		       TooLight(color.green) &&
@@ -2972,15 +3148,10 @@ static Boolean
 alloc_shadows(Pixel pixel, Pixel *light, Pixel *dark)
 {
     XColor color;
-    Colormap colormap;
     ULONG lred, lgreen, lblue, dred, dgreen, dblue;
 
-    XtVaGetValues(cur_win->screen,
-		  XtNcolormap, &colormap,
-		  NULL);
-
     color.pixel = pixel;
-    XQueryColor(dpy, colormap, &color);
+    XQueryColor(dpy, cur_win->colormap, &color);
 
     if ((color.red > 0xfff0 && color.green > 0xfff0 && color.blue > 0xfff0)
 	|| (color.red < 0x0020 && color.green < 0x0020 && color.blue < 0x0020))
@@ -3010,7 +3181,7 @@ alloc_shadows(Pixel pixel, Pixel *light, Pixel *dark)
     color.green = (USHORT) lgreen;
     color.blue = (USHORT) lblue;
 
-    if (!XAllocColor(dpy, colormap, &color))
+    if (!XAllocColor(dpy, cur_win->colormap, &color))
 	return False;
 
     *light = color.pixel;
@@ -3019,7 +3190,7 @@ alloc_shadows(Pixel pixel, Pixel *light, Pixel *dark)
     color.green = (USHORT) dgreen;
     color.blue = (USHORT) dblue;
 
-    if (!XAllocColor(dpy, colormap, &color))
+    if (!XAllocColor(dpy, cur_win->colormap, &color))
 	return False;
 
     *dark = color.pixel;
@@ -3100,19 +3271,19 @@ x_setfont(const char *fname)
 	oldh = (Dimension) x_height(cur_win);
 	if ((pfont = xvileQueryFont(dpy, cur_win, fname)) != 0) {
 #ifndef XRENDERFONT
-	    XSetFont(dpy, cur_win->tt_info.gc, pfont->fid);
-	    XSetFont(dpy, cur_win->rt_info.gc, pfont->fid);
-	    XSetFont(dpy, cur_win->ss_info.gc, pfont->fid);
-	    XSetFont(dpy, cur_win->rs_info.gc, pfont->fid);
-	    XSetFont(dpy, cur_win->cc_info.gc, pfont->fid);
-	    XSetFont(dpy, cur_win->rc_info.gc, pfont->fid);
-	    XSetFont(dpy, cur_win->mm_info.gc, pfont->fid);
-	    XSetFont(dpy, cur_win->rm_info.gc, pfont->fid);
-	    XSetFont(dpy, cur_win->oo_info.gc, pfont->fid);
-	    XSetFont(dpy, cur_win->ro_info.gc, pfont->fid);
-	    if (cur_win->tt_info.gc != cur_win->rs_info.gc) {
-		XSetFont(dpy, cur_win->ss_info.gc, pfont->fid);
-		XSetFont(dpy, cur_win->rs_info.gc, pfont->fid);
+	    XSetFont(dpy, GetColorGC(cur_win, tt_info), pfont->fid);
+	    XSetFont(dpy, GetColorGC(cur_win, rt_info), pfont->fid);
+	    XSetFont(dpy, GetColorGC(cur_win, ss_info), pfont->fid);
+	    XSetFont(dpy, GetColorGC(cur_win, rs_info), pfont->fid);
+	    XSetFont(dpy, GetColorGC(cur_win, cc_info), pfont->fid);
+	    XSetFont(dpy, GetColorGC(cur_win, rc_info), pfont->fid);
+	    XSetFont(dpy, GetColorGC(cur_win, mm_info), pfont->fid);
+	    XSetFont(dpy, GetColorGC(cur_win, rm_info), pfont->fid);
+	    XSetFont(dpy, GetColorGC(cur_win, oo_info), pfont->fid);
+	    XSetFont(dpy, GetColorGC(cur_win, ro_info), pfont->fid);
+	    if (GetColorGC(cur_win, tt_info) != GetColorGC(cur_win, rs_info)) {
+		XSetFont(dpy, GetColorGC(cur_win, ss_info), pfont->fid);
+		XSetFont(dpy, GetColorGC(cur_win, rs_info), pfont->fid);
 	    }
 #endif
 	    reset_color_gcs();
@@ -3294,7 +3465,10 @@ x_scroll(int from, int to, int count)
     if (from == to)
 	return;			/* shouldn't happen */
 
-    XCopyArea(dpy, cur_win->win, cur_win->win, cur_win->tt_info.gc,
+    XCopyArea(dpy,
+	      cur_win->win,
+	      cur_win->win,
+	      GetColorGC(cur_win, tt_info),
 	      x_pos(cur_win, 0), y_pos(cur_win, from),
 	      x_width(cur_win), (UINT) (count * cur_win->char_height),
 	      x_pos(cur_win, 0), y_pos(cur_win, to));
@@ -4444,7 +4618,8 @@ x_process_event(Widget w GCC_UNUSED,
 
     case VisibilityNotify:
 	cur_win->visibility = ev->xvisibility.state;
-	XSetGraphicsExposures(dpy, cur_win->tt_info.gc,
+	XSetGraphicsExposures(dpy,
+			      GetColorGC(cur_win, tt_info),
 			      cur_win->visibility != VisibilityUnobscured);
 	break;
 
@@ -5101,8 +5276,9 @@ display_cursor(XtPointer client_data GCC_UNUSED, XtIntervalId * idp)
 	return;
     }
 
-    if (IS_DIRTY(ttrow, the_col) && idp == (XtIntervalId *) 0)
+    if (IS_DIRTY(ttrow, the_col) && idp == (XtIntervalId *) 0) {
 	return;
+    }
 
     if (cur_win->show_cursor) {
 	if (cur_win->blink_interval > 0
@@ -5117,8 +5293,9 @@ display_cursor(XtPointer client_data GCC_UNUSED, XtIntervalId * idp)
 				    (XtPointer) 0);
 		cur_win->blink_status ^= BLINK_TOGGLE;
 		am_blinking = TRUE;
-	    } else
+	    } else {
 		cur_win->blink_status &= ~BLINK_TOGGLE;
+	    }
 	} else {
 	    am_blinking = FALSE;
 	    cur_win->blink_status &= ~BLINK_TOGGLE;
@@ -5148,8 +5325,8 @@ display_cursor(XtPointer client_data GCC_UNUSED, XtIntervalId * idp)
 		  (UINT) VATTRIB(CELL_ATTR(ttrow, the_col)), ttrow, the_col);
 	XDrawRectangle(dpy, cur_win->win,
 		       (IS_REVERSED(ttrow, the_col)
-			? cur_win->cc_info.gc
-			: cur_win->rc_info.gc),
+			? GetColorGC(cur_win, cc_info)
+			: GetColorGC(cur_win, rc_info)),
 		       x_pos(cur_win, ttcol), y_pos(cur_win, ttrow),
 		       (UINT) (cur_win->char_width - 1),
 		       (UINT) (cur_win->char_height - 1));
@@ -5553,8 +5730,8 @@ x_set_foreground(int color)
     TRACE(("...cur_win->fg = %#lx%s\n", cur_win->fg, cur_win->fg ==
 	   cur_win->default_fg ? " (default)" : ""));
 
-    XSetForeground(dpy, cur_win->tt_info.gc, cur_win->fg);
-    XSetBackground(dpy, cur_win->rt_info.gc, cur_win->fg);
+    XSetForeground(dpy, GetColorGC(cur_win, tt_info), cur_win->fg);
+    XSetBackground(dpy, GetColorGC(cur_win, rt_info), cur_win->fg);
 
     x_touch(cur_win, 0, 0, cur_win->cols, cur_win->rows);
     x_flush();
@@ -5574,11 +5751,11 @@ x_set_background(int color)
 	   cur_win->bg == cur_win->default_bg ? " (default)" : ""));
 
     if (color == ENUM_FCOLOR) {
-	XSetBackground(dpy, cur_win->tt_info.gc, cur_win->default_bg);
-	XSetForeground(dpy, cur_win->rt_info.gc, cur_win->default_bg);
+	XSetBackground(dpy, GetColorGC(cur_win, tt_info), cur_win->default_bg);
+	XSetForeground(dpy, GetColorGC(cur_win, rt_info), cur_win->default_bg);
     } else {
-	XSetBackground(dpy, cur_win->tt_info.gc, cur_win->bg);
-	XSetForeground(dpy, cur_win->rt_info.gc, cur_win->bg);
+	XSetBackground(dpy, GetColorGC(cur_win, tt_info), cur_win->bg);
+	XSetForeground(dpy, GetColorGC(cur_win, rt_info), cur_win->bg);
     }
     cur_win->bg_follows_fg = (Boolean) (color == ENUM_FCOLOR);
     TRACE(("...cur_win->bg_follows_fg = %#x\n", cur_win->bg_follows_fg));
@@ -5596,11 +5773,10 @@ x_set_background(int color)
 static void
 x_set_cursor_color(int color)
 {
-    XGCValues gcvals;
-    ULONG gcmask;
     Pixel fg, bg;
+    ColorGC *data;
 
-    TRACE(("x_set_cursor_color(%d)\n", color));
+    TRACE((T_CALLED "x_set_cursor_color(%d)\n", color));
     if (cur_win->is_color_cursor == False) {
 	if (!color_cursor(cur_win)) {
 	    gccolor = -1;
@@ -5620,14 +5796,21 @@ x_set_cursor_color(int color)
 	   : cur_win->colors_bg[color])
 	: cur_win->cursor_bg;
 
-    gcmask = GCForeground | GCBackground;
-    gcvals.background = bg;
-    gcvals.foreground = fg;
-    XChangeGC(dpy, cur_win->cc_info.gc, gcmask, &gcvals);
+    data = &cur_win->cc_info;
+    data->state = sgINIT;
+    data->gcmask = GCForeground | GCBackground;
+    data->gcvals.background = bg;
+    data->gcvals.foreground = fg;
+    makeColorGC(cur_win, data);
 
-    gcvals.foreground = bg;
-    gcvals.background = fg;
-    XChangeGC(dpy, cur_win->rc_info.gc, gcmask, &gcvals);
+    data = &cur_win->rc_info;
+    data->state = sgINIT;
+    data->gcmask = GCForeground | GCBackground;
+    data->gcvals.foreground = bg;
+    data->gcvals.background = fg;
+    makeColorGC(cur_win, data);
+
+    returnVoid();
 }
 
 #endif
@@ -5640,19 +5823,29 @@ x_beep(void)
     if (global_g_val(GMDFLASH)) {
 	beginDisplay();
 	XGrabServer(dpy);
-	XSetFunction(dpy, cur_win->tt_info.gc, GXxor);
-	XSetBackground(dpy, cur_win->tt_info.gc, 0L);
-	XSetForeground(dpy, cur_win->tt_info.gc, cur_win->fg ^ cur_win->bg);
-	XFillRectangle(dpy, cur_win->win, cur_win->tt_info.gc,
-		       0, 0, x_width(cur_win), x_height(cur_win));
+	XSetFunction(dpy, GetColorGC(cur_win, tt_info), GXxor);
+	XSetBackground(dpy, GetColorGC(cur_win, tt_info), 0L);
+	XSetForeground(dpy,
+		       GetColorGC(cur_win, tt_info),
+		       cur_win->fg ^ cur_win->bg);
+	XFillRectangle(dpy,
+		       cur_win->win,
+		       GetColorGC(cur_win, tt_info),
+		       0, 0,
+		       x_width(cur_win),
+		       x_height(cur_win));
 	XFlush(dpy);
 	catnap(90, FALSE);
-	XFillRectangle(dpy, cur_win->win, cur_win->tt_info.gc,
-		       0, 0, x_width(cur_win), x_height(cur_win));
+	XFillRectangle(dpy,
+		       cur_win->win,
+		       GetColorGC(cur_win, tt_info),
+		       0, 0,
+		       x_width(cur_win),
+		       x_height(cur_win));
 	XFlush(dpy);
-	XSetFunction(dpy, cur_win->tt_info.gc, GXcopy);
-	XSetBackground(dpy, cur_win->tt_info.gc, cur_win->bg);
-	XSetForeground(dpy, cur_win->tt_info.gc, cur_win->fg);
+	XSetFunction(dpy, GetColorGC(cur_win, tt_info), GXcopy);
+	XSetBackground(dpy, GetColorGC(cur_win, tt_info), cur_win->bg);
+	XSetForeground(dpy, GetColorGC(cur_win, tt_info), cur_win->fg);
 	XUngrabServer(dpy);
 	endofDisplay();
     } else
