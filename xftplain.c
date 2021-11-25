@@ -1,7 +1,7 @@
 /*
  * Xft text-output, Thomas Dickey 2020
  *
- * $Id: xftplain.c,v 1.49 2021/11/23 22:18:57 tom Exp $
+ * $Id: xftplain.c,v 1.51 2021/11/25 18:48:04 tom Exp $
  *
  * Some of this was adapted from xterm, of course.
  */
@@ -269,7 +269,6 @@ xvileDraw(Display *dpy,
 	fore_ptr = back_ptr;
 	back_ptr = temp_ptr;
 	attr &= ~(VAREV | VACURS);
-	TRACE(("swap %p/%p...\n", fore_ptr->gc, back_ptr->gc));
     }
 
     if (attr & (VABOLD | VAITAL)) {
@@ -315,6 +314,9 @@ xvileDraw(Display *dpy,
 	    }
 	}
     }
+
+    makeColorGC(win, back_ptr);
+    makeColorGC(win, fore_ptr);
 
     TRACE(("FILL %06lx (%2d)\n", back_ptr->xft.pixel, len));
     XFillRectangle(dpy, win->win, back_ptr->gc,

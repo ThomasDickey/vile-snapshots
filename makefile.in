@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Id: makefile.in,v 1.291 2021/02/22 08:56:41 tom Exp $
+# $Id: makefile.in,v 1.292 2021/11/25 21:58:33 tom Exp $
 
 SHELL		= @SHELL@
 
@@ -739,7 +739,7 @@ uninstall \
 mostlyclean \
 clean \
 distclean ::
-	- ( test -f filters/makefile && cd filters && $(MAKE) $(MAKE_RECUR) $@ )
+	- $(SHELL) -c "if test -f filters/makefile; then cd filters && $(MAKE) $(MAKE_RECUR) $@ ; fi"
 
 mostlyclean ::
 	-@ $(RM) -rf *.dSYM
