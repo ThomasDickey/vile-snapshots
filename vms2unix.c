@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.42 2005/06/03 00:03:29 tom Exp $
+ * $Id: vms2unix.c,v 1.43 2005/06/03 00:03:29 tom Exp $
  *
  */
 #include "estruct.h"

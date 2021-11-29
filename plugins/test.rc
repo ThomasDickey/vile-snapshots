@@ -1,2 +1,2 @@
-; $Header: /users/source/archives/vile.vcs/plugins/RCS/test.rc,v 1.1 2004/06/17 23:54:35 Fabien.Coutant Exp $
+; $Id: test.rc,v 1.2 2004/06/17 23:54:35 tom Exp $
 load-plugin "test"

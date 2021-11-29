@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/infofilt.l,v 1.13 2013/12/02 01:32:53 tom Exp $
+ * $Id: infofilt.l,v 1.14 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an info file.
  * (An extension of "text" mode).

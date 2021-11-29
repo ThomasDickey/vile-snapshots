@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/w32vile.h,v 1.9 2014/03/24 23:03:08 tom Exp $
+ * $Id: w32vile.h,v 1.10 2014/03/24 23:03:08 tom Exp $
  *
  * Do the pragmas in a separate file to avoid contaminating portable code.
  */

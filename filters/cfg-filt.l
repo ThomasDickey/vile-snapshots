@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cfg-filt.l,v 1.19 2013/12/02 01:32:54 tom Exp $
+ * $Id: cfg-filt.l,v 1.20 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary Lynx config-file
  */

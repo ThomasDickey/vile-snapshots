@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.18 2010/09/06 15:46:27 tom Exp $
+ * $Id: xtermkeys.h,v 1.19 2010/09/06 15:46:27 tom Exp $
  *
  * Function-key definitions and modifiers used for xterm.  This is a header
  * file to simplify sharing between the termcap/curses drivers.

@@ -2,7 +2,7 @@
  * w32reg.h:  Winvile OLE registry data (currently applicable only
  *            to OLE Automation).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32reg.h,v 1.1 1998/08/15 20:42:00 cmorgan Exp $
+ * $Id: w32reg.h,v 1.2 1998/08/15 20:42:00 tom Exp $
  */
 
 #ifndef W32REG_H

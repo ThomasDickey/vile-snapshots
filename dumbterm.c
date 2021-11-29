@@ -1,6 +1,6 @@
 /*	Dumb terminal driver, for I/O before we get into screen mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.26 2009/12/09 01:28:19 tom Exp $
+ * $Id: dumbterm.c,v 1.27 2009/12/09 01:28:19 tom Exp $
  *
  */
 

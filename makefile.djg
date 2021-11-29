@@ -1,6 +1,6 @@
 # makefile for vile using DJGCC 2.x and  GNU's MAKE
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.41 2009/12/24 09:35:11 tom Exp $
+# $Id: makefile.djg,v 1.42 2009/12/24 09:35:11 tom Exp $
 #
 # Options (set to "yes" to enable):
 #	dbg	- debugging, e.g., for gdb

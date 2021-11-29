@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.164 2016/07/16 14:42:34 tom Exp $
+ * $Id: statevar.c,v 1.165 2016/07/16 14:42:34 tom Exp $
  */
 
 #include	<estruct.h>

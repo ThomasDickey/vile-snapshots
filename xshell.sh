@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Header: /users/source/archives/vile.vcs/RCS/xshell.sh,v 1.4 1997/11/10 01:28:07 tom Exp $
+# $Id: xshell.sh,v 1.5 1997/11/10 01:28:07 tom Exp $
 #
 # This script is designed to be used from xvile to support the $xshell variable.
 # If you wish to have shell commands of the form

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.326 2020/08/23 19:03:03 Stephan.Schulz Exp $
+# $Id: modetbl,v 1.327 2020/08/23 19:03:03 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.

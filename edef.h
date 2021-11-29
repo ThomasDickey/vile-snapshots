@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.375 2020/01/17 22:36:11 tom Exp $
+ * $Id: edef.h,v 1.376 2020/01/17 22:36:11 tom Exp $
  */
 
 #ifndef VILE_EDEF_H

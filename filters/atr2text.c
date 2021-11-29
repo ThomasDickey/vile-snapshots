@@ -1,7 +1,7 @@
 /*
  * Convert attributed text to something like nroff output.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2text.c,v 1.4 2007/05/05 15:14:56 tom Exp $
+ * $Id: atr2text.c,v 1.5 2007/05/05 15:14:56 tom Exp $
  */
 #include <unfilter.h>
 

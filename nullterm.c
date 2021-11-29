@@ -2,7 +2,7 @@
  * Define an empty terminal type for machines where we cannot use 'dumb_term',
  * so that command-line prompting will have something to talk to.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/nullterm.c,v 1.11 2011/11/24 20:04:08 tom Exp $
+ * $Id: nullterm.c,v 1.12 2011/11/24 20:04:08 tom Exp $
  */
 
 #include	<estruct.h>

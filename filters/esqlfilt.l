@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.26 2013/12/02 01:32:53 tom Exp $
+ * $Id: esqlfilt.l,v 1.27 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey

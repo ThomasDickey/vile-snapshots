@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.39 2013/04/08 00:22:25 tom Exp $
+ * $Id: vl_ctype.h,v 1.40 2013/04/08 00:22:25 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *

@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.103 2016/07/16 14:08:37 tom Exp $
+ * $Id: glob.c,v 1.104 2016/07/16 14:08:37 tom Exp $
  *
  */
 

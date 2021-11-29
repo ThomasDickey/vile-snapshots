@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.124 2013/12/02 01:33:56 tom Exp $
+ * $Id: htmlfilt.l,v 1.125 2013/12/02 01:33:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.

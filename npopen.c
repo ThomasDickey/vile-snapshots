@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.101 2013/03/08 09:58:49 tom Exp $
+ * $Id: npopen.c,v 1.102 2013/03/08 09:58:49 tom Exp $
  *
  */
 

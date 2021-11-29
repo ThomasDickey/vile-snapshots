@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.30 2013/12/02 01:32:53 tom Exp $
+ * $Id: xresfilt.l,v 1.31 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */

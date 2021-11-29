@@ -2,7 +2,7 @@
  * Prototypes for functions in the mode-tables (must be declared before the
  * point at which proto.h is included).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/chgdfunc.h,v 1.23 2008/11/08 13:40:12 tom Exp $
+ * $Id: chgdfunc.h,v 1.24 2008/11/08 13:40:12 tom Exp $
  */
 extern int chgd_autobuf  (CHGD_ARGS);
 extern int chgd_buffer   (CHGD_ARGS);

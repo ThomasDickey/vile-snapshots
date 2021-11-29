@@ -5,7 +5,7 @@
  *		for control-break in the go32 libraries
  *	critical error handling from Bob Babcock.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/djhandl.c,v 1.7 2010/11/10 09:20:16 tom Exp $
+ * $Id: djhandl.c,v 1.8 2010/11/10 09:20:16 tom Exp $
  *
  *
  */

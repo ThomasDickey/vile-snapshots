@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/loaderrs.rc,v 1.2 2007/08/07 00:32:16 tom Exp $
+; $Id: loaderrs.rc,v 1.3 2007/08/07 00:32:16 tom Exp $
 ; A macro that prepends user's error-patterns to [Error Expressions].  The
 ; user-defined patterns are in a file ".vile-errs" or "vile-errs".  The macro
 ; binds ^X^X to LoadErrorExprs temporarily, then the first time it is run,

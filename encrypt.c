@@ -16,7 +16,7 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/encrypt.c,v 1.11 2014/07/04 19:31:52 tom Exp $
+ * $Id: encrypt.c,v 1.12 2014/07/04 19:31:52 tom Exp $
  * changes for vile are GPLv2, no "later version" express or implied -TD
  */
 #include <filters.h>

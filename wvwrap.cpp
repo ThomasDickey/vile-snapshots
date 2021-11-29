@@ -12,7 +12,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.22 2016/07/27 09:28:11 tom Exp $
+ * $Id: wvwrap.cpp,v 1.23 2016/07/27 09:28:11 tom Exp $
  */
 
 #include "w32vile.h"

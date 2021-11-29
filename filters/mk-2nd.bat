@@ -1,5 +1,5 @@
 @echo off
-rem $Header: /users/source/archives/vile.vcs/filters/RCS/mk-2nd.bat,v 1.9 2014/02/01 00:35:46 tom Exp $
+rem $Id: mk-2nd.bat,v 1.10 2014/02/01 00:35:46 tom Exp $
 rem like mk-2nd.awk, used to generate rules from genmake.mak
 
 goto %2

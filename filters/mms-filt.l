@@ -5,7 +5,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.20 2013/12/02 01:32:53 tom Exp $
+ * $Id: mms-filt.l,v 1.21 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VMS mms script
  * - T.Dickey

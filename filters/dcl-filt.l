@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.26 2013/12/02 01:32:54 tom Exp $
+ * $Id: dcl-filt.l,v 1.27 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *

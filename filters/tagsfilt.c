@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tagsfilt.c,v 1.12 2013/12/02 01:32:53 tom Exp $
+ * $Id: tagsfilt.c,v 1.13 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a tags file.  It's done best
  * in C because the file consists only of columns of data that are delimited

@@ -4,7 +4,7 @@
  * Support functions for "popup-msgs" mode.
  * Written by T.E.Dickey for vile (august 1994).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.30 2010/09/08 21:11:30 tom Exp $
+ * $Id: msgs.c,v 1.31 2010/09/08 21:11:30 tom Exp $
  */
 #include "estruct.h"
 

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.43 2013/12/02 01:33:56 tom Exp $
+ * $Id: m4-filt.c,v 1.44 2013/12/02 01:33:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters

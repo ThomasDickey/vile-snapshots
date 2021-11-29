@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.35 2020/01/17 23:12:35 tom Exp $
+ * $Id: w32ole.cpp,v 1.36 2020/01/17 23:12:35 tom Exp $
  */
 
 #include "w32vile.h"

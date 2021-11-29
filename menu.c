@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.80 2013/03/06 11:46:19 tom Exp $
+ * $Id: menu.c,v 1.81 2013/03/06 11:46:19 tom Exp $
  */
 
 /* Vile includes */

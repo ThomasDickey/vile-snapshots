@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Id: buffer.c,v 1.371 2019/12/19 09:36:02 bod Exp $
+ * $Id: buffer.c,v 1.372 2021/11/29 00:17:11 tom Exp $
  */
 
 #include	"estruct.h"
@@ -3124,7 +3124,7 @@ set_editor_title(void)
 static BUFFER *
 zap_buffer(BUFFER *bp)
 {
-    TRACE(("zap_buffer(%s) %p\n", bp->b_bname, bp));
+    TRACE(("zap_buffer(%s) %p\n", bp->b_bname, (void *) bp));
     if (bp != 0) {
 	b_clr_changed(bp);	/* discard any changes */
 	bclear(bp);

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/mime.pl,v 1.10 2020/01/17 23:34:15 tom Exp $
+# $Id: mime.pl,v 1.11 2020/01/17 23:34:15 tom Exp $
 # (see dir.doc)
 require 'plugins.pl';
 

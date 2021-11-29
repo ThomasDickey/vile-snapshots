@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/man.pm,v 1.5 2014/01/28 23:35:26 tom Exp $
+# $Id: man.pm,v 1.6 2014/01/28 23:35:26 tom Exp $
 package man;
 
 use strict;

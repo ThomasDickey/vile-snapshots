@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.53 2020/01/17 23:17:05 tom Exp $
+ * $Id: ansi.c,v 1.54 2020/01/17 23:17:05 tom Exp $
  */
 
 #include	"estruct.h"

@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.24 2009/12/24 09:17:59 tom Exp $
+# $Id: makefile.blc,v 1.25 2009/12/24 09:17:59 tom Exp $
 #
 # Tested with
 #	Borland C++ 5.5.1

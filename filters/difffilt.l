@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.12 2013/12/02 01:32:54 tom Exp $
+ * $Id: difffilt.l,v 1.13 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of diff output
  */

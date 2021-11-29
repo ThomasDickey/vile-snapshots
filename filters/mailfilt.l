@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.30 2013/12/02 01:32:53 tom Exp $
+ * $Id: mailfilt.l,v 1.31 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */

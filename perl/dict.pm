@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/dict.pm,v 1.5 2014/01/28 23:37:16 tom Exp $
+# $Id: dict.pm,v 1.6 2014/01/28 23:37:16 tom Exp $
 # http://search.cpan.org/dist/Net-Dict/
 package dict;
 

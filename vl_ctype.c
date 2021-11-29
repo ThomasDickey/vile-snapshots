@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.20 2013/03/10 20:27:22 tom Exp $
+ * $Id: vl_ctype.c,v 1.21 2013/03/10 20:27:22 tom Exp $
  *
  * On Linux, the normal/wide ctypes give comparable results in the range 0-255,
  * reflecting the fact that codes 128-255 in Unicode are the "same" as

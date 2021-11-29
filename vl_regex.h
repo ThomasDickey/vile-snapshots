@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_regex.h,v 1.9 2019/12/19 09:38:15 bod Exp $
+ * $Id: vl_regex.h,v 1.10 2019/12/19 09:38:15 tom Exp $
  *
  * Copyright 2005-2015,2019 Thomas E. Dickey and Paul G. Fox
  *

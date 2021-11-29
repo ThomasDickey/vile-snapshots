@@ -20,7 +20,7 @@
  *		buffer will be marked readonly.  the .lck file will be
  *		deleted at most of the appropriate times.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/lckfiles.c,v 1.12 2020/01/17 22:36:39 tom Exp $
+ * $Id: lckfiles.c,v 1.13 2020/01/17 22:36:39 tom Exp $
  *
  */
 

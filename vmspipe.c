@@ -3,7 +3,7 @@
  *		adapted from elvis, in turn from
  *		Chris Janton's (chj) VMS Icon port.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmspipe.c,v 1.15 2010/11/10 10:05:05 tom Exp $
+ * $Id: vmspipe.c,v 1.16 2010/11/10 10:05:05 tom Exp $
  *
  */
 

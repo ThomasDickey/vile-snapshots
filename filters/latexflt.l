@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.55 2013/12/02 01:33:56 tom Exp $
+ * $Id: latexflt.l,v 1.56 2013/12/02 01:33:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.

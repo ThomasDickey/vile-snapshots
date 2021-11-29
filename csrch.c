@@ -2,7 +2,7 @@
  * These functions perform vi's on-this-line character scanning functions.
  * written for vile.  Copyright (c) 1990, 1995-2002 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/csrch.c,v 1.34 2006/11/06 21:00:51 tom Exp $
+ * $Id: csrch.c,v 1.35 2006/11/06 21:00:51 tom Exp $
  *
 */
 

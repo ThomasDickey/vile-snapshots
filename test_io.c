@@ -1,7 +1,7 @@
 /*
  * Stub for testing linkage requirements of I/O drivers.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/test_io.c,v 1.2 2006/01/10 23:28:47 tom Exp $
+ * $Id: test_io.c,v 1.3 2006/01/10 23:28:47 tom Exp $
  */
 
 #include <estruct.h>

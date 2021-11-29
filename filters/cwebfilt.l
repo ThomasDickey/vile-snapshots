@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.23 2013/12/02 01:32:54 tom Exp $
+ * $Id: cwebfilt.l,v 1.24 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Cwebx input
  * text.  Also useful for Cweb

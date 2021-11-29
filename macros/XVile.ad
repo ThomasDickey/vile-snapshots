@@ -1,4 +1,4 @@
-! $Header: /users/source/archives/vile.vcs/macros/RCS/XVile.ad,v 1.8 2010/09/05 14:37:12 tom Exp $
+! $Id: XVile.ad,v 1.9 2010/09/05 14:37:12 tom Exp $
 
 ! "white" on "black" main window
 *background: grey5

@@ -1,7 +1,7 @@
 /* pipe routines for OS/2
  *  lee johnson, spring 1995
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2pipe.c,v 1.6 2010/11/10 09:45:43 tom Exp $
+ * $Id: os2pipe.c,v 1.7 2010/11/10 09:45:43 tom Exp $
  */
 #define INCL_DOSFILEMGR
 #define INCL_DOSQUEUES

@@ -1,4 +1,4 @@
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.19 2008/11/07 00:21:28 tom Exp $
+;; $Id: which.rc,v 1.20 2008/11/07 00:21:28 tom Exp $
 ;;
 ;; Show where vile looks for keyword file, and where it finds it.  If we
 ;; always implemented built-in filters, the natural place for this would be

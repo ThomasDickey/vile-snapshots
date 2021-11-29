@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lua-filt.l,v 1.14 2014/03/30 18:27:27 tom Exp $
+ * $Id: lua-filt.l,v 1.15 2014/03/30 18:27:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lua
  * input text.

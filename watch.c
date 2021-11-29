@@ -2,7 +2,7 @@
  * watch.c	-- generic data structures and routines for watching
  *		   file descriptors and timers (eventually)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/watch.c,v 1.7 2010/11/10 10:43:37 tom Exp $
+ * $Id: watch.c,v 1.8 2010/11/10 10:43:37 tom Exp $
  */
 
 #include "estruct.h"

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/doc/RCS/makefile,v 1.21 2015/07/08 00:17:26 tom Exp $
+# $Id: makefile,v 1.22 2015/07/08 00:17:26 tom Exp $
 # construct ".doc" and ".hlp" files from the ".html" files
 
 # NOTE: the perl script uses the version from the running copy of vile rather

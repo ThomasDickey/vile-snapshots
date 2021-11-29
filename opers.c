@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile.  Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.104 2015/08/22 00:08:52 tom Exp $
+ * $Id: opers.c,v 1.105 2015/08/22 00:08:52 tom Exp $
  *
  */
 
