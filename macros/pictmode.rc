@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/pictmode.rc,v 1.4 2005/04/19 19:21:59 tom Exp $
+; $Id: pictmode.rc,v 1.5 2005/04/19 19:21:59 tom Exp $
 ; this procedure implements a primitive ascii picture-drawing mode.
 ;		pgf, may '95
 

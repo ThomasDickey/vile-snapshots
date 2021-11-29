@@ -1,7 +1,7 @@
 /*
  * Common definitions for xvile modules.
  *
- * $Id: x11vile.h,v 1.20 2021/11/24 23:18:35 tom Exp $
+ * $Id: x11vile.h,v 1.23 2021/11/28 21:08:17 tom Exp $
  */
 
 /*
@@ -301,6 +301,13 @@ typedef XftFont XVileFont;
 typedef XFontStruct XVileFont;
 #endif
 
+typedef struct {
+    XVileFont *norm;		/* normal */
+    XVileFont *bold;		/* bold */
+    XVileFont *ital;		/* italic */
+    XVileFont *btal;		/* bold/italic */
+} XVileFonts;
+
 #if OPT_XAW_SCROLLBARS
 typedef struct _scroll_info {
     int totlen;			/* total length of scrollbar */
@@ -392,10 +399,7 @@ typedef struct _text_win {
     int fsrch_flags;		/* flags which indicate which fonts have
 				 * been searched for
 				 */
-    XVileFont *pfont;		/* Normal font */
-    XVileFont *pfont_bold;
-    XVileFont *pfont_ital;
-    XVileFont *pfont_boldital;
+    XVileFonts fonts;
     XVileFont *curfont;		/* Current font */
     ColorGC tt_info;		/* normal/uncolored text GC, related state */
     ColorGC rt_info;		/* reverse/uncolored text GC, related state */
@@ -685,6 +689,7 @@ typedef enum {
 } XVileAtom;
 
 #define GetAtom(name) xvileAtom(ae ## name)
+#define GetColorGC(win, name) makeColorGC(win, &win->name)->gc
 
 extern Atom xvileAtom(XVileAtom);
 extern ColorGC *x_get_color_gc(TextWindow, int, Bool);
@@ -692,6 +697,7 @@ extern ColorGC *makeColorGC(TextWindow, ColorGC *);
 extern XVileFont *xvileQueryFont(Display *, TextWindow, const char *);
 extern void x_set_font_encoding(ENC_CHOICES);
 extern void x_set_fontname(TextWindow, const char *);
+extern void xvileCloseFonts(Display *, XVileFonts *);
 extern void xvileDraw(Display *, TextWindow, VIDEO_TEXT *, int, UINT, int, int);
 
 #define NotImpl() fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__)

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-2nd.awk,v 1.22 2016/08/03 00:47:55 tom Exp $
+# $Id: mk-2nd.awk,v 1.23 2016/08/03 00:47:55 tom Exp $
 #
 # Generate makefile rules for vile's external and built-in filters.  We will
 # build each filter only one way, to avoid conflict with the generated files.

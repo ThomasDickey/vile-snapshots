@@ -1,5 +1,5 @@
 @echo off
-rem $Header: /users/source/archives/vile.vcs/filters/RCS/mk-0th.bat,v 1.6 2000/08/20 21:42:06 tom Exp $
+rem $Id: mk-0th.bat,v 1.7 2000/08/20 21:42:06 tom Exp $
 rem like mk-0th.awk, used to generate builtflt.h from genmake.mak
 genmake.exe -o%2 -n "#ifndef _builtflt_h"
 genmake.exe -o%2 -n "#define _builtflt_h 1"

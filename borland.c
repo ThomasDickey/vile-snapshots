@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.42 2020/01/17 23:12:22 tom Exp $
+ * $Id: borland.c,v 1.43 2020/01/17 23:12:22 tom Exp $
  *
  */
 

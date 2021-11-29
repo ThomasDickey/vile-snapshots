@@ -2,7 +2,7 @@
  * Generate fragments of filters/makefile (for platforms without useful
  * shell scripting tools)
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.c,v 1.4 2002/05/01 19:43:39 tom Exp $
+ * $Id: genmake.c,v 1.5 2002/05/01 19:43:39 tom Exp $
  *
  */
 #include <stdlib.h>

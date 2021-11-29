@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/jsonfilt.l,v 1.12 2013/12/02 01:32:53 tom Exp $
+ * $Id: jsonfilt.l,v 1.13 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of JSON input
  * text.  JSON officially has no comments; some applications use JSON-syntax

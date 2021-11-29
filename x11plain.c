@@ -3,7 +3,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11plain.c,v 1.16 2021/11/25 15:27:34 tom Exp $
+ * $Id: x11plain.c,v 1.18 2021/11/28 21:09:41 tom Exp $
  */
 
 #include <x11vile.h>
@@ -238,11 +238,11 @@ xvileDraw(Display *dpy,
 	    if (!(win->fsrch_flags & FSRCH_BOLDITAL)) {
 		if ((fsp = alternate_font(dpy, win, "bold", "i")) != NULL
 		    || (fsp = alternate_font(dpy, win, "bold", "o")) != NULL)
-		    win->pfont_boldital = fsp;
+		    win->fonts.btal = fsp;
 		win->fsrch_flags |= FSRCH_BOLDITAL;
 	    }
-	    if (win->pfont_boldital != NULL) {
-		XSetFont(dpy, fore_ptr->gc, win->pfont_boldital->fid);
+	    if (win->fonts.btal != NULL) {
+		XSetFont(dpy, fore_ptr->gc, win->fonts.btal->fid);
 		fontchanged = TRUE;
 		attr &= ~(VABOLD | VAITAL);	/* don't use fallback */
 	    } else
@@ -253,11 +253,11 @@ xvileDraw(Display *dpy,
 		if ((fsp = alternate_font(dpy, win, (char *) 0, "i")) != NULL
 		    || (fsp = alternate_font(dpy, win, (char *) 0, "o"))
 		    != NULL)
-		    win->pfont_ital = fsp;
+		    win->fonts.ital = fsp;
 		win->fsrch_flags |= FSRCH_ITAL;
 	    }
-	    if (win->pfont_ital != NULL) {
-		XSetFont(dpy, fore_ptr->gc, win->pfont_ital->fid);
+	    if (win->fonts.ital != NULL) {
+		XSetFont(dpy, fore_ptr->gc, win->fonts.ital->fid);
 		fontchanged = TRUE;
 		attr &= ~VAITAL;	/* don't use fallback */
 	    } else if (attr & VABOLD)
@@ -265,11 +265,11 @@ xvileDraw(Display *dpy,
 	} else if (attr & VABOLD) {
 	  trybold:
 	    if (!(win->fsrch_flags & FSRCH_BOLD)) {
-		win->pfont_bold = alternate_font(dpy, win, "bold", NULL);
+		win->fonts.bold = alternate_font(dpy, win, "bold", NULL);
 		win->fsrch_flags |= FSRCH_BOLD;
 	    }
-	    if (win->pfont_bold != NULL) {
-		XSetFont(dpy, fore_ptr->gc, win->pfont_bold->fid);
+	    if (win->fonts.bold != NULL) {
+		XSetFont(dpy, fore_ptr->gc, win->fonts.bold->fid);
 		fontchanged = TRUE;
 		attr &= ~VABOLD;	/* don't use fallback */
 	    }
@@ -321,7 +321,7 @@ xvileDraw(Display *dpy,
     }
 
     if (fontchanged)
-	XSetFont(dpy, fore_ptr->gc, win->pfont->fid);
+	XSetFont(dpy, fore_ptr->gc, win->fonts.norm->fid);
 }
 
 XVileFont *
@@ -338,32 +338,17 @@ xvileQueryFont(Display *dpy, TextWindow tw, const char *fname)
 			   "proportional font, things will be miserable\n");
 	}
 
-	/*
-	 * Free resources associated with any presently loaded fonts.
-	 */
-	if (tw->pfont)
-	    XFreeFont(dpy, tw->pfont);
-	if (tw->pfont_bold) {
-	    XFreeFont(dpy, tw->pfont_bold);
-	    tw->pfont_bold = NULL;
-	}
-	if (tw->pfont_ital) {
-	    XFreeFont(dpy, tw->pfont_ital);
-	    tw->pfont_ital = NULL;
-	}
-	if (tw->pfont_boldital) {
-	    XFreeFont(dpy, tw->pfont_boldital);
-	    tw->pfont_boldital = NULL;
-	}
-	tw->fsrch_flags = 0;
+	memset(&tw->fonts, 0, sizeof(tw->fonts));
 
-	tw->pfont = pf;
-	tw->char_width = pf->max_bounds.width;
-	tw->char_height = pf->ascent + pf->descent;
-	tw->char_ascent = pf->ascent;
+	/* *INDENT-EQLS* */
+	tw->fsrch_flags  = 0;
+	tw->fonts.norm   = pf;
+	tw->char_width   = pf->max_bounds.width;
+	tw->char_height  = pf->ascent + pf->descent;
+	tw->char_ascent  = pf->ascent;
 	tw->char_descent = pf->descent;
-	tw->left_ink = (pf->min_bounds.lbearing < 0);
-	tw->right_ink = (pf->max_bounds.rbearing > tw->char_width);
+	tw->left_ink     = (pf->min_bounds.lbearing < 0);
+	tw->right_ink    = (pf->max_bounds.rbearing > tw->char_width);
 
 	TRACE(("...success left:%d, right:%d\n", tw->left_ink, tw->right_ink));
 
@@ -472,4 +457,29 @@ xvileQueryFont(Display *dpy, TextWindow tw, const char *fname)
 #endif
     }
     return pf;
+}
+
+/*
+ * After query-fonts is returned successfully, and none of the GC's refers to
+ * the saved-fonts, discard them.
+ */
+void
+xvileCloseFonts(Display *dpy, XVileFonts * data)
+{
+    if (data->norm) {
+	XFreeFont(dpy, data->norm);
+	data->norm = NULL;
+    }
+    if (data->bold) {
+	XFreeFont(dpy, data->bold);
+	data->bold = NULL;
+    }
+    if (data->ital) {
+	XFreeFont(dpy, data->ital);
+	data->ital = NULL;
+    }
+    if (data->btal) {
+	XFreeFont(dpy, data->btal);
+	data->btal = NULL;
+    }
 }

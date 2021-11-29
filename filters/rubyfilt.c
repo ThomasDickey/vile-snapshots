@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.85 2020/01/17 23:37:07 tom Exp $
+ * $Id: rubyfilt.c,v 1.86 2020/01/17 23:37:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This began as a
  * translation into C of an earlier version written for LEX/FLEX.

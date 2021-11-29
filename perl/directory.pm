@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.11 2020/01/17 23:34:52 tom Exp $
+# $Id: directory.pm,v 1.12 2020/01/17 23:34:52 tom Exp $
 # (see dir.doc)
 
 package directory;

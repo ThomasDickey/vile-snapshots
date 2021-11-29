@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Header: /users/source/archives/vile.vcs/RCS/sinstall.sh,v 1.1 1998/11/14 15:24:04 tom Exp $
+# $Id: sinstall.sh,v 1.2 1998/11/14 15:24:04 tom Exp $
 #
 # Install Perl scripts, adjusting for the correct pathname
 #	$1 = name of perl program

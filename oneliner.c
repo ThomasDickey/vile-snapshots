@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.126 2019/12/19 09:32:10 bod Exp $
+ * $Id: oneliner.c,v 1.127 2019/12/19 09:32:10 tom Exp $
  */
 
 #include	"estruct.h"

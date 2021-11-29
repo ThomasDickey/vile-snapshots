@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/plugins.pl,v 1.7 2014/01/28 21:37:40 tom Exp $
+# $Id: plugins.pl,v 1.8 2014/01/28 21:37:40 tom Exp $
 # (see dir.doc)
 package plugins;
 

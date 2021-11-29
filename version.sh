@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Header: /users/source/archives/vile.vcs/RCS/version.sh,v 1.1 2010/01/25 10:39:29 tom Exp $
+# $Id: version.sh,v 1.2 2010/01/25 10:39:29 tom Exp $
 # Extract vile's version from source-files to make it simple to generate
 # versioned binaries.
 if test $# != 0 ; then

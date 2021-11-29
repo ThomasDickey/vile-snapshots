@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Id: makefile.in,v 1.292 2021/11/25 21:58:33 tom Exp $
+# $Id: makefile.in,v 1.293 2021/11/28 15:40:26 tom Exp $
 
 SHELL		= @SHELL@
 
@@ -928,6 +928,7 @@ tcap$o :	tcap.h xtermkeys.h
 ucrypt$o :	vl_crypt.h
 version$o :	patchlev.h
 x11$o :		pscreen.h
+x11$o x11plain$o xftplain$o : x11vile.h
 
 # test-drivers
 

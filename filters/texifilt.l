@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.14 2013/12/02 01:32:53 tom Exp $
+ * $Id: texifilt.l,v 1.15 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of texinfo input.
  */

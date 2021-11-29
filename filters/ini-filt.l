@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ini-filt.l,v 1.18 2014/09/30 09:31:37 tom Exp $
+ * $Id: ini-filt.l,v 1.19 2014/09/30 09:31:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ ini-definition
  * input text.

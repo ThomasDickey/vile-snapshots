@@ -10,7 +10,7 @@
  *
  *                samples\com\oleaut\hello\hello .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.10 2020/01/17 22:36:27 tom Exp $
+ * $Id: w32ole.h,v 1.11 2020/01/17 22:36:27 tom Exp $
  */
 
 #ifndef W32OLE_H

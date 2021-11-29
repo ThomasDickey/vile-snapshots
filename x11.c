@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11.c,v 1.426 2021/11/25 18:51:34 tom Exp $
+ * $Id: x11.c,v 1.430 2021/11/29 00:30:47 tom Exp $
  */
 
 /*
@@ -1690,6 +1690,13 @@ pixelToXftColor(TextWindow tw, XftColor *target, Pixel source)
 /***====================================================================***/
 
 #if OPT_TRACE
+static Boolean
+retraceBoolean(Boolean code)
+{
+    Trace(T_RETURN "%s\n", code ? "True" : "False");
+    return code;
+}
+
 static const char *
 traceColorGC(TextWindow win, ColorGC * source)
 {
@@ -1722,6 +1729,9 @@ traceColorGC(TextWindow win, ColorGC * source)
     /* *INDENT-ON* */
     return result;
 }
+#define returnBoolean(code) return retraceBoolean(code)
+#else
+#define returnBoolean(code) return(code)
 #endif
 
 /*
@@ -1736,7 +1746,7 @@ initColorGC(TextWindow win, ColorGC * data, Pixel new_fg, Pixel new_bg)
     data->gcmask = GCForeground | GCBackground | GCGraphicsExposures;
 #ifndef XRENDERFONT
     data->gcmask |= GCFont;
-    data->gcvals.font = win->pfont->fid;
+    data->gcvals.font = win->fonts.norm->fid;
 #endif
     data->gcvals.graphics_exposures = False;
 
@@ -1794,7 +1804,7 @@ makeColorGC(TextWindow win, ColorGC * target)
 	       traceColorGC(win, target),
 	       (long) target->gcvals.foreground,
 	       (long) target->gcvals.background,
-	       target->gc,
+	       (void *) target->gc,
 	       (changed == 1) ? "created" : "changed"));
     }
 #ifdef XRENDERFONT
@@ -3265,10 +3275,14 @@ x_setfont(const char *fname)
     XVileFont *pfont;
     Dimension oldw;
     Dimension oldh;
+    int code = 1;
 
+    TRACE((T_CALLED "x_setfont(%s)\n", fname));
     if (cur_win) {
+	XVileFonts oldf = cur_win->fonts;
 	oldw = (Dimension) x_width(cur_win);
 	oldh = (Dimension) x_height(cur_win);
+	code = 0;
 	if ((pfont = xvileQueryFont(dpy, cur_win, fname)) != 0) {
 #ifndef XRENDERFONT
 	    XSetFont(dpy, GetColorGC(cur_win, tt_info), pfont->fid);
@@ -3287,6 +3301,7 @@ x_setfont(const char *fname)
 	    }
 #endif
 	    reset_color_gcs();
+	    xvileCloseFonts(dpy, &oldf);
 
 	    /* if size changed, resize it, otherwise refresh */
 	    if (oldw != x_width(cur_win) || oldh != x_height(cur_win)) {
@@ -3311,11 +3326,10 @@ x_setfont(const char *fname)
 		x_flush();
 	    }
 
-	    return 1;
+	    code = 1;
 	}
-	return 0;
     }
-    return 1;
+    returnCode(code);
 }
 
 static void
@@ -4063,7 +4077,7 @@ x_paste_selection(Atom selection)
 			(XtPointer) data, &len_ul, &format);
     } else {
 	Atom *targets = GetSelectionTargets();
-	SelectionList *list = XtNew(SelectionList);
+	SelectionList *list = (void *) XtNew(SelectionList);
 	Time ev_time = XtLastTimestampProcessed(dpy);
 
 	list->targets = targets + 1;
@@ -4157,7 +4171,7 @@ x_convert_selection(Widget w GCC_UNUSED,
 	   visibleAtoms(*target)));
 
     if (!cur_win->have_selection && IsPrimary(*selection))
-	returnCode(False);
+	returnBoolean(False);
 
     /*
      * The ICCCM requires us to handle the following targets:  TARGETS,
@@ -4177,7 +4191,7 @@ x_convert_selection(Widget w GCC_UNUSED,
 
 #define NTARGS 10
 
-	tp = (Atom *) XtMalloc((Cardinal) (NTARGS * sizeof(Atom)));
+	tp = (void *) XtMalloc((Cardinal) (NTARGS * sizeof(Atom)));
 	*(Atom **) value = tp;
 
 	if (tp != NULL) {
@@ -4218,7 +4232,7 @@ x_convert_selection(Widget w GCC_UNUSED,
     }
 #endif /* OPT_MULTIBYTE */
 
-    returnCode(result);
+    returnBoolean(result);
 }
 
 /* ARGSUSED */
@@ -6028,7 +6042,7 @@ x_autocolor_timeout(XtPointer data GCC_UNUSED, XtIntervalId * id GCC_UNUSED)
 int
 gui_isprint(int ch)
 {
-    XVileFont *pf = cur_win->pfont;
+    XVileFont *pf = cur_win->fonts.norm;
     int result = TRUE;
 
     if (ch >= 0 && pf != NULL) {

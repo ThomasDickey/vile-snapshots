@@ -1,7 +1,7 @@
 /*
  * Configurable headers used by termcap/terminfo driver for vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.19 2018/01/13 02:50:29 Adam.Denton Exp $
+ * $Id: tcap.h,v 1.20 2018/01/13 02:50:29 tom Exp $
  */
 
 #ifndef VILE_TCAP_H

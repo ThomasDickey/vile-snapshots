@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mc-filt.l,v 1.12 2013/12/02 01:32:53 tom Exp $
+ * $Id: mc-filt.l,v 1.13 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mailcap-file.
  */

@@ -1,7 +1,7 @@
 /*
  * Convert attributed text to ANSI-style escape sequences, allowing color.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2ansi.c,v 1.4 2007/05/05 15:23:03 tom Exp $
+ * $Id: atr2ansi.c,v 1.5 2007/05/05 15:23:03 tom Exp $
  */
 #include <unfilter.h>
 

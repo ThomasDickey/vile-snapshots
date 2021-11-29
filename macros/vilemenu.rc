@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vilemenu.rc,v 1.6 2009/10/04 15:24:37 tom Exp $
+; $Id: vilemenu.rc,v 1.7 2009/10/04 15:24:37 tom Exp $
 ; A sample .vilemenu file:
 ~with define-menu-entry
 C:Xvile

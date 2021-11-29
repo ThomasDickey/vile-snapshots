@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.25 2013/12/02 01:32:53 tom Exp $
+ * $Id: imakeflt.l,v 1.26 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *

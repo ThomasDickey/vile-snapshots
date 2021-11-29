@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.164 2018/11/13 01:37:52 tom Exp $
+ * $Id: filters.c,v 1.165 2018/11/13 01:37:52 tom Exp $
  *
  */
 

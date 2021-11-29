@@ -1,7 +1,7 @@
 /*
  * This is just a place holder -- a place in which to pull in edef.h alone
  *
- * $Header: /users/source/archives/vile.vcs/RCS/externs.c,v 1.12 2011/04/07 00:55:07 tom Exp $
+ * $Id: externs.c,v 1.13 2011/04/07 00:55:07 tom Exp $
  *
  */
 

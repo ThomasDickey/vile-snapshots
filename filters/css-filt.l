@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.29 2013/12/02 01:32:54 tom Exp $
+ * $Id: css-filt.l,v 1.30 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Cascading Style Sheets.
  *

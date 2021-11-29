@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.51 2010/08/08 17:57:02 tom Exp $
+$! $Id: vmsbuild.com,v 1.52 2010/08/08 17:57:02 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Screen Configurations

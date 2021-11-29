@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.33 2013/12/02 01:32:54 tom Exp $
+ * $Id: awk-filt.l,v 1.34 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.

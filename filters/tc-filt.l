@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.40 2013/12/02 01:32:53 tom Exp $
+ * $Id: tc-filt.l,v 1.41 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */

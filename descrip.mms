@@ -5,7 +5,7 @@
 # estruct.h to make sure the correct one is #defined as "1", and the others
 # all as "0".
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.50 2009/02/06 00:50:28 tom Exp $
+# $Id: descrip.mms,v 1.51 2009/02/06 00:50:28 tom Exp $
 
 # Editor Configuration Note
 # -------------------------

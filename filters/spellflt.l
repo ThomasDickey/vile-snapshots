@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.60 2019/06/23 20:28:42 tom Exp $
+ * $Id: spellflt.l,v 1.61 2019/06/23 20:28:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */

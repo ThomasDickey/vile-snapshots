@@ -3,7 +3,7 @@
  *
  * written for vile.  Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.102 2013/03/09 01:14:13 tom Exp $
+ * $Id: undo.c,v 1.103 2013/03/09 01:14:13 tom Exp $
  *
  */
 

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/plugins/RCS/test.c,v 1.1 2004/06/17 23:53:47 Fabien.Coutant Exp $
+ * $Id: test.c,v 1.2 2004/06/17 23:53:47 tom Exp $
  */
 #include "estruct.h"
 #include "edef.h"

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.9 2010/02/09 21:32:14 tom Exp $
+ * $Id: xterm.c,v 1.10 2010/02/09 21:32:14 tom Exp $
  *
  * xterm-specific code for vi-like-emacs.
  */

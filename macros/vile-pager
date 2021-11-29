@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Header: /users/source/archives/vile.vcs/macros/RCS/vile-pager,v 1.6 2008/12/05 00:03:03 tom Exp $
+# $Id: vile-pager,v 1.7 2008/12/05 00:03:03 tom Exp $
 # This is a simple script that uses the vi-clone 'vile' as a pager to show
 # highlighted text.  It's a lot easier to work with large listings than 'more'
 # or 'less'

@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.49 2014/07/04 18:55:53 tom Exp $
+ * $Id: curses.c,v 1.50 2014/07/04 18:55:53 tom Exp $
  */
 
 #include "estruct.h"

@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20211125 (v)
+ 20211128 (v)
 	> Lois Mansot
 	+ corrected range for &random function.
 	+ move the reframe_cursor_position() in update() to ensure that $cwline
@@ -29,6 +29,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
  	> Stephan Schulz:
 	+ add popup-choices mode (Savannah #58999)
 	> Tom Dickey:
+	+ replace Header keywords with Id, to make Git-snapshots match.
 	+ continue development of xftplain.c (--enable-freetype).  The current
 	  driver is able to display a single TrueType font using Xft.  Some of
 	  the remaining issues:

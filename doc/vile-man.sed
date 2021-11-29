@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/doc/RCS/vile-man.sed,v 1.10 2013/12/27 20:56:36 tom Exp $
+# $Id: vile-man.sed,v 1.11 2013/12/27 20:56:36 tom Exp $
 s/<h1\([^>]*\)>\([^<]*\)/<h1 id="toplevel-toc"\1><a name="toplevel">\2<\/a>/
 s/<h2>\([^<]*\)/<h2 id="\1-toc">\1/
 :ids

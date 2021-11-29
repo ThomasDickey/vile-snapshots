@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/os2keys.h,v 1.2 2005/10/02 21:56:00 tom Exp $
+ * $Id: os2keys.h,v 1.3 2005/10/02 21:56:00 tom Exp $
  *
  * Function-key definitions used for OS/2 VIO driver, as well as OS/2 EMX
  * driver.

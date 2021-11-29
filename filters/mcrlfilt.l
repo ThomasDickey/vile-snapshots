@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mcrlfilt.l,v 1.7 2013/12/02 01:32:53 tom Exp $
+ * $Id: mcrlfilt.l,v 1.8 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a mCRL(2) specification
  * or model, based on the text filter.

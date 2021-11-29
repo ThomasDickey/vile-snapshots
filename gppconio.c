@@ -5,7 +5,7 @@
 	changes have been sent back to the DJGPP maintainers -- hopefully
 	vile will not need to include this file in the future.  -pgf 9/95
 
-   $Header: /users/source/archives/vile.vcs/RCS/gppconio.c,v 1.4 2020/01/19 16:04:58 tom Exp $
+   $Id: gppconio.c,v 1.5 2020/01/19 16:04:58 tom Exp $
 */
 
 #if __DJGPP__ < 2

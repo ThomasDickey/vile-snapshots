@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/spell.pm,v 1.9 2014/01/28 23:35:55 tom Exp $
+# $Id: spell.pm,v 1.10 2014/01/28 23:35:55 tom Exp $
 package spell;
 
 use strict;

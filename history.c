@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.91 2015/03/13 08:52:40 tom Exp $
+ * $Id: history.c,v 1.92 2015/03/13 08:52:40 tom Exp $
  *
  */
 

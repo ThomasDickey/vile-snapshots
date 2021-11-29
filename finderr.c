@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2016,2019 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.152 2019/12/19 09:37:07 bod Exp $
+ * $Id: finderr.c,v 1.153 2019/12/19 09:37:07 tom Exp $
  *
  */
 

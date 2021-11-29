@@ -1,7 +1,7 @@
 /*
  * Common definitions for un-filters.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/unfilter.h,v 1.1 2003/05/07 00:38:38 tom Exp $
+ * $Id: unfilter.h,v 1.2 2003/05/07 00:38:38 tom Exp $
  */
 
 #ifndef UNFILTER_H

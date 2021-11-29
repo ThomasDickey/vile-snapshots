@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.78 2013/03/06 00:49:46 tom Exp $
+ * $Id: version.c,v 1.79 2013/03/06 00:49:46 tom Exp $
  *
  */
 

@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.177 2020/08/30 23:47:37 tom Exp $
+ * $Id: basic.c,v 1.178 2020/08/30 23:47:37 tom Exp $
  *
  */
 

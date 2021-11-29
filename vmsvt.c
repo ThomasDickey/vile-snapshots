@@ -14,7 +14,7 @@
  *   -- support wide and narrow screen resolutions,
  *   -- support visual bells.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.68 2010/02/14 18:43:48 tom Exp $
+ * $Id: vmsvt.c,v 1.69 2010/02/14 18:43:48 tom Exp $
  *
  */
 

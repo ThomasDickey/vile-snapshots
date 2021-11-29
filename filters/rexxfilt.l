@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rexxfilt.l,v 1.15 2013/12/02 01:32:53 tom Exp $
+ * $Id: rexxfilt.l,v 1.16 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of REXX source
  * - T.Dickey

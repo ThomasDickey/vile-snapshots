@@ -3,7 +3,7 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.26 2014/03/30 20:10:29 tom Exp $
+;; $Id: manpage.rc,v 1.27 2014/03/30 20:10:29 tom Exp $
 ;;
 
 store-procedure ShowManpage "Prompt for, and display a manual-page"

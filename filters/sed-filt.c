@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.28 2013/12/02 01:32:53 tom Exp $
+ * $Id: sed-filt.c,v 1.29 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */

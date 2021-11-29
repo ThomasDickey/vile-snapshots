@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.189 2014/01/25 00:31:52 tom Exp $
+ * $Id: tcap.c,v 1.190 2014/01/25 00:31:52 tom Exp $
  *
  */
 

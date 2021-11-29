@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/midlfilt.l,v 1.10 2013/12/02 01:32:53 tom Exp $
+ * $Id: midlfilt.l,v 1.11 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to MIDL / ODL files.
  * - T.Dickey

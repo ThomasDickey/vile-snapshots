@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.17 2013/12/02 01:32:53 tom Exp $
+ * $Id: tbl-filt.l,v 1.18 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile mktbls datafile.
  */
