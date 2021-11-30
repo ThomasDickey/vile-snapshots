@@ -1,7 +1,7 @@
 /*
  * Xft text-output, Thomas Dickey 2020
  *
- * $Id: xftplain.c,v 1.55 2021/11/29 00:13:10 tom Exp $
+ * $Id: xftplain.c,v 1.56 2021/11/30 01:28:17 tom Exp $
  *
  * Some of this was adapted from xterm, of course.
  */
@@ -38,6 +38,7 @@
 
 #define MAX_FONTNAME 1024
 
+static char *face_name = NULL;
 static double face_size = 12.0;	/* FIXME - make this configurable */
 
 static XVileFont *
@@ -488,10 +489,36 @@ xvileQueryFont(Display *dpy, TextWindow tw, const char *fname)
 {
     XVileFont *pf;
     char fullname[MAX_FONTNAME + 2];
+    char *copy_name;
+    char *comma;
 
-    TRACE(("x11:query_font(%s)\n", fname));
-    pf = NULL;
-    sprintf(fullname, "%.*s", MAX_FONTNAME, fname);
+    TRACE(("xft:query_font(%s)\n", fname));
+
+    /*
+     * fname is expected to be the font family name, optionally followed by
+     * a comma and the font size.  Either font family or font size may be
+     * missing, defaulting to the previous value used (or initially mono,12).
+     */
+    while (isspace(*fname))
+	++fname;
+    copy_name = strdup(fname);
+    comma = strchr(copy_name, ',');
+    if (comma != NULL) {
+	float value;
+	char ignore;
+	*comma++ = EOS;
+	if (sscanf(comma, "%f%c", &value, &ignore) == 1) {
+	    face_size = value;
+	}
+    }
+    if (*copy_name != EOS) {
+	free(face_name);
+	face_name = copy_name;
+    } else {
+	free(copy_name);
+    }
+
+    sprintf(fullname, "%.*s", MAX_FONTNAME, face_name);
     pf = open_font_pattern(dpy, fullname, NormXftPattern, NULL);
     if (pf != NULL) {
 	tw->fsrch_flags = 0;

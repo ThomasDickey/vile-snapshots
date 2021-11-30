@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.119 2021/01/01 12:39:53 tom Exp $
+  $Id: vile-hlp.html,v 1.121 2021/11/30 09:03:37 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
@@ -5451,7 +5451,22 @@ unbind-selmode-key
 
           <tr>
             <td>xaw3d</td>
-            <td>xvile built with Athena widgets (Xaw3D)</td>
+            <td>xvile built with Athena widgets (Xaw3d)</td>
+          </tr>
+
+          <tr>
+            <td>xaw3dxft</td>
+            <td>xvile built with Athena widgets (Xaw3dxft)</td>
+          </tr>
+
+          <tr>
+            <td>xawplus</td>
+            <td>xvile built with Athena widgets (XawPlus)</td>
+          </tr>
+
+          <tr>
+            <td>xft</td>
+            <td>xvile built with TrueType font support (Xft)</td>
           </tr>
         </table>
       </td>
@@ -11518,22 +11533,45 @@ $startup-path
   </blockquote>
 
   <h3 id="xvile-fonts-toc"><a name="xvile-fonts" id=
-  "xvile-fonts">Fonts</a></h3>
+  "xvile-fonts">X11 Fonts</a></h3>
 
-  <p>To change the font on the fly, use the ':setv' command to set
-  the <a href="#modevar-font">$font</a> variable, with ":setv $font
-  &lt;fontname&gt;".</p>
+  <p>The <a href="#modevar-font">$font</a> variable corresponds to
+  the X11 font resource. To change the font on the fly, use the
+  ':setv' command to set the <a href="#modevar-font">$font</a>
+  variable, with ":setv $font &lt;fontname&gt;". The actual font
+  used depends upon how xvile is built:</p>
 
-  <p>At present, only xvile is capable of displaying bold and
-  italic (or underline) text associated with attributes. It is
-  anticipated that other versions of vile will catch up to the best
-  of their ability. Users of xvile will find that the italic font
-  in particular is not always available with the font that they've
-  chosen (or have had chosen for them). If an italic font is
-  unavailable, xvile will underline text which is meant to be
-  italic. The program xfontsel is quite useful for determining
-  which fonts are available on your display server and whether
-  there are corresponding bold and/or italic fonts available.</p>
+  <ul>
+    <li>
+      <p>If xvile uses bitmap fonts, <em>fontname</em> is either an
+      XLFD string which is a dash-separated list of attributes, or
+      an alias to one of the known X11 fonts.</p>
+
+      <p>xvile derives the names of bold and italic fonts from the
+      <em>fontname</em> string by changing those attributes. The
+      fontsize is one of those attributes, but is less readily
+      changed (bitmap fonts cannot be scaled nicely).</p>
+
+      <p>Users of xvile will find that the italic font in
+      particular is not always available with the font that they've
+      chosen (or have had chosen for them). If an italic font is
+      unavailable, xvile will underline text which is meant to be
+      italic. The program xfontsel is quite useful for determining
+      which fonts are available on your display server and whether
+      there are corresponding bold and/or italic fonts
+      available.</p>
+    </li>
+
+    <li>
+      <p>If xvile uses TrueType fonts, the fontsize can be given as
+      the second field in a comma-separated list, e.g., ":setv
+      $font monospace,18". To change only the size, omit the font
+      family name, e.g., ":setf $font ,22".</p>
+
+      <p>In this case, xvile uses the Xft and fontconfig libraries
+      to derive bold and italic fonts.</p>
+    </li>
+  </ul>
 
   <p>Here are some tips on using xfontsel to find an appropriate
   font.</p>
@@ -13173,13 +13211,17 @@ set-rgb-palette red 200 0 0
   <p>This information is also available online:</p>
 
   <ul>
-    <li><a href=
-    "http://invisible-island.net/vile/vile-toc.html">http://invisible-island.net/vile/vile-toc.html</a>
-    (table of contents)</li>
+    <li>
+      <p><a href=
+      "http://invisible-island.net/vile/vile-toc.html">http://invisible-island.net/vile/vile-toc.html</a>
+      (table of contents)</p>
+    </li>
 
-    <li><a href=
-    "http://invisible-island.net/vile/vile-hlp.html">http://invisible-island.net/vile/vile-hlp.html</a>
-    (this file)</li>
+    <li>
+      <p><a href=
+      "http://invisible-island.net/vile/vile-hlp.html">http://invisible-island.net/vile/vile-hlp.html</a>
+      (this file)</p>
+    </li>
   </ul>
 
   <h2 id="copying-toc"><a name="copying" id="copying">Copyright</a></h2>

@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Id: x11menu.c,v 1.19 2021/11/28 22:33:11 tom Exp $
+ * $Id: x11menu.c,v 1.22 2021/11/29 22:57:58 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -19,21 +19,45 @@
 
 #if DISP_X11
 
-#if MOTIF_WIDGETS
-#include <Xm/MainW.h>
-#include <Xm/CascadeB.h>
-#include <Xm/SeparatoG.h>
-#include <Xm/RowColumn.h>
-#include <Xm/PushBG.h>
-#include <Xm/ToggleB.h>
-#endif
-
 #if ATHENA_WIDGETS
-#include <X11/Xaw/Form.h>
-#include <X11/Xaw/SimpleMenu.h>
-#include <X11/Xaw/MenuButton.h>
-#include <X11/Xaw/SmeLine.h>
-#include <X11/Xaw/SmeBSB.h>
+#if defined(HAVE_LIB_XAW3DXFT)
+#include	<X11/Xaw3dxft/Form.h>
+#include	<X11/Xaw3dxft/SimpleMenu.h>
+#include	<X11/Xaw3dxft/MenuButton.h>
+#include	<X11/Xaw3dxft/SmeLine.h>
+#include	<X11/Xaw3dxft/SmeBSB.h>
+#elif defined(HAVE_LIB_XAW3D)
+#include	<X11/Xaw3d/Form.h>
+#include	<X11/Xaw3d/SimpleMenu.h>
+#include	<X11/Xaw3d/MenuButton.h>
+#include	<X11/Xaw3d/SmeLine.h>
+#include	<X11/Xaw3d/SmeBSB.h>
+#elif defined(HAVE_LIB_XAWPLUS)
+#include	<X11/XawPlus/Form.h>
+#include	<X11/XawPlus/SimpleMenu.h>
+#include	<X11/XawPlus/MenuButton.h>
+#include	<X11/XawPlus/SmeLine.h>
+#include	<X11/XawPlus/SmeBSB.h>
+#elif defined(HAVE_LIB_NEXTAW)
+#include	<X11/neXtaw/Form.h>
+#include	<X11/neXtaw/SimpleMenu.h>
+#include	<X11/neXtaw/MenuButton.h>
+#include	<X11/neXtaw/SmeLine.h>
+#include	<X11/neXtaw/SmeBSB.h>
+#elif defined(HAVE_LIB_XAW)
+#include	<X11/Xaw/Form.h>
+#include	<X11/Xaw/SimpleMenu.h>
+#include	<X11/Xaw/MenuButton.h>
+#include	<X11/Xaw/SmeLine.h>
+#include	<X11/Xaw/SmeBSB.h>
+#endif
+#elif MOTIF_WIDGETS
+#include	<Xm/MainW.h>
+#include	<Xm/CascadeB.h>
+#include	<Xm/SeparatoG.h>
+#include	<Xm/RowColumn.h>
+#include	<Xm/PushBG.h>
+#include	<Xm/ToggleB.h>
 #endif
 
 #define Nval(name,value) name, (XtArgVal)(value)

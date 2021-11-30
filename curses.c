@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Id: curses.c,v 1.50 2014/07/04 18:55:53 tom Exp $
+ * $Id: curses.c,v 1.51 2021/11/30 09:05:53 tom Exp $
  */
 
 #include "estruct.h"
@@ -492,6 +492,10 @@ curs_attr(UINT attr)
 	result |= A_UNDERLINE;
     if (attr & (VAREV | VASEL))
 	result |= A_REVERSE;
+#ifdef A_ITALIC
+    if (attr & VAITAL)
+	result |= A_ITALIC;
+#endif
 #if OPT_COLOR
     if (can_color) {
 	int fg;

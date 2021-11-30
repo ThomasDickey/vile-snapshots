@@ -1,4 +1,4 @@
-; $Id: vilemenu.rc,v 1.7 2009/10/04 15:24:37 tom Exp $
+; $Id: vilemenu.rc,v 1.8 2021/11/30 00:49:03 tom Exp $
 ; A sample .vilemenu file:
 ~with define-menu-entry
 C:Xvile
@@ -35,6 +35,16 @@ B:Show Current Only:delete-other-windows
 B:Toggle Show:toggle-buffer
 L:list_buff
 ;
+~if &stoken 'xft' ',' $cfgopts
+C:Font Size
+B:8px:setv $font ,8
+B:10px:setv $font ,10
+B:12px:setv $font ,12
+B:14px:setv $font ,14
+B:16px:setv $font ,16
+B:18px:setv $font ,18
+B:20px:setv $font ,20
+~else
 C:Fixed Fonts
 B:default:setv $font &default font
 ; fonts used in uxterm
@@ -62,6 +72,7 @@ B:14pt:setv $font "-*-lucidatypewriter-medium-r-normal-sans-14-*-*-*-*-*-iso8859
 B:17pt:setv $font "-*-lucidatypewriter-medium-r-normal-sans-17-*-*-*-*-*-iso8859-1"
 B:18pt:setv $font "-*-lucidatypewriter-medium-r-normal-sans-18-*-*-*-*-*-iso8859-1"
 B:20pt:setv $font "-*-lucidatypewriter-medium-r-normal-sans-20-*-*-*-*-*-iso8859-1"
+~endif
 ;
 C:Help:help
 B:About:version
