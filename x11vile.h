@@ -1,7 +1,7 @@
 /*
  * Common definitions for xvile modules.
  *
- * $Id: x11vile.h,v 1.23 2021/11/28 21:08:17 tom Exp $
+ * $Id: x11vile.h,v 1.26 2021/11/29 22:57:06 tom Exp $
  */
 
 /*
@@ -107,31 +107,33 @@
 
 #define OPT_INPUT_METHOD OPT_LOCALE
 
-#if ATHENA_WIDGETS
+#if OPT_XAW_SCROLLBARS
 #include	<X11/IntrinsicP.h>
-#ifdef HAVE_LIB_XAW
-#include	<X11/Xaw/Form.h>
-#include	<X11/Xaw/Grip.h>
-#include	<X11/Xaw/Scrollbar.h>
-#include	<X11/Xaw/XawImP.h>
-#endif
-#ifdef HAVE_LIB_XAW3D
+#if defined(HAVE_LIB_XAW3DXFT)
+#include	<X11/Xaw3dxft/Form.h>
+#include	<X11/Xaw3dxft/Grip.h>
+#include	<X11/Xaw3dxft/Scrollbar.h>
+#include	<X11/Xaw3dxft/XawImP.h>
+#elif defined(HAVE_LIB_XAW3D)
 #include	<X11/Xaw3d/Form.h>
 #include	<X11/Xaw3d/Grip.h>
 #include	<X11/Xaw3d/Scrollbar.h>
 #include	<X11/Xaw3d/XawImP.h>
-#endif
-#ifdef HAVE_LIB_XAWPLUS
+#elif defined(HAVE_LIB_XAWPLUS)
 #include	<X11/XawPlus/Form.h>
 #include	<X11/XawPlus/Grip.h>
 #include	<X11/XawPlus/Scrollbar.h>
 #include	<X11/XawPlus/XawImP.h>
-#endif
-#ifdef HAVE_LIB_NEXTAW
+#elif defined(HAVE_LIB_NEXTAW)
 #include	<X11/neXtaw/Form.h>
 #include	<X11/neXtaw/Grip.h>
 #include	<X11/neXtaw/Scrollbar.h>
 #include	<X11/neXtaw/XawImP.h>
+#elif defined(HAVE_LIB_XAW)
+#include	<X11/Xaw/Form.h>
+#include	<X11/Xaw/Grip.h>
+#include	<X11/Xaw/Scrollbar.h>
+#include	<X11/Xaw/XawImP.h>
 #endif
 #endif /* OPT_XAW_SCROLLBARS */
 
@@ -282,17 +284,39 @@
 
 #if OPT_MENUS
 #if ATHENA_WIDGETS
-#include <X11/Xaw/SimpleMenu.h>
-#include <X11/Xaw/Box.h>
-#include <X11/Xaw/Form.h>
-#include <X11/Xaw/Paned.h>
+#if defined(HAVE_LIB_XAW3DXFT)
+#include	<X11/Xaw3dxft/SimpleMenu.h>
+#include	<X11/Xaw3dxft/Box.h>
+#include	<X11/Xaw3dxft/Form.h>
+#include	<X11/Xaw3dxft/Paned.h>
+#elif defined(HAVE_LIB_XAW3D)
+#include	<X11/Xaw3d/SimpleMenu.h>
+#include	<X11/Xaw3d/Box.h>
+#include	<X11/Xaw3d/Form.h>
+#include	<X11/Xaw3d/Paned.h>
+#elif defined(HAVE_LIB_XAWPLUS)
+#include	<X11/XawPlus/SimpleMenu.h>
+#include	<X11/XawPlus/Box.h>
+#include	<X11/XawPlus/Form.h>
+#include	<X11/XawPlus/Paned.h>
+#elif defined(HAVE_LIB_NEXTAW)
+#include	<X11/neXtaw/SimpleMenu.h>
+#include	<X11/neXtaw/Box.h>
+#include	<X11/neXtaw/Form.h>
+#include	<X11/neXtaw/Paned.h>
+#elif defined(HAVE_LIB_XAW)
+#include	<X11/Xaw/SimpleMenu.h>
+#include	<X11/Xaw/Box.h>
+#include	<X11/Xaw/Form.h>
+#include	<X11/Xaw/Paned.h>
 #endif
-#if MOTIF_WIDGETS
-#include <Xm/RowColumn.h>
+#elif MOTIF_WIDGETS
+#include	<Xm/RowColumn.h>
 #endif
 #endif /* OPT_MENUS */
+
 #ifdef XRENDERFONT
-#include <X11/Xft/Xft.h>
+#include	<X11/Xft/Xft.h>
 #endif
 
 #ifdef XRENDERFONT

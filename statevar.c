@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Id: statevar.c,v 1.165 2016/07/16 14:42:34 tom Exp $
+ * $Id: statevar.c,v 1.167 2021/11/29 22:45:32 tom Exp $
  */
 
 #include	<estruct.h>
@@ -437,47 +437,45 @@ cfgopts(void)
 #endif
 #if DISP_ANSI
 	"ansi",
-#endif
-#if DISP_BORLAND
+#elif DISP_BORLAND
 	"borland",
-#endif
-#if DISP_CURSES
+#elif DISP_CURSES
 	"curses",
-#endif
-#if DISP_NTCONS
+#elif DISP_NTCONS
 	"ntcons",
-#endif
-#if DISP_NTWIN
+#elif DISP_NTWIN
 	"ntwin",
-#endif
-#if DISP_TERMCAP
+#elif DISP_TERMCAP
 # if USE_TERMINFO
 	"terminfo",
 # else
 	"termcap",
 # endif
-#endif
-#if DISP_VIO
+#elif DISP_VIO
 	"os2vio",
-#endif
-#if DISP_VMSVT
+#elif DISP_VMSVT
 	"vmsvt",
-#endif
-#if DISP_X11
-# if MOTIF_WIDGETS
-	"motif",
-# endif
+#elif DISP_X11
 # if ATHENA_WIDGETS
 	"athena",
-#  ifdef HAVE_LIB_XAW
-	"xaw",
-#  endif
-#  ifdef HAVE_LIB_XAW3D
+#  if defined(HAVE_LIB_XAW3DXFT)
+	"xaw3dxft",
+#  elif defined(HAVE_LIB_XAW3D)
 	"xaw3d",
-#  endif
-#  ifdef HAVE_LIB_NEXTAW
+#  elif defined(HAVE_LIB_XAWPLUS)
+	"xawplus",
+#  elif defined(HAVE_LIB_NEXTAW)
 	"nextaw",
+#  elif defined(HAVE_LIB_XAW)
+	"xaw",
+#  else
+	"other-xaw",
 #  endif
+# elif MOTIF_WIDGETS
+	"motif",
+# endif
+# if defined(XRENDERFONT)
+	"xft",
 # endif
 #endif
 	NULL			/* End of list marker */

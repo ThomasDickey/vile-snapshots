@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11.c,v 1.430 2021/11/29 00:30:47 tom Exp $
+ * $Id: x11.c,v 1.432 2021/11/29 09:25:55 tom Exp $
  */
 
 /*
@@ -1608,42 +1608,6 @@ rgb masks (%04lx/%04lx/%04lx)\n"
 
 /***====================================================================***/
 
-#define MIN_UDIFF  0x1000
-#define UDIFF(a,b) ((a)>(b)?(a)-(b):(b)-(a))
-
-/*
- * Returns true if the RGB components are close enough to make distinguishing
- * two colors difficult.
- */
-static Boolean
-SamePixel(Pixel a, Pixel b)
-{
-    Boolean result = True;
-    XColor a_color;
-    XColor b_color;
-
-    if (a != b) {
-	result = False;
-	if (cur_win->top_widget != 0) {
-	    a_color.pixel = a;
-	    b_color.pixel = b;
-
-	    if (XQueryColor(dpy, cur_win->colormap, &a_color)
-		&& XQueryColor(dpy, cur_win->colormap, &b_color)) {
-		if (UDIFF(a_color.red, b_color.red) < MIN_UDIFF
-		    && UDIFF(a_color.green, b_color.green) < MIN_UDIFF
-		    && UDIFF(a_color.blue, b_color.blue) < MIN_UDIFF)
-		    result = True;
-	    } else {
-		TRACE(("FIXME: SamePixel failed\n"));
-	    }
-	} else {
-	    TRACE(("FIXME: SamePixel cannot compute (too soon)\n"));
-	}
-    }
-    return result;
-}
-
 #ifdef XRENDERFONT
 static void
 pixelToXftColor(TextWindow tw, XftColor *target, Pixel source)
@@ -1686,6 +1650,56 @@ pixelToXftColor(TextWindow tw, XftColor *target, Pixel source)
 	    target->color.blue));
 }
 #endif
+
+#define MIN_UDIFF  0x1000
+#define UDIFF(a,b) ((a)>(b)?(a)-(b):(b)-(a))
+
+/*
+ * Returns true if the RGB components are close enough to make distinguishing
+ * two colors difficult.
+ */
+static Boolean
+SamePixel(Pixel a, Pixel b)
+{
+    Boolean result = True;
+
+    if (a != b) {
+	result = False;
+	if (cur_win->top_widget != 0) {
+#ifdef XRENDERFONT
+	    XftColor a_color;
+	    XftColor b_color;
+
+	    pixelToXftColor(cur_win, &a_color, a);
+	    pixelToXftColor(cur_win, &b_color, b);
+
+	    if (UDIFF(a_color.color.red, b_color.color.red) < MIN_UDIFF
+		&& UDIFF(a_color.color.green, b_color.color.green) < MIN_UDIFF
+		&& UDIFF(a_color.color.blue, b_color.color.blue) < MIN_UDIFF)
+		result = True;
+#else
+	    XColor a_color;
+	    XColor b_color;
+
+	    a_color.pixel = a;
+	    b_color.pixel = b;
+
+	    if (XQueryColor(dpy, cur_win->colormap, &a_color)
+		&& XQueryColor(dpy, cur_win->colormap, &b_color)) {
+		if (UDIFF(a_color.red, b_color.red) < MIN_UDIFF
+		    && UDIFF(a_color.green, b_color.green) < MIN_UDIFF
+		    && UDIFF(a_color.blue, b_color.blue) < MIN_UDIFF)
+		    result = True;
+	    } else {
+		TRACE(("FIXME: SamePixel failed\n"));
+	    }
+#endif
+	} else {
+	    TRACE(("FIXME: SamePixel cannot compute (too soon)\n"));
+	}
+    }
+    return result;
+}
 
 /***====================================================================***/
 
@@ -6046,7 +6060,11 @@ gui_isprint(int ch)
     int result = TRUE;
 
     if (ch >= 0 && pf != NULL) {
-#ifndef XRENDERFONT
+#ifdef XRENDERFONT
+	if (!XftGlyphExists(dpy, pf, ch)) {
+	    result = FALSE;
+	}
+#else
 	static XCharStruct dft, *tmp = &dft;
 	XCharStruct *pc = 0;
 

@@ -3478,12 +3478,12 @@ Programmed procedures (aka macros)
    |                     | | multibyte | vile built with multibyte        | |
    |                     | |           | locales                          | |
    |                     | |-----------+----------------------------------| |
-   | $cfgopts            | | nextaw    | xvile built with Athena widgets  | |
+   |                     | | nextaw    | xvile built with Athena widgets  | |
    |                     | |           | (NeXtaw)                         | |
    |                     | |-----------+----------------------------------| |
    |                     | | ntcons    | vile built for Win32 console     | |
    |                     | |-----------+----------------------------------| |
-   |                     | | ntwin     | vile built for Win32 GUI         | |
+   | $cfgopts            | | ntwin     | vile built for Win32 GUI         | |
    |                     | |-----------+----------------------------------| |
    |                     | | noshell   | shell commands are disabled      | |
    |                     | |-----------+----------------------------------| |
@@ -3508,7 +3508,16 @@ Programmed procedures (aka macros)
    |                     | |           | (Xaw)                            | |
    |                     | |-----------+----------------------------------| |
    |                     | | xaw3d     | xvile built with Athena widgets  | |
-   |                     | |           | (Xaw3D)                          | |
+   |                     | |           | (Xaw3d)                          | |
+   |                     | |-----------+----------------------------------| |
+   |                     | | xaw3dxft  | xvile built with Athena widgets  | |
+   |                     | |           | (Xaw3dxft)                       | |
+   |                     | |-----------+----------------------------------| |
+   |                     | | xawplus   | xvile built with Athena widgets  | |
+   |                     | |           | (XawPlus)                        | |
+   |                     | |-----------+----------------------------------| |
+   |                     | | xft       | xvile built with TrueType font   | |
+   |                     | |           | support (Xft)                    | |
    |                     | +----------------------------------------------+ |
    |---------------------+--------------------------------------------------|
    | $cfilname           | current file name                                |
@@ -6555,20 +6564,36 @@ X Window System specifics
      XVile.modeline.foreground: darkslategrey
      XVile.modeline.focusForeground: yellow
 
-  Fonts
+  X11 Fonts
 
-   To change the font on the fly, use the ':setv' command to set the $font
-   variable, with ":setv $font <fontname>".
+   The $font variable corresponds to the X11 font resource. To change the
+   font on the fly, use the ':setv' command to set the $font variable, with
+   ":setv $font <fontname>". The actual font used depends upon how xvile is
+   built:
 
-   At present, only xvile is capable of displaying bold and italic (or
-   underline) text associated with attributes. It is anticipated that other
-   versions of vile will catch up to the best of their ability. Users of
-   xvile will find that the italic font in particular is not always available
-   with the font that they've chosen (or have had chosen for them). If an
-   italic font is unavailable, xvile will underline text which is meant to be
-   italic. The program xfontsel is quite useful for determining which fonts
-   are available on your display server and whether there are corresponding
-   bold and/or italic fonts available.
+     * If xvile uses bitmap fonts, fontname is either an XLFD string which is
+       a dash-separated list of attributes, or an alias to one of the known
+       X11 fonts.
+
+       xvile derives the names of bold and italic fonts from the fontname
+       string by changing those attributes. The fontsize is one of those
+       attributes, but is less readily changed (bitmap fonts cannot be scaled
+       nicely).
+
+       Users of xvile will find that the italic font in particular is not
+       always available with the font that they've chosen (or have had chosen
+       for them). If an italic font is unavailable, xvile will underline text
+       which is meant to be italic. The program xfontsel is quite useful for
+       determining which fonts are available on your display server and
+       whether there are corresponding bold and/or italic fonts available.
+
+     * If xvile uses TrueType fonts, the fontsize can be given as the second
+       field in a comma-separated list, e.g., ":setv $font monospace,18". To
+       change only the size, omit the font family name, e.g., ":setf $font
+       ,22".
+
+       In this case, xvile uses the Xft and fontconfig libraries to derive
+       bold and italic fonts.
 
    Here are some tips on using xfontsel to find an appropriate font.
 
@@ -7510,6 +7535,7 @@ Online resources
    This information is also available online:
 
      * http://invisible-island.net/vile/vile-toc.html (table of contents)
+
      * http://invisible-island.net/vile/vile-hlp.html (this file)
 
 
@@ -7517,6 +7543,6 @@ Copyright
 ---------
    Copyright (c) 1995-2020,2021 by Paul Fox, Thomas Dickey, and Kevin Buettner
 
--- (generated by make-hlp.pl from vile-hlp.html(1.119))
+-- (generated by make-hlp.pl from vile-hlp.html(1.121))
 -- vile:txtmode fillcol=78
--- $Id: vile.hlp,v 1.762 2021/01/01 12:42:01 tom Exp $
+-- $Id: vile.hlp,v 1.764 2021/11/30 09:04:05 tom Exp $

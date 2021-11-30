@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.340 $)
+AC_REVISION($Revision: 1.341 $)
 AC_PREREQ(2.52.20210105)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Id: configure.in,v 1.340 2021/11/14 14:33:15 tom Exp $
+dnl $Id: configure.in,v 1.341 2021/11/30 00:17:01 tom Exp $
 
 define(MAKELIST, sh "$srcdir/filters/makelist.sh" "$srcdir/filters/genmake.mak")
 
@@ -457,7 +457,7 @@ AC_ARG_WITH(screen,
 [  --with-screen=value     specify terminal driver.  The default is tcap, for
                           the termcap/terminfo driver.  Other values include:
                               curses, ncurses, ncursesw,
-                              X11, Motif, Athena, Xaw, Xaw3d, neXtaw,
+                              X11, Motif, Athena, Xaw{3d|3dxft|Plus}, neXtaw,
                               DOS, Windows and ansi.],
 [screen=$withval])
 
@@ -532,7 +532,7 @@ case "$screen" in
 		AC_DEFINE(ATHENA_WIDGETS,1,[Define to 1 if using Xaw widgets])
 		case $screen in
 		(*aw*)
-			cf_x_athena=`echo $screen | sed -e s/x/X/`
+			cf_x_athena=`echo $screen | sed -e s/x/X/ -e s/Xft/xft/`
 			;;
 		esac
 		CF_X_ATHENA
