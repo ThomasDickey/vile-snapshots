@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Id: makefile.in,v 1.293 2021/11/28 15:40:26 tom Exp $
+# $Id: makefile.in,v 1.295 2021/12/03 00:41:22 tom Exp $
 
 SHELL		= @SHELL@
 
@@ -75,8 +75,6 @@ PROGRAM		= $(TARGET)$x
 AWK		= @AWK@
 PERL		= @PERL@
 PERL_XSUBPP	= @PERL_XSUBPP@
-INSTALL_PL_EXE	= $(SHELL) $(srcdir)/sinstall.sh $(PERL) $(INSTALL_PROGRAM)
-INSTALL_MODULE	= $(SHELL) $(srcdir)/sinstall.sh $(PERL) $(INSTALL_DATA)
 
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
@@ -85,7 +83,7 @@ datarootdir	= @datarootdir@
 manext		= 1
 libdir		= @libdir@
 bindir		= @bindir@
-datadir		= @datadir@/vile
+datadir		= @datadir@
 docdir		= $(datadir)/doc
 htmldir		= $(datadir)/html
 perldir		= $(datadir)/perl
@@ -1067,7 +1065,7 @@ $(PERLDIR)/Vile/Exporter.pm:	$(srcdir)/perl/Vile/Exporter.pm
 $(PERLDIR)/Vile/Manual.pm:	$(srcdir)/perl/Vile/Manual.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/Vile/Manual.pm $@
 $(PERLDIR)/Vileserv.pm:		$(srcdir)/perl/Vileserv.pm
-	$(INSTALL_MODULE)	$(srcdir)/perl/Vileserv.pm $@
+	$(INSTALL_DATA)		$(srcdir)/perl/Vileserv.pm $@
 $(PERLDIR)/Visit.pm:		$(srcdir)/perl/Visit.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/Visit.pm $@
 $(PERLDIR)/capture.pm:		$(srcdir)/perl/capture.pm

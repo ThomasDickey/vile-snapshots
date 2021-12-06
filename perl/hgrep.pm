@@ -14,7 +14,7 @@ use vars qw(@ISA %REGISTRY);
 require Vile::Exporter;
 @ISA      = 'Vile::Exporter';
 %REGISTRY = (
-    hgrep => [ \&hgrep, 'recursive grep' ],
+    hgrep        => [ \&hgrep, 'recursive grep' ],
     'hgrep-help' => [ sub { &manual }, 'manual page for hgrep' ]
 );
 

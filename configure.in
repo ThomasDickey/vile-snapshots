@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.341 $)
+AC_REVISION($Revision: 1.343 $)
 AC_PREREQ(2.52.20210105)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Id: configure.in,v 1.341 2021/11/30 00:17:01 tom Exp $
+dnl $Id: configure.in,v 1.343 2021/12/05 23:58:07 tom Exp $
 
 define(MAKELIST, sh "$srcdir/filters/makelist.sh" "$srcdir/filters/genmake.mak")
 
@@ -299,15 +299,15 @@ AC_MSG_CHECKING(for library path)
 CF_WITH_PATHLIST(libdir-path,
 [  --with-libdir-path=LIST specify locations to search for filters, etc.],
 VILE_LIBDIR_PATH,
-$cf_default,[],[define])
+${libdir}/vile,$cf_default,[define])
 AC_MSG_RESULT($VILE_LIBDIR_PATH)
 
-cf_default="\[$]{datadir}/vile"
+cf_default="\[$]{datadir}"
 AC_MSG_CHECKING(for startup path)
 CF_WITH_PATHLIST(startup-path,
 [  --with-startup-path=LIST specify locations to search for vile.hlp, etc.],
 VILE_STARTUP_PATH,
-$cf_default,[],[define])
+${datadir},$cf_default,[define])
 AC_MSG_RESULT($VILE_STARTUP_PATH)
 
 CF_LEX_POINTER

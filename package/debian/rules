@@ -20,6 +20,7 @@ configure = \
 	$(MYFLAGS); ../../configure \
 	--prefix=/usr \
 	--mandir='$${prefix}/share/man' \
+	--datadir='$${prefix}/share/vile' \
 	--with-app-defaults=/etc/X11/app-defaults \
 	--with-locale \
 	--with-loadable-filters=all \
@@ -91,7 +92,7 @@ ifneq ($(PACKAGES.arch),)
 	dh_testroot
 	dh_link              $(verbose) $(PACKAGES.arch:%=-p%)
 	dh_installdocs       $(verbose) $(PACKAGES.arch:%=-p%)
-	dh_installmenu       $(verbose) $(PACKAGES.arch:%=-p%)
+	dh_installmenu       $(verbose) -pvile
 	dh_strip             $(verbose) $(PACKAGES.arch:%=-p%)
 	dh_compress          $(verbose) $(PACKAGES.arch:%=-p%)
 	dh_fixperms          $(verbose) $(PACKAGES.arch:%=-p%)
@@ -152,6 +153,8 @@ install-vile-stamp: build-vile-stamp
 	dh_testroot
 	dh_prep -pvile-filters -pvile-common -pvile
 
+	sed -i 's,^#!.*perl,#!/usr/bin/perl,' perl/vileget
+
 	$(MAKE) -C t/vile DESTDIR=$(TMP) install
 	#rm -f $(TMP)/usr/bin/vile-pager  # examples
 	rm -f $(TMP)/usr/share/man/man1/vile.1  # docs
@@ -183,6 +186,8 @@ install-xvile-stamp: build-xvile-stamp
 	    $(TMP)/usr/share/icons \
 	    $(TMP)/usr/share/pixmaps \
 	    $(TMP)/usr/share/vile
+
+	sed -i 's,^#!.*perl,#!/usr/bin/perl,' macros/lxvile
 
 	install -c t/xvile/xvile $(TMP)/usr/bin/xvile
 	install -c macros/uxvile $(TMP)/usr/bin/uxvile

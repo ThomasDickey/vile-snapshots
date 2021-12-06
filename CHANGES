@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20211130 (v)
+ 20211205 (v)
 	> Lois Mansot
 	+ corrected range for &random function.
 	+ move the reframe_cursor_position() in update() to ensure that $cwline
@@ -29,6 +29,14 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
  	> Stephan Schulz:
 	+ add popup-choices mode (Savannah #58999)
 	> Tom Dickey:
+	+ updated plink.sh, from xterm, to work around poor performance of gcc
+	  on Fedora.
+	+ updated test-package scripts to work with the changes for makefile
+	  and perl-scripts, e.g., by adding --datadir option.
+	+ change makefile.in use of datadir to not include "/vile", allowing
+	  pkgsrc to omit patch for this.
+	+ modify perl scripts to use /usr/bin/env to locate the perl program,
+	  and eliminate sinstall.sh
 	+ modify curses-driver to support italics, e.g., as in ncurses 6.
 	+ apply Xaw header-fix for XawPlus, neXtaw and Xaw3dxft.
 	+ use Xaw3d menu-headers for x11vile.h and x11menu.c (FreeBSD #186420).
