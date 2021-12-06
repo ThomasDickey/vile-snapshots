@@ -1,8 +1,10 @@
-#!/usr/bin/perl -w
-# $Id: lxvile-fonts,v 1.1 2010/06/11 22:56:31 tom Exp $
+#!/usr/bin/env perl
+# $Id: lxvile-fonts,v 1.2 2021/12/02 00:27:52 tom Exp $
 # ask xlsfonts for the matching fonts for the encodings used in lxvile.
 
 use strict;
+use warnings;
+
 use I18N::Langinfo qw(langinfo CODESET);
 
 my $encoding = lc( langinfo( CODESET() ) );

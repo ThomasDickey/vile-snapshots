@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8u27
+MANIFEST for vile, version v9_8u28
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -108,7 +108,6 @@ region.c                        region-manipulation
 revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
-sinstall.sh                     wrapper for installing perl-scripts
 spawn.c                         functions for spawning subprocesses
 statevar.c                      functions to set/get state-variables
 tags.c                          support for vi-style "tags"
@@ -518,9 +517,6 @@ package/pkgsrc/vile/Makefile    build-script
 package/pkgsrc/vile/PLIST       build-script
 package/pkgsrc/vile/distinfo    build-script
 package/pkgsrc/vile/options.mk  build-script
-package/pkgsrc/vile/patches                            subdirectory
-package/pkgsrc/vile/patches/patch-filters_makefile.in  build-scripts
-package/pkgsrc/vile/patches/patch-makefile.in  build-script
 package/pkgsrc/xvile            subdirectory
 package/pkgsrc/xvile/DESCR      build-script
 package/pkgsrc/xvile/Makefile   build-script

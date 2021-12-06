@@ -1,3 +1,4 @@
+# $Id: Vileserv.pm,v 1.16 2021/12/02 08:45:03 tom Exp $
 #   Vileserv.pm (version 1.4) - Provides network command-server capability
 #                               for Vile.
 #
@@ -20,6 +21,7 @@
 package Vileserv;
 
 use strict;
+use warnings;
 
 use Socket;
 use POSIX 'EINTR';
@@ -40,18 +42,19 @@ use vars qw(@ISA %REGISTRY);
 # path to PERL binary (needed to run server daemon)
 our $__perl = Vile::get('%vileserv-perl-path');
 if ( $__perl eq 'ERROR' || $__perl eq '' ) {
-    if ( -e '/usr/bin/perl' ) {
-        $__perl = '/usr/bin/perl';
+    my @path = split /:/, $ENV{'PATH'};
+    $__perl = '';
+    for my $p ( 0 .. $#path ) {
+	my $test = sprintf("%s/perl", $path[$p]);
+        if ( -e $test and -x $test ) {
+            $__perl = $test;
+            last;
+        }
     }
-    elsif ( -e '/usr/local/bin/perl' ) {
-        $__perl = '/usr/local/bin/perl';
-    }
-    else {
-        die(
-            "can't find perl binary - try setting the %vileserv-perl-path \
+    die(
+        "can't find perl binary - try setting the %vileserv-perl-path \
 	  variable in your .vilerc file"
-        );
-    }
+    ) if ( $__perl eq "" );
 }
 elsif ( !-e $__perl ) {
     die("perl binary $__perl does not exist");
@@ -402,9 +405,9 @@ behaviors.  For best results, any of these variables that you choose
 to use should be set in your I<.vilerc> file B<before> Vileserv is
 imported and started.
 
-Vileserv looks for a perl binary in I</usr/bin/perl> and
-I</usr/local/bin/perl> respectively.  You can override this
-in your I<.vilerc> file using the B<%vileserv-perl-path> variable:
+Vileserv looks for the first perl binary in the I<PATH>.  You can
+override this in your I<.vilerc> file using the B<%vileserv-perl-path>
+variable:
 
    setv %vileserv-perl-path /opt/local/bin/perl
 

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11.c,v 1.432 2021/11/29 09:25:55 tom Exp $
+ * $Id: x11.c,v 1.433 2021/11/30 23:48:34 tom Exp $
  */
 
 /*
@@ -6061,7 +6061,7 @@ gui_isprint(int ch)
 
     if (ch >= 0 && pf != NULL) {
 #ifdef XRENDERFONT
-	if (!XftGlyphExists(dpy, pf, ch)) {
+	if (!XftGlyphExists(dpy, pf, (FcChar32) ch)) {
 	    result = FALSE;
 	}
 #else

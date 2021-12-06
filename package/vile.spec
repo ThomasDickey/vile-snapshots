@@ -1,5 +1,5 @@
 Summary: VI Like Emacs editor
-# $Id: vile.spec,v 1.59 2020/05/19 23:22:34 tom Exp $
+# $Id: vile.spec,v 1.62 2021/12/05 19:07:32 tom Exp $
 Name: vile
 %define AppVersion 9.8
 Version: %{AppVersion}v
@@ -7,7 +7,7 @@ Version: %{AppVersion}v
 Release: dev
 License: GPLv2
 Group: Applications/Editors
-URL: ftp://ftp.invisible-island.net/vile
+URL: ftp://ftp.invisible-island.net/pub/vile
 Source0: vile-9.8.tgz
 Patch1: vile-9.8a.patch.gz
 Patch2: vile-9.8b.patch.gz
@@ -139,11 +139,13 @@ rebinding, and real X window system support.
 %build
 %configure --verbose \
 	--with-loadable-filters \
+	--datadir=%{_datarootdir}/vile \
 	--disable-rpath-hack %{perl_opt}
 make vile
 
 %configure --verbose \
 	--with-loadable-filters \
+	--datadir=%{_datarootdir}/vile \
 	--disable-rpath-hack \
 	--with-app-defaults=%{_xresdir} \
 	--with-icondir=%{_icondir} \
@@ -260,6 +262,9 @@ rm -rf %{buildroot}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Sun Dec 05 2021 Thomas E. Dickey
+- use --datadir option to keep same package layout as in 9.8u
 
 * Tue May 19 2020 Thomas E. Dickey
 - added patch for 9.8v

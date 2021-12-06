@@ -1,7 +1,8 @@
-#!/usr/bin/perl -w
-# $Id: make-toc.pl,v 1.8 2019/04/13 17:02:25 tom Exp $
+#!/usr/bin/env perl
+# $Id: make-toc.pl,v 1.9 2021/12/02 00:27:24 tom Exp $
 
 use strict;
+use warnings;
 
 use HTML::Toc;
 use HTML::TocGenerator;
