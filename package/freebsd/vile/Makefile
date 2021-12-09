@@ -21,6 +21,7 @@ USES=		ncurses pkgconfig shebangfix tar:tgz
 SHEBANG_FILES=	perl/vileget
 GNU_CONFIGURE=	yes
 CONFIGURE_ENV=	cf_cv_crypt_works=yes
+CONFIGURE_ARGS=	--datadir=${PREFIX}/share/vile
 MAKEFILE=	makefile
 INSTALL_TARGET=	install install-doc install-html
 
@@ -48,6 +49,7 @@ PLIST_SUB+=	SO_EXT=""
 post-patch:
 	@${REINPLACE_CMD} -e \
 		's|$$(datadir)/doc|@datadir@/doc/vile| ; \
+		 s|@datadir@/doc/vile|@datarootdir@/doc/vile| ; \
 		 s|$$(datadir)/html|$$(docdir)/html| ; \
 		 s|\($$(DOCDIR)\) \($$(MANDIR)\)|\1 $$(HTMLDIR) \2|' \
 		${WRKSRC}/makefile.in

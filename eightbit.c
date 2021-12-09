@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.109 2019/12/19 09:32:10 bod Exp $
+ * $Id: eightbit.c,v 1.110 2021/12/06 08:47:18 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -561,7 +561,7 @@ vl_get_encoding(char **target, const char *locale)
     static char utf_eight[] = "UTF-8";
 
 #ifdef WIN32
-    char cp_value[80];
+    static char cp_value[80];
 #endif
     char *result = 0;
     char *actual = setlocale(LC_CTYPE, locale);

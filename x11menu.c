@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Id: x11menu.c,v 1.22 2021/11/29 22:57:58 tom Exp $
+ * $Id: x11menu.c,v 1.23 2021/12/08 21:24:48 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -137,7 +137,6 @@ gui_make_menu(void *menubar, const char *nom, int the_class GCC_UNUSED)
 				      Nval(XtNfromHoriz, last),
 				      Nval(XtNmenuName, str),
 				      NULL);
-    free(str);
 #if OPT_MENUS_COLORED
     XtVaSetValues(pm,
 		  Nval(XtNforeground, x_menu_foreground()),

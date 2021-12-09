@@ -1,7 +1,7 @@
 bin/lxvile
 bin/lxvile-fonts
 bin/uxvile
-%%PERL%%bin/vileget
+%%PERL%%bin/xvileget
 bin/xshell.sh
 bin/xvile
 bin/xvile-libdir-path

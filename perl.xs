@@ -13,12 +13,23 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Id: perl.xs,v 1.141 2020/01/17 22:32:39 tom Exp $
+ * $Id: perl.xs,v 1.143 2021/12/07 01:40:25 tom Exp $
  */
 
+/*
+ * Perl's header (and macro expansions) produce too many warnings to be useful.
+ */
 #ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wcompound-token-split-by-macro"
+#pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wnested-externs"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 #pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wundef"
 #endif
 
 /*#
@@ -123,6 +134,10 @@
 #undef main
 #undef regexp
 #undef dofile
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 /* Some earlier versions of perl don't have GIMME_V or G_VOID. We must
    be careful of the order in which we check things if these defines
