@@ -1,7 +1,7 @@
 /*
  * Xft text-output, Thomas Dickey 2020
  *
- * $Id: xftplain.c,v 1.56 2021/11/30 01:28:17 tom Exp $
+ * $Id: xftplain.c,v 1.57 2021/12/07 00:50:12 tom Exp $
  *
  * Some of this was adapted from xterm, of course.
  */
@@ -17,11 +17,18 @@
 #define GetFcTxt(pattern, what) \
     (FcPatternGetString(pattern, what, 0, &fc_txt) == FcResultMatch)
 
+#ifdef FC_COLOR
 #define NormXftPattern \
 	    XFT_FAMILY,     XftTypeString, "mono", \
 	    FC_COLOR,       XftTypeBool,   FcFalse, \
 	    FC_OUTLINE,     XftTypeBool,   FcTrue, \
 	    XFT_SIZE,       XftTypeDouble, face_size
+#else
+#define NormXftPattern \
+	    XFT_FAMILY,     XftTypeString, "mono", \
+	    FC_OUTLINE,     XftTypeBool,   FcTrue, \
+	    XFT_SIZE,       XftTypeDouble, face_size
+#endif
 
 #define BoldXftPattern(font) \
 	    XFT_WEIGHT,     XftTypeInteger, XFT_WEIGHT_BOLD, \

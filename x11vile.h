@@ -1,7 +1,7 @@
 /*
  * Common definitions for xvile modules.
  *
- * $Id: x11vile.h,v 1.26 2021/11/29 22:57:06 tom Exp $
+ * $Id: x11vile.h,v 1.27 2021/12/07 23:26:52 tom Exp $
  */
 
 /*
@@ -215,10 +215,10 @@
 }
 #endif /* CI_NONEXISTCHAR */
 
-#define TRACE_RES_I(res,val) TRACE(("\t%s: %d\n", res, cur_win->val));
-#define TRACE_RES_B(res,val) TRACE(("\t%s: %s\n", res, cur_win->val ? "true" : "false"));
-#define TRACE_RES_P(res,val) TRACE(("\t%s: %06lx\n", res, cur_win->val));
-#define TRACE_RES_S(res,val) TRACE(("\t%s: %s\n", res, cur_win->val));
+#define TRACE_RES_I(res,val) TRACE(("\t%s: %d\n", res, cur_win->val))
+#define TRACE_RES_B(res,val) TRACE(("\t%s: %s\n", res, cur_win->val ? "true" : "false"))
+#define TRACE_RES_P(res,val) TRACE(("\t%s: %06lx\n", res, cur_win->val))
+#define TRACE_RES_S(res,val) TRACE(("\t%s: %s\n", res, NonNull(cur_win->val)))
 
 #define IsPrimary(s)    ((s) == XA_PRIMARY)
 
