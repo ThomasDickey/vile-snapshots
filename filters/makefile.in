@@ -1,4 +1,4 @@
-# $Id: makefile.in,v 1.91 2021/12/03 00:41:40 tom Exp $
+# $Id: makefile.in,v 1.92 2021/12/09 22:07:50 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -51,7 +51,7 @@ bindir		= @bindir@
 libdir		= @libdir@
 
 filters_bindir	= @filters_bindir@
-datadir		= @datadir@
+datadir		= @datadir@/vile
 
 #### End of system configuration section. ####
 
