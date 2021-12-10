@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Id: makefile.in,v 1.295 2021/12/03 00:41:22 tom Exp $
+# $Id: makefile.in,v 1.296 2021/12/09 08:46:15 tom Exp $
 
 SHELL		= @SHELL@
 
@@ -83,7 +83,7 @@ datarootdir	= @datarootdir@
 manext		= 1
 libdir		= @libdir@
 bindir		= @bindir@
-datadir		= @datadir@
+datadir		= @datadir@/vile
 docdir		= $(datadir)/doc
 htmldir		= $(datadir)/html
 perldir		= $(datadir)/perl

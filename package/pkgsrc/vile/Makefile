@@ -15,7 +15,7 @@ LICENSE=		gnu-gpl-v2
 
 GNU_CONFIGURE=		yes
 CONFIGURE_ARGS+=	--with-perl
-CONFIGURE_ARGS+=	--datadir=${DATADIR:Q}
+CONFIGURE_ARGS+=	--datadir=${PREFIX}/share
 CONFIGURE_ARGS+=	--with-libdir-path=${FILTERDIR:Q}
 USE_TOOLS+=		perl:run
 

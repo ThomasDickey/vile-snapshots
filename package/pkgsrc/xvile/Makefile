@@ -18,8 +18,9 @@ PATCHDIR=		${.CURDIR}/../../editors/vile/patches
 GNU_CONFIGURE=		yes
 CONFIGURE_ARGS+=	--disable-imake
 CONFIGURE_ARGS+=	--with-perl
-CONFIGURE_ARGS+=	--datadir=${DATADIR:Q}
+CONFIGURE_ARGS+=	--datadir=${PREFIX}/share
 CONFIGURE_ARGS+=	--with-libdir-path=${FILTERDIR:Q}
+CONFIGURE_ARGS+=	--with-startup-path=${DATADIR:Q}
 
 MAKE_FILE=		makefile
 INSTALL_TARGET=		install install-doc install-perl
@@ -42,6 +43,14 @@ CONFIGURE_ARGS+=	--with-Xaw3d
 CONFIGURE_ARGS+=	--with-screen=Xaw
 .endif
 CONFIGURE_ARGS+=	--with-xpm
+
+pre-configure:
+	for f in							\
+		${WRKDIR}/${DISTNAME}/makefile.in			\
+		${WRKDIR}/${DISTNAME}/filters/makefile.in; do		\
+		${MV} $$f $$f.bak;					\
+		sed -e '/^datadir[ 	]*=[ 	]*@datadir@/s%/vile%/xvile%' $$f.bak >$$f; \
+	done
 
 post-install:
 	${INSTALL_SCRIPT} ${WRKSRC}/perl/vileget 			\

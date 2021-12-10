@@ -20,7 +20,6 @@ configure = \
 	$(MYFLAGS); ../../configure \
 	--prefix=/usr \
 	--mandir='$${prefix}/share/man' \
-	--datadir='$${prefix}/share/vile' \
 	--with-app-defaults=/etc/X11/app-defaults \
 	--with-locale \
 	--with-loadable-filters=all \
