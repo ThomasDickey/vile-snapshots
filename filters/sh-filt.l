@@ -2,7 +2,7 @@
 %x NORMAL HEREDOC HEREDOC2 DQUOTED SQUOTED EXPRS BRACES BRACES2 BRACES3 KSH_CQUOTE KSH_MATH
 
 %e 1500
-%p 3400
+%p 4000
 %o 10000
 %a 5000
 %k 2000
@@ -10,7 +10,7 @@
 %{
 
 /*
- * $Id: sh-filt.l,v 1.182 2021/02/21 22:08:52 tom Exp $
+ * $Id: sh-filt.l,v 1.183 2021/12/12 01:26:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
