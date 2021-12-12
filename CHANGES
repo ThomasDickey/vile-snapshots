@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20211210 (v)
+ 20211212 (v)
 	> Lois Mansot
 	+ corrected range for &random function.
 	+ move the reframe_cursor_position() in update() to ensure that $cwline
