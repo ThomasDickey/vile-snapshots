@@ -1,8 +1,8 @@
 Summary: VI Like Emacs editor
-# $Id: vile.spec,v 1.63 2021/12/10 00:38:28 tom Exp $
+# $Id: vile.spec,v 1.65 2022/01/20 22:55:03 tom Exp $
 Name: vile
 %define AppVersion 9.8
-Version: %{AppVersion}v
+Version: %{AppVersion}w
 # each patch should update the version
 Release: dev
 License: GPLv2
@@ -31,12 +31,14 @@ Patch19: vile-9.8s.patch.gz
 Patch20: vile-9.8t.patch.gz
 Patch21: vile-9.8u.patch.gz
 Patch22: vile-9.8v.patch.gz
+Patch23: vile-9.8w.patch.gz
 # each patch should add itself to this list
 Vendor: Thomas E. Dickey <dickey@invisible-island.net>
 Packager: Thomas E. Dickey <dickey@invisible-island.net>
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:	%{name}-common = %{version}-%{release}
+# Fedora34 requires perl-DB_File, perl-English 
 
 %prep
 
@@ -94,6 +96,7 @@ Requires:	%{name}-common = %{version}-%{release}
 %patch20 -p1
 %patch21 -p1
 %patch22 -p1
+%patch23 -p1
 # each patch should add itself to this list
 
 rpm --version
@@ -260,6 +263,9 @@ rm -rf %{buildroot}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Sat Dec 18 2021 Thomas E. Dickey
+- added patch for 9.8w
 
 * Tue May 19 2020 Thomas E. Dickey
 - added patch for 9.8v

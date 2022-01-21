@@ -1,16 +1,16 @@
 /*
- * $Id: pl6filt.c,v 1.1 2019/07/21 17:42:30 tom Exp $
+ * $Id: rakufilt.c,v 1.3 2022/01/21 00:54:29 bod Exp $
  *
- * Filter to add vile "attribution" sequences to perl6 scripts.
+ * Filter to add vile "attribution" sequences to raku (formerly perl6) scripts.
  * This is a clone of "pl-filt.c", to handle differences from perl5.
  */
 
 #include <filters.h>
 
 #ifdef DEBUG
-DefineOptFilter(perl6, "d");
+DefineOptFilter(raku, "d");
 #else
-DefineFilter(perl6);
+DefineFilter(raku);
 #endif
 
 /*
@@ -1548,8 +1548,10 @@ do_filter(FILE *input GCC_UNUSED)
 			    state = eHERE;
 			    mark_len = 0;
 			    try_mark = do_alloc(0, (size_t) 2, &mark_len);
-			    if (try_mark != 0)
+			    if (try_mark != 0) {
+				free(marker);
 				marker = strcpy(try_mark, ".");
+			    }
 			}
 			save = s[ok];
 			s[ok] = 0;
@@ -1659,6 +1661,7 @@ do_filter(FILE *input GCC_UNUSED)
 	}
 	free(the_file);
     }
+    free(marker);
 }
 
 #if NO_LEAKS

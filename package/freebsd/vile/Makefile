@@ -1,5 +1,4 @@
 # Created by: pgf
-# $FreeBSD$
 
 PORTNAME=	vile
 PORTVERSION=	9.8v
@@ -14,6 +13,7 @@ MAINTAINER=	dickey@invisible-island.net
 COMMENT=	VI Like Emacs -- console version
 
 LICENSE=	GPLv2
+LICENSE_FILE=	${WRKSRC}/COPYING
 
 BUILD_DEPENDS=	reflex:textproc/reflex
 

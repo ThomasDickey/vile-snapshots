@@ -1,4 +1,4 @@
-; $Id: winvile.nsi,v 1.17 2020/05/19 23:22:34 tom Exp $
+; $Id: winvile.nsi,v 1.18 2021/12/18 11:50:27 tom Exp $
 ; Script generated with the Venis Install Wizard
 
 ; Define your application name
@@ -6,8 +6,8 @@
 
 !define VERSION_MAJOR "9"
 !define VERSION_MINOR "8"
-!define VERSION_LEVEL "22"
-!define VERSION_PATCH "v"
+!define VERSION_LEVEL "23"
+!define VERSION_PATCH "w"
 !define VERSION_BUILT "0"
 
 !define APPNAMEANDVERSION "${APPNAME} ${VERSION_MAJOR}.${VERSION_MINOR}"
