@@ -17,11 +17,11 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2018,2020 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2020,2022 by Paul Fox and Thomas Dickey
  */
 
 /*
- * $Id: main.c,v 1.742 2020/08/30 23:41:27 tom Exp $
+ * $Id: main.c,v 1.744 2022/01/21 00:05:52 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -2856,7 +2856,7 @@ char *
 strncpy0(char *dest, const char *src, size_t destlen)
 {
     if (dest != 0 && src != 0 && destlen != 0) {
-	(void) strncpy(dest, src, destlen);
+	(void) memcpy(dest, src, destlen);
 	dest[destlen - 1] = EOS;
     }
     return dest;

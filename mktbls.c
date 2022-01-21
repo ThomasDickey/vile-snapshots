@@ -5,7 +5,7 @@
  *	included in main.c
  *
  *	Copyright (c) 1990 by Paul Fox
- *	Copyright (c) 1995-2021 by Paul Fox and Thomas Dickey
+ *	Copyright (c) 1995-2022 by Paul Fox and Thomas Dickey
  *
  *	See the file "cmdtbl" for input data formats, and "estruct.h" for
  *	the output structures.
@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Id: mktbls.c,v 1.200 2021/03/22 23:21:55 tom Exp $
+ * $Id: mktbls.c,v 1.202 2022/01/21 00:06:10 tom Exp $
  *
  */
 
@@ -243,7 +243,7 @@ static char *
 my_strncpy0(char *dest, const char *src, size_t destlen)
 {
     if (dest != 0 && src != 0 && destlen != 0) {
-	(void) strncpy(dest, src, destlen);
+	(void) memcpy(dest, src, destlen);
 	dest[destlen - 1] = EOS;
     }
     return dest;

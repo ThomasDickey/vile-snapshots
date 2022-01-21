@@ -1,4 +1,4 @@
-# $Id: genmake.mak,v 1.49 2020/05/09 09:27:50 tom Exp $
+# $Id: genmake.mak,v 1.52 2022/01/21 01:11:08 tom Exp $
 # This is a list of filter root names and whether .c or .l files define the
 # filter.  Except for vile-crypt and vile-manfilt (which do not correspond to
 # majormodes), the filter names are constructed as vile-{root}-filt.
@@ -7,7 +7,7 @@ c	c-filt		c
 key	key-filt	c
 m4	m4-filt		c
 perl	pl-filt		c
-perl6	pl6filt		c
+raku	rakufilt	c
 ruby	rubyfilt	c
 sed	sed-filt	c
 tags	tagsfilt	c

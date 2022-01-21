@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.149 2020/05/10 20:30:36 tom Exp $
+; $Id: modes.rc,v 1.150 2022/01/20 22:44:51 bod Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -706,11 +706,11 @@ define-mode perl
 ;	fence-fi       '^\s*}'
 ~endwith
 
-define-mode perl6
-~with define-submode perl6
-	preamble	'^\(#!\s*\(\/[^\\]*\)\?\<perl6\>\)\|\(\s*use\s\+v6\s*;\)'
-	suffixes	'\.\(pl6\|rakudo\)$'
-	mode-pathname	'^.*perl6.*\.t$'
+define-mode raku
+~with define-submode raku
+	preamble	'^\(#!\s*\(\/[^\\]*\)\?\<\(perl6\|rakudo\)\>\)\|\(\s*use\s\+v6\s*;\)'
+	suffixes	'\.\(pl\?6\|pm6\|raku\(\|mod\|test\)\)$'
+	mode-pathname	'^.*rakudo.*\.t$'
 	after		"perl"
 	cindent
 	cindent-chars  &cat ':' $fences

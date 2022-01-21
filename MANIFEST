@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8v
+MANIFEST for vile, version v9_8v2
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -325,11 +325,9 @@ filters/pas-filt.l              Pascal syntax filter for vile
 filters/pas.key                 keywords for pascal highlighting filter
 filters/pc.key                  keywords for printcap syntax highlighting
 filters/perl.key                keywords for perl syntax filter
-filters/perl6.key               keywords for perl6 syntax filter
 filters/php-filt.l              syntax filter for php
 filters/php.key                 keywords for phpmode
 filters/pl-filt.c               syntax highlighter for perl
-filters/pl6filt.c               syntax highlighter for perl6
 filters/pot-filt.l              syntax filter for gettext ".po" files
 filters/pot.key                 keywords for pot (gettext) mode
 filters/prolog.key              keywords for prolog
@@ -339,6 +337,8 @@ filters/ps1-filt.l              syntax highlighter for powershell
 filters/ps1.key                 keywords for powershell mode
 filters/py-filt.l               syntax filter for Python
 filters/py.key                  keywords for Python syntax filter
+filters/raku.key                syntax keywords for raku (originally perl6)
+filters/rakufilt.c              syntax filter for raku (originally perl6)
 filters/rb.key                  keywords for Ruby syntax filter
 filters/rc-filt.l               syntax filter for Windows ".rc" files
 filters/rc.key                  keywords for Windows ".rc" files

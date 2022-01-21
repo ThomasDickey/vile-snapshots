@@ -1,5 +1,4 @@
 # Created by: pgf
-# $FreeBSD: head/editors/xvile/Makefile 516802 2019-11-05 15:48:40Z zeising $
 
 PORTNAME=	vile
 PORTVERSION=	9.8v
