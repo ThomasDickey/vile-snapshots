@@ -3,7 +3,7 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Id: manpage.rc,v 1.27 2014/03/30 20:10:29 tom Exp $
+;; $Id: manpage.rc,v 1.29 2022/01/25 11:24:32 tom Exp $
 ;;
 
 store-procedure ShowManpage "Prompt for, and display a manual-page"
@@ -89,6 +89,17 @@ store-procedure ShowFormatted "Render the current buffer with nroff (-man or -ms
 			&cat " " \
 			&cat &pquote $cfilname \
 			&cat " | " %filter
+	~elseif &seq $majormode "md"
+		" fick
+		kill-buffer '[Trace]'
+		~trace on
+		edit-file \
+			&cat "!markdown " \
+			&cat &pquote $cfilname \
+			&cat "|lynx -nolist -stdin -force_html -with_backspaces -dump -width=" \
+			&cat $pagewid \
+			&cat "|" %filter
+		~trace off
 	~elseif &seq $majormode "perl"
 		~if &seq %table ''
 			edit-file &cat "!pod2text " \

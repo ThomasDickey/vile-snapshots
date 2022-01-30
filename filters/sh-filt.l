@@ -10,7 +10,7 @@
 %{
 
 /*
- * $Id: sh-filt.l,v 1.183 2021/12/12 01:26:53 tom Exp $
+ * $Id: sh-filt.l,v 1.184 2022/01/30 20:27:01 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -70,6 +70,7 @@ static void end_braces(const char *text, int length);
 static void handle_backtic2(const char *text, int length, int test, int which);
 static void handle_backtic1(const char *text, int length, int test, int which);
 static void handle_parens(const char *text, int length, int test, int which, int state);
+static void resume_state(void);
 static void save_here(const char *text, int length);
 static void write_vname(const char *text, int length);
 
@@ -198,8 +199,10 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			    FLEX_PRINTF((stderr, "cannot pop '$((' level %d\n", stk_level));
 			    if (!pop_backtic1(yytext, 1, LEN_BACKTIC1_DOWN)) {
 			      FLEX_PRINTF((stderr, "cannot pop '$(' level %d\n", stk_level));
-			      if (FLTSTACK_OK && stk_state[stk_level-1].state == NORMAL)
+			      if (FLTSTACK_OK && stk_state[stk_level-1].state == NORMAL) {
 			        pop_state();
+				resume_state();
+			      }
 			      flt_putc(R_PAREN);
 			    }
 			    unput(R_PAREN);
@@ -213,8 +216,10 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			}
 <NORMAL>{BACKTIC1_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC1_DOWN)) {
 			    FLEX_PRINTF((stderr, "cannot pop '$(' level %d\n", stk_level));
-			    if (FLTSTACK_OK && stk_state[stk_level-1].state == NORMAL)
+			    if (FLTSTACK_OK && stk_state[stk_level-1].state == NORMAL) {
 			      pop_state();
+			      resume_state();
+			    }
 			    ECHO;
 			  }
 			}
@@ -293,6 +298,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <KSH_MATH>"))"		{
 			  WriteToken(Action_attr); 
 			  pop_state();
+			  resume_state();
 			}
 <KSH_MATH>{IDENT1}	|
 <KSH_MATH>{VNAME}	{ WriteToken(Ident_attr); }
@@ -312,6 +318,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			  flt_bfr_append("'", 1);
 			  flt_bfr_finish();
 			  pop_state();
+			  resume_state();
 			}
 <KSH_CQUOTE>\\[0-7]{1,3}  {
 			  flt_bfr_embed(yytext, 1, Action_attr);
@@ -874,6 +881,7 @@ check_heredoc(char *value, int length)
 	flt_bfr_append(value + used, length - used);
 	flt_bfr_finish();
 	pop_state();
+	resume_state();
 	FreeAndNull(here_tag);
 	here_exp = 0;
 	here_next = 0;
