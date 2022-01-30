@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.150 2022/01/20 22:44:51 bod Exp $
+; $Id: modes.rc,v 1.152 2022/01/25 11:03:52 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -408,6 +408,14 @@ define-mode html
 ~elsewith define-submode html group 'html'
 	fence-begin	'<--'
 	fence-end	'-->'
+~endwith
+
+" markdown
+define-mode md
+~with define-submode md
+	suffixes	'\.\(md\)$'
+	tabstop=8
+	shiftwidth=4
 ~endwith
 
 define-mode midl

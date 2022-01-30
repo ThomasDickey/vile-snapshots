@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8v2
+MANIFEST for vile, version v9_8v3
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -303,6 +303,8 @@ filters/manfilt.c               manpage-filter
 filters/mc-filt.l               mailcap syntax filter
 filters/mcrl.key                filters for mCRL/mCRL2
 filters/mcrlfilt.l              filters for mCRL/mCRL2
+filters/md-filt.l               syntax filter for markdown files
+filters/md.key                  keywords for markdown files
 filters/midl.key                keywords for MIDL
 filters/midlfilt.l              syntax filter for MIDL
 filters/mk-0th.awk              construct builtflt.h
