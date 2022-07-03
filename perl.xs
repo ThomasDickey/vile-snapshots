@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Id: perl.xs,v 1.143 2021/12/07 01:40:25 tom Exp $
+ * $Id: perl.xs,v 1.144 2022/07/03 18:02:36 tom Exp $
  */
 
 /*
@@ -21,7 +21,6 @@
  */
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wcast-qual"
-#pragma GCC diagnostic ignored "-Wcompound-token-split-by-macro"
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wnested-externs"
 #pragma GCC diagnostic ignored "-Wshadow"
@@ -119,20 +118,20 @@
 
 /* for vile */
 #define MARK vile_MARK
+#define regexp vile_regexp
 #include "estruct.h"
 #include "edef.h"
 #include "api.h"
+#undef regexp
 #undef MARK
 #undef ABORT
 
 /* for perl */
 #define main perl_main
-#define regexp perl_regexp
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
 #undef main
-#undef regexp
 #undef dofile
 
 #ifdef __GNUC__
