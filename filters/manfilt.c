@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Id: manfilt.c,v 1.73 2021/09/04 20:25:32 tom Exp $
+ * $Id: manfilt.c,v 1.74 2022/02/12 13:09:26 tom Exp $
  *
  */
 
@@ -137,6 +137,7 @@ typedef struct LineData {
 
 static void flush_line(void);
 
+static char *program = "vile-manfilt";
 static LINEDATA *all_lines;
 static LINEDATA *cur_line;
 static long total_lines;
@@ -147,6 +148,9 @@ static int (*my_putc) (int);
 static void
 failed(const char *s)
 {
+    int save_err = errno;
+    fprintf(stderr, "%s: ", program);
+    errno = save_err;
     perror(s);
     exit(BADEXIT);
 }
@@ -1010,6 +1014,7 @@ main(int argc, char **argv)
     int n;
     FILE *fp;
 
+    program = argv[0];
     my_getc = ansi_getc;
     my_putc = ansi_putc;
 #if OPT_LOCALE
