@@ -35,7 +35,7 @@
  *
  *	_^HB^HB_^Ho^Ho_^Ht^Ht_^Hh^Hh		^A4IB:Both
  *
- * On many system, bold sequences are actually quite a bit longer.  On
+ * On many systems, bold sequences are actually quite a bit longer.  On
  * some systems, the repeated character is repeated as many as four times.
  * Thus the letter "B" would be represented as B^HB^HB^HB.
  *
@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Id: manfilt.c,v 1.74 2022/02/12 13:09:26 tom Exp $
+ * $Id: manfilt.c,v 1.75 2022/07/11 00:06:11 tom Exp $
  *
  */
 
@@ -149,6 +149,8 @@ static void
 failed(const char *s)
 {
     int save_err = errno;
+    fflush(stdout);
+    fclose(stdout);
     fprintf(stderr, "%s: ", program);
     errno = save_err;
     perror(s);
@@ -349,6 +351,7 @@ static LINEDATA *
 allocate_line(void)
 {
     LINEDATA *p = typecallocn(LINEDATA, 1);
+
     if (p == 0)
 	failed("allocate_line");
 
@@ -750,21 +753,20 @@ osc_ignored(FILE *ifp)
 }
 
 /*
- * Set the current pointer to the previous line, allocating it if necessary
+ * Set the current pointer to the previous line, if possible.
  */
 static void
 prev_line(void)
 {
     LINEDATA *old_line;
 
-    if (cur_line == 0)
-	cur_line = allocate_line();
+    /*
+     * We can't go back to lines that were already flushed and discarded.
+     */
+    assert(cur_line != 0);
+    if (cur_line->l_prev == 0)
+	return;
 
-    if (cur_line->l_prev == 0) {
-	cur_line->l_prev = allocate_line();
-	if (cur_line == all_lines)
-	    all_lines = cur_line->l_prev;
-    }
     old_line = cur_line;
     cur_line = cur_line->l_prev;
     cur_line->l_next = old_line;
@@ -838,6 +840,27 @@ cell_code(LINEDATA * line, size_t col)
     return code;
 }
 
+static void
+free_line(LINEDATA * l)
+{
+    if (l != 0) {
+	if (l->l_cell != 0)
+	    free(l->l_cell);
+	if (l->l_prev != 0) {
+	    if (l->l_prev->l_next == l)
+		l->l_prev->l_next = 0;
+	    l->l_prev = 0;
+	}
+	if (l->l_next != 0) {
+	    if (l->l_next->l_prev == l)
+		l->l_next->l_prev = 0;
+	    l->l_next = 0;
+	}
+	free(l);
+	total_lines--;
+    }
+}
+
 /*
  * Write the oldest line from memory to standard output and deallocate its
  * storage.
@@ -853,7 +876,7 @@ flush_line(void)
     LINEDATA *l = all_lines;
     CHARCELL *p;
 
-    if (l != 0) {
+    if (l != 0 && l->l_next != 0) {
 	all_lines = l->l_next;
 	if (cur_line == l)
 	    cur_line = all_lines;
@@ -890,16 +913,12 @@ flush_line(void)
 
 	    while ((p = l->l_cell[col].link) != 0) {
 		l->l_cell[col].link = p->link;
-		free((char *) p);
+		free(p);
 	    }
 	}
 	my_putc('\n');
 
-	if (l != 0) {
-	    if (l->l_cell != 0)
-		free((char *) l->l_cell);
-	    free((char *) l);
-	}
+	free_line(l);
     }
 }
 
@@ -1002,8 +1021,12 @@ ManFilter(FILE *ifp)
 	}
     }
 
-    while (all_lines != 0)
+    while (all_lines != 0) {
+	int save = total_lines;
 	flush_line();
+	if (save == total_lines)
+	    break;
+    }
 
     total_lines = 0;
 }
@@ -1056,6 +1079,9 @@ main(int argc, char **argv)
     }
     fflush(stdout);
     fclose(stdout);
+#if NO_LEAKS
+    free_line(cur_line);
+#endif
     exit(GOODEXIT);		/* successful exit */
     /*NOTREACHED */
 }
