@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Id: manfilt.c,v 1.75 2022/07/11 00:06:11 tom Exp $
+ * $Id: manfilt.c,v 1.76 2022/08/05 07:37:23 tom Exp $
  *
  */
 
@@ -1022,7 +1022,7 @@ ManFilter(FILE *ifp)
     }
 
     while (all_lines != 0) {
-	int save = total_lines;
+	long save = total_lines;
 	flush_line();
 	if (save == total_lines)
 	    break;

@@ -3,9 +3,10 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Id: map.c,v 1.126 2018/10/21 21:00:20 tom Exp $
+ * $Id: map.c,v 1.129 2022/08/05 07:40:25 tom Exp $
  */
 
+#include "config.h"
 #include "estruct.h"
 #include "edef.h"
 
@@ -249,7 +250,7 @@ addtomap(struct maprec **mpp,
 	    }
 	    *mpp = mp;
 	    mp->dlink = mp->flink = NULL;
-	    TRACE2(("...adding %#x\n", CharOf(*ks)));
+	    TRACE2(("...adding 0x%X\n", CharOf(*ks)));
 	    mp->ch = CharOf(*ks++);
 	    mp->srv = NULL;
 	    mp->flags = flags;
@@ -378,7 +379,7 @@ maplookup(int c,
     TRACE2(("maplookup unmatched:%s\n", itb_visible(unmatched)));
     matchedcnt = 0;
     while (mp != 0) {
-	TRACE2(("... c=%#x, mp->ch=%#x\n", c, mp->ch));
+	TRACE2(("... c=0x%X, mp->ch=0x%X\n", c, mp->ch));
 	if (c == mp->ch) {
 	    if (mp->irv != -1 || mp->srv != NULL) {
 		rmp = mp;
@@ -462,7 +463,7 @@ maplookup(int c,
 	/* unget the unmatched suffix */
 	while (suffix && (count > 0)) {
 	    (void) itb_append(out_ptr, itb_values(unmatched)[--count]);
-	    TRACE2(("...1 ungetting %#x\n", itb_values(unmatched)[count]));
+	    TRACE2(("...1 ungetting 0x%X\n", itb_values(unmatched)[count]));
 	}
 	/* unget the mapping and elide correct number of recorded chars */
 	if (rmp->srv) {
@@ -476,16 +477,16 @@ maplookup(int c,
 		remapflag = 0;
 	    while (cp > rmp->srv) {
 		(void) itb_append(out_ptr, CharOf(*--cp) | (int) remapflag);
-		TRACE2(("...2 ungetting %#x|%#x\n", CharOf(*cp), remapflag));
+		TRACE2(("...2 ungetting 0x%X|0x%X\n", CharOf(*cp), remapflag));
 	    }
 	} else {
 	    (void) itb_append(out_ptr, rmp->irv);
-	    TRACE2(("...3 ungetting %#x\n", rmp->irv));
+	    TRACE2(("...3 ungetting 0x%X\n", rmp->irv));
 	}
     } else {			/* didn't find a match */
 	while (count > 0) {
 	    (void) itb_append(out_ptr, itb_values(unmatched)[--count]);
-	    TRACE2(("...4 ungetting %#x\n", itb_values(unmatched)[count]));
+	    TRACE2(("...4 ungetting 0x%X\n", itb_values(unmatched)[count]));
 	}
 	matchedcnt = 0;
     }
@@ -726,7 +727,7 @@ static int
 normal_getc(void)
 {
     int c = term.getch();
-    TRACE(("normal/getc:%c (%#x)\n", c, c));
+    TRACE(("normal/getc:%c (0x%X)\n", c, c));
     save_keystroke(c);
     return c;
 }
@@ -755,7 +756,7 @@ sysmapped_c(void)
     if ((c = term.getch()) == -1)
 	return c;		/* see comment in ttgetc */
 
-    TRACE(("mapped/getc:%c (%#x)\n", c, c));
+    TRACE(("mapped/getc:%c (0x%X)\n", c, c));
 
     save_keystroke(c);
 
@@ -785,7 +786,7 @@ sysmapped_c_avail(void)
 void
 mapungetc(int c)
 {
-    TRACE2(("mapungetc %#x\n", c));
+    TRACE2(("mapungetc 0x%X\n", c));
     if (tgetc_avail()) {
 	tungetc(c);
     } else {
@@ -800,6 +801,7 @@ static int mapgetc_raw_flag;
 static int
 mapgetc(void)
 {
+    int result;
     UINT remapflag;
     if (global_g_val(GMDREMAP))
 	remapflag = 0;
@@ -815,13 +817,16 @@ mapgetc(void)
 	    mlforce("[Infinite loop detected in %s sequence]",
 		    (insertmode) ? "map!" : "map");
 	    catnap(1000, FALSE);	/* FIXME: be sure message gets out */
-	    return esc_c | (int) NOREMAP;
+	    result = esc_c | (int) NOREMAP;
+	} else {
+	    mapgetc_ungotcnt--;
+	    result = itb_last(mapgetc_ungottenchars) | (int) remapflag;
 	}
-	mapgetc_ungotcnt--;
-	return itb_last(mapgetc_ungottenchars) | (int) remapflag;
+    } else {
+	infloopcount = 0;
+	result = tgetc(mapgetc_raw_flag);
     }
-    infloopcount = 0;
-    return tgetc(mapgetc_raw_flag);
+    return result;
 }
 
 int
@@ -917,6 +922,25 @@ mapped_c(int remap, int raw)
 	}
 
 	c = mapgetc();
+#if OPT_MULTIBYTE
+	if (vl_encoding >= enc_UTF8 && b_is_utfXX(curbp)) {
+	    char save[MAX_UTF8];
+	    int have = 0;
+	    int need = 9;
+	    UINT utf8;
+	    do {
+		save[have++] = (char) c;
+		need = vl_check_utf8(save, (B_COUNT) have);
+		if (need <= have)
+		    break;
+		c = mapgetc();
+	    } while (c > 127);
+	    if ((have > 1) &&
+		vl_conv_to_utf32(&utf8, save, (B_COUNT) have) == have) {
+		c = (int) utf8;
+	    }
+	}
+#endif
 
 	if (!global_g_val(GMDREMAPFIRST))
 	    matched = FALSE;
@@ -992,8 +1016,9 @@ abbr_check(int *backsp_limit_p)
 	}
 	DOT.o -= matched;
 	ldel_bytes((B_COUNT) matched, FALSE);
-	while (status && itb_more(abbr_chars))
+	while (status && itb_more(abbr_chars)) {
 	    status = inschar(itb_last(abbr_chars), backsp_limit_p);
+	}
     }
     itb_free(&abbr_chars);
     return;

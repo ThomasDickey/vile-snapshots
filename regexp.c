@@ -1,7 +1,7 @@
 /*
- * $Id: regexp.c,v 1.221 2020/03/29 23:30:13 tom Exp $
+ * $Id: regexp.c,v 1.223 2022/08/04 23:59:11 tom Exp $
  *
- * Copyright 2005-2019,2020 Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005-2020,2022 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -645,7 +645,7 @@ reg_char_before(const char *source, const char *first)
 static void
 put_reg_char(int ch)
 {
-    UCHAR target[10];
+    UCHAR target[MAX_UTF8];
     int len = vl_conv_to_utf8(target, (UINT) ch, sizeof(target));
     int n;
 

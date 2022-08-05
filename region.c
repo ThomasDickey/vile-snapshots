@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Id: region.c,v 1.170 2018/10/25 23:30:18 tom Exp $
+ * $Id: region.c,v 1.171 2022/08/04 21:17:54 tom Exp $
  */
 
 #include	"estruct.h"
@@ -724,7 +724,7 @@ _yankchar(int ch)
 {
 #if OPT_MULTIBYTE
     if (b_is_utfXX(curbp)) {
-	UCHAR buffer[10];
+	UCHAR buffer[MAX_UTF8];
 	int len = vl_conv_to_utf8(buffer, (UINT) ch, sizeof(buffer));
 	int n;
 	for (n = 0; n < len; ++n)

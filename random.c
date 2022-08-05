@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Id: random.c,v 1.359 2018/10/23 22:34:15 tom Exp $
+ * $Id: random.c,v 1.360 2022/08/04 21:23:10 tom Exp $
  */
 
 #ifdef __BEOS__
@@ -463,7 +463,7 @@ set_char2(LINE *lp, int offset, int ch)
 {
 #if OPT_MULTIBYTE
     if (b_is_utfXX(curbp)) {
-	UCHAR buffer[10];
+	UCHAR buffer[MAX_UTF8];
 	int old_len = bytes_at(lp, offset);
 	int new_len = vl_conv_to_utf8(buffer, (UINT) ch, sizeof(buffer));
 	int n;

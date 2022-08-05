@@ -1,12 +1,14 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20220710 (w)
+ 20220805 (w)
 	> Brendan O'Dea:
 	+ apply memory-leak fix from pl-filt.c in 9.8v to pl6filt.c
 	+ rename perl6mode and corresponding syntax filter to "raku" (report by
 	  Steve Lembark).
 	+ update suffix-list for rakumode.
 	> Tom Dickey:
+	+ revise change for lins_chars() to handle UTF-8 in scripts, as that
+	  interfered with normal insertions (report by Chris Green).
 	+ fix a check in vile-manfilt, to ensure that stepping into previous
 	  lines does not use flushed/discarded rows.
 	+ build-fix for perl 5.36 (Debian #1014289)
