@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Id: input.c,v 1.372 2020/12/01 22:47:44 tom Exp $
+ * $Id: input.c,v 1.373 2022/08/04 22:52:31 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1685,7 +1685,7 @@ reallyEditMiniBuffer(TBUFF **buf,
     if (!recur
 	&& ((char2int(c) >= (int) iBIT(MinCBits))
 	    || (char2int(c) >= 128 && b_is_utfXX(bminip)))) {
-	UCHAR temp[10];
+	UCHAR temp[MAX_UTF8];
 	int used = vl_conv_to_utf8(temp, (UINT) c, sizeof(temp));
 	int n;
 

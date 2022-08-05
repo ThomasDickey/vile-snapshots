@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Id: insert.c,v 1.187 2020/12/02 00:52:02 tom Exp $
+ * $Id: insert.c,v 1.191 2022/08/05 07:38:41 tom Exp $
  */
 
 #include	"estruct.h"
@@ -21,6 +21,27 @@
 #define	BackspaceLimit() (b_val(curbp,MDBACKLIMIT) && autoindented <= 0)\
 			? DOT.o\
 			: w_left_margin(curwp)
+
+/* Use this to convert from UTF-8 in cases where a character is needed rather
+ * than a series of bytes.
+ */
+#if OPT_MULTIBYTE
+#define DecodeUTF8(target, source) \
+	    B_COUNT limit; \
+	    UINT utf8; \
+	    int test; \
+ \
+	    if ((vl_encoding >= enc_UTF8) \
+		&& b_is_utfXX(curbp) \
+		&& (limit = strlen(source)) > 1 \
+		&& (test = vl_check_utf8(source, limit)) > 1 \
+		&& vl_conv_to_utf32(&utf8, source, (B_COUNT) test) == test) { \
+		target = (int) utf8; \
+		source += test; \
+	    } else
+#else
+#define DecodeUTF8(target, source)	/* nothing */
+#endif
 
 static int backspace(void);
 static int doindent(int ind);
@@ -411,9 +432,13 @@ replacechar(int f, int n)
     if (clexec || isnamedcmd) {
 	int status;
 	static char cbuf[NLINE];
-	if ((status = mlreply("Replace with: ", cbuf, 2)) != TRUE)
+	char *tp = cbuf;
+	if ((status = mlreply("Replace with: ", cbuf, sizeof(cbuf))) != TRUE)
 	    return status;
-	c = cbuf[0];
+	{
+	    DecodeUTF8(c, tp)
+		c = *tp;
+	}
     } else {
 	set_insertmode(INSMODE_RPL);	/* need to fool SPEC prefix code */
 	if (dotcmdactive != PLAY)
@@ -446,7 +471,7 @@ replacechar(int f, int n)
 		if (isbackspace(c)) {	/* vi beeps here */
 		    s = TRUE;	/* replaced with nothing */
 		} else {
-		    t = s = lins_chars(n, c, FALSE);
+		    t = s = lins_chars(n, c);
 		}
 	    }
 	}
@@ -838,6 +863,7 @@ inschar(int c, int *backsp_limit_p)
     int rc = FALSE;
     CmdFunc execfunc;		/* ptr to function to execute */
 
+    TRACE((T_CALLED "inschar U+%04X\n", c));
     execfunc = NULL;
     if (c == quotec) {
 	execfunc = quote_next;
@@ -859,7 +885,7 @@ inschar(int c, int *backsp_limit_p)
 		int status = wrapword(wm_flag, is_space);
 		*backsp_limit_p = w_left_margin(curwp);
 		if (wm_flag && is_space) {
-		    return status;
+		    returnCode(status);
 		}
 	    } else if (wm_flag
 		       && !blanks_on_line()
@@ -981,14 +1007,14 @@ inschar(int c, int *backsp_limit_p)
 		rc = inspound();
 	    } else {
 		autoindented = -1;
-		rc = lins_chars(1, c, FALSE);
+		rc = lins_chars(1, c);
 	    }
 	} else {
 	    autoindented = -1;
-	    rc = lins_chars(1, c, FALSE);
+	    rc = lins_chars(1, c);
 	}
     }
-    return rc;
+    returnCode(rc);
 }
 
 #if ! SMALLER
@@ -1036,10 +1062,13 @@ istring(int f, int n, int mode)
 	backsp_limit = BackspaceLimit();
 
 	/* insert it */
-	while (n--) {
+	while (n-- > 0) {
 	    tp = tstring;
 	    while (*tp) {
-		if ((status = inschar(CharOf(*tp++), &backsp_limit)) != TRUE) {
+		int c;
+		DecodeUTF8(c, tp)
+		    c = CharOf(*tp++);
+		if ((status = inschar(c, &backsp_limit)) != TRUE) {
 		    n = 0;
 		    break;
 		}
@@ -1515,7 +1544,7 @@ quote_next(int f, int n)
 		s = lnewline();
 	    } while ((s == TRUE) && (--n != 0));
 	} else {
-	    s = lins_chars(n, c, TRUE);
+	    s = lins_chars(n, c);
 	}
     }
     return s;

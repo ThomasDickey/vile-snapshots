@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Id: basic.c,v 1.178 2020/08/30 23:47:37 tom Exp $
+ * $Id: basic.c,v 1.179 2022/08/04 21:19:27 tom Exp $
  *
  */
 
@@ -1085,7 +1085,7 @@ column_after(int c, int col, int list)
     }
 #if OPT_MULTIBYTE
     else if (b_is_utfXX(curbp)) {
-	if (vl_conv_to_utf8((UCHAR *) 0, (UINT) c, (B_COUNT) 10) > 1)
+	if (vl_conv_to_utf8((UCHAR *) 0, (UINT) c, (B_COUNT) MAX_UTF8) > 1)
 	    rc = col + COLS_UTF8;	/* "\uXXXX" */
     }
 #endif

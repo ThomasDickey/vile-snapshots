@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Id: w32cbrd.c,v 1.44 2020/01/17 22:29:27 tom Exp $
+ * $Id: w32cbrd.c,v 1.45 2022/08/04 21:16:11 tom Exp $
  */
 
 #include "estruct.h"
@@ -553,8 +553,6 @@ paste_to_minibuffer(W32_CHAR * cbrddata)
 #endif
     return (rc);
 }
-
-#define MAX_UTF8 8		/* buffer-size big enough for any UTF-8 conversion */
 
 /*
  * Paste contents of windows clipboard (if TEXT) to current buffer.

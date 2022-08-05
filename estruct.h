@@ -12,7 +12,7 @@
 */
 
 /*
- * $Id: estruct.h,v 1.759 2021/03/22 23:19:44 tom Exp $
+ * $Id: estruct.h,v 1.760 2022/08/04 21:16:07 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1132,6 +1132,8 @@ extern void endofDisplay(void);
 #define COLS_CTRL  2			/* columns for "^X"		*/
 #define COLS_8BIT  4			/* columns for "\xXX"		*/
 #define COLS_UTF8  6			/* columns for "\uXXXX"		*/
+
+#define MAX_UTF8 8			/* enough for any UTF-8 conversion */
 
 #define CTLA       iBIT(MaxCBits+0)	/* ^A flag, or'ed in		*/
 #define CTLX       iBIT(MaxCBits+1)	/* ^X flag, or'ed in		*/

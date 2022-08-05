@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Id: eval.c,v 1.469 2021/05/09 21:32:16 Lois.Mansot Exp $
+ * $Id: eval.c,v 1.470 2022/08/04 21:19:48 tom Exp $
  */
 
 #include	<estruct.h>
@@ -70,7 +70,7 @@ one_ctype_row(VL_CTYPE2 * enc, int ch)
 
 #if OPT_MULTIBYTE
     int rc;
-    char temp[10];
+    char temp[MAX_UTF8];
     int use_locale = same_string(enc->locale, vl_wide_enc.locale);
 #else
     (void) enc;

@@ -1,5 +1,5 @@
 /*
- * $Id: xterm.c,v 1.10 2010/02/09 21:32:14 tom Exp $
+ * $Id: xterm.c,v 1.11 2022/08/04 21:24:31 tom Exp $
  *
  * xterm-specific code for vi-like-emacs.
  */
@@ -293,7 +293,7 @@ xterm_settitle(const char *string)
 #if OPT_MULTIBYTE
 	int check;
 	UINT ch;
-	UCHAR temp[10];
+	UCHAR temp[MAX_UTF8];
 	ENC_CHOICES want_encoding = title_encoding;
 #endif
 	TRACE(("xterm_settitle(%s)\n", string));
