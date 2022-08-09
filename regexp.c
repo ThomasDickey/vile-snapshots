@@ -1,5 +1,5 @@
 /*
- * $Id: regexp.c,v 1.223 2022/08/04 23:59:11 tom Exp $
+ * $Id: regexp.c,v 1.227 2022/08/09 22:38:31 tom Exp $
  *
  * Copyright 2005-2020,2022 Thomas E. Dickey and Paul G. Fox
  *
@@ -117,6 +117,9 @@ typedef ULONG B_COUNT;		/* byte-count */
 #include <vl_regex.h>
 #include <vl_alloc.h>
 #include <vl_ctype.h>
+
+#define vl_index (strchr)
+#define strmalloc(s) strdup(s)
 
 #endif /* OPT_MULTIBYTE */
 
@@ -428,7 +431,7 @@ typedef enum {
 
 #else
 #define sys_CTYPE_SIZE	((unsigned) 0xff)
-#define is_CLASS(name,ptr) is_ ## name(*ptr)
+#define is_CLASS(name,ptr) is_ ## name(*(ptr))
 #endif
 
 /*
@@ -2136,7 +2139,7 @@ regmatch(char *prog, int plevel, int ic)
 		returnReg(0);
 	    break;
 	case ENDWORD:
-	    /* Match if previous char isident
+	    /* Match if previous char is ident
 	     * and current char EOL or !ident */
 	    if ((reginput != regnomore && is_CLASS(IDENT, reginput))
 		|| reginput == regbol
@@ -3096,6 +3099,7 @@ put_string(char *s, unsigned length, int literal)
  * >	Comments begin with '#'.
  * >	Use an uppercase p/q/r to suppress backslash interpretation of the line,
  *	e.g., to simplify typing patterns.
+ * >	Use I/i to switch ignorecase on/off in the call to regexec().
  * >	Use M/m to switch magic on/off in the call to regcomp().
  * >	Use N to disable regmassage (used for vile), so expressions are POSIX.
  * >	Lines beginning with '?' are error messages.
@@ -3110,6 +3114,7 @@ static void
 test_regexp(FILE *fp)
 {
     char *s;
+    int ic = FALSE;
     int magic = TRUE;
     int linenum = 0;
     int literal;
@@ -3122,6 +3127,14 @@ test_regexp(FILE *fp)
 	literal = 0;
 	REGTRACE(("-------------->%s\n", s));
 	switch (*s) {
+	case 'i':
+	    ic = FALSE;
+	    put_string(s, length, TRUE);
+	    break;
+	case 'I':
+	    ic = TRUE;
+	    put_string(s, length, TRUE);
+	    break;
 	case 'N':
 	    magic = -1;
 	    put_string(s, length, TRUE);
@@ -3154,8 +3167,7 @@ test_regexp(FILE *fp)
 	    ++s, --length;
 	    if (pattern != 0) {
 		for (offset = 0; offset <= length; ++offset) {
-		    if (regexec(pattern, s, s + length, offset, length,
-				(offset == 0))) {
+		    if (regexec(pattern, s, s + length, offset, length, ic)) {
 			for (subexp = 0; subexp < NSUBEXP; ++subexp) {
 			    if (pattern->startp[subexp] != 0
 				&& pattern->endp[subexp] != 0
@@ -3165,11 +3177,11 @@ test_regexp(FILE *fp)
 				pattern->endp[subexp] -
 				pattern->startp[subexp];
 				if (mlen <= 1) {
-				    printf("r%d [%d:%d] -> [%d]",
+				    printf("r%d [%d:%d] -> [%ld]",
 					   subexp, offset, length - mlen,
 					   pattern->startp[subexp] - s);
 				} else {
-				    printf("r%d [%d:%d] -> [%d:%d]",
+				    printf("r%d [%d:%d] -> [%ld:%ld]",
 					   subexp, offset, length - 1,
 					   pattern->startp[subexp] - s,
 					   pattern->endp[subexp] - s - 1);
@@ -3177,7 +3189,7 @@ test_regexp(FILE *fp)
 				put_string(pattern->startp[subexp], mlen, FALSE);
 			    } else if (pattern->startp[subexp] != 0
 				       && pattern->endp[subexp] != 0) {
-				printf("? mlen = %d\n",
+				printf("? mlen = %ld\n",
 				       pattern->endp[subexp] -
 				       pattern->startp[subexp]);
 			    } else if (pattern->startp[subexp] != 0) {

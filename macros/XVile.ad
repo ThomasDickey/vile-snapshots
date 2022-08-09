@@ -1,9 +1,9 @@
-! $Id: XVile.ad,v 1.9 2010/09/05 14:37:12 tom Exp $
+! $Id: XVile.ad,v 1.10 2022/08/02 03:58:11 bod Exp $
 
 ! "white" on "black" main window
 *background: grey5
 *foreground: grey95
-*font: 8x13
+*font: -misc-fixed-medium-r-normal--18-120-100-100-c-90-iso8859-1
 *cursor.background: yellow
 *cursor.foreground: grey5
 

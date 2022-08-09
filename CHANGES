@@ -1,12 +1,21 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20220805 (w)
+ 20220809 (w)
 	> Brendan O'Dea:
+	+ the font specification in /etc/X11/app-defaults/UXVile was being
+	  overridden by the one in XVile.  Additionally update the xvile font
+	  to use the Latin-1 equivalent (9x18 instead of 8x13).
 	+ apply memory-leak fix from pl-filt.c in 9.8v to pl6filt.c
 	+ rename perl6mode and corresponding syntax filter to "raku" (report by
 	  Steve Lembark).
 	+ update suffix-list for rakumode.
 	> Tom Dickey:
+	+ portability-fixes for plink.sh
+	+ fixes for regexp.c:
+	  + build-fix for test_regexp
+	  + add parentheses in non-multibyte is_CLASS() macro to correct a
+	    problem with pointer expressions.
+	  + add I/i toggle in test_regexp to exercise ignorecase.
 	+ revise change for lins_chars() to handle UTF-8 in scripts, as that
 	  interfered with normal insertions (report by Chris Green).
 	+ fix a check in vile-manfilt, to ensure that stepping into previous
