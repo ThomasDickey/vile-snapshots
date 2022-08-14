@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20220809 (w)
+ 20220814 (w)
 	> Brendan O'Dea:
 	+ the font specification in /etc/X11/app-defaults/UXVile was being
 	  overridden by the one in XVile.  Additionally update the xvile font
