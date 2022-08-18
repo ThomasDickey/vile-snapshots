@@ -1,5 +1,5 @@
 %pointer
-%s sTEXT sCODE FENCE QUOTED QUOTES HTML
+%s sTEXT sCODE FENCE QUOTED QUOTES HTML NOTE
 
 %a 10000
 %o 10000
@@ -7,14 +7,16 @@
 %{
 
 /*
- * $Id: md-filt.l,v 1.33 2022/08/14 23:13:39 tom Exp $
+ * $Id: md-filt.l,v 1.52 2022/08/18 08:19:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a markdown file.
  *
  * https://daringfireball.net/projects/markdown/
  * https://www.markdownguide.org/
  *
- * TODO optionally up to 3 spaces before item-lists, etc.
+ * TODO `code`
+ * TODO [label](link)
+ * TODO [label][link] reference links
  * TODO markup ">line"
  * TODO markup ">paragraph"
  */
@@ -22,6 +24,8 @@
 #include <filters.h>
 #include <fltstack.h>
 #undef YY_NO_UNPUT
+
+#define flt_puts(b,n,a) flt_bfr_embed(b,n,a)
 
 DefineFilter(md);
 
@@ -36,10 +40,16 @@ static void emphasize(const char *, int, int, const char *);
 static void fence_start(const char *, int);
 static void fence_finish(const char *, int);
 static void indent_code(const char *, int);
+static void link_link(const char *, int);
+static void link_cite(const char *, int);
+static void scan_html(const char *, int);
+static void underline(const char *, int, int, const char *);
+static int reject_links(const char *, int);
 static int valid_indent(const char *, int, int);
 
 static char *Action_attr;
 static char *Code_attr = "";
+static char *Comment_attr;
 static char *Error_attr;
 static char *Ident2_attr;
 static char *Number_attr;
@@ -48,33 +58,42 @@ static char *String_attr;
 
 static int nbl;			/* count characters on non-blank line */
 static int pbl;			/* previous line's count for "nbl" */
-static int item_level;		/* if >= 0, index in item_stack[] */
 
+static int item_level;		/* if >= 0, index in item_stack[] */
 static int item_limit;
 static int item_depth;
 static ITEM_STACK *item_stack;
+
+static int html_level;
+
+#define NoItem()  { item_depth = 0; item_level = -1; }
 
 #define isMark(c) ((c) == '*' || (c) == '-' || (c) == '+' || (c) == ':' || isdigit(c))
 
 %}
 
-WHITE		[\t ]
-DASH_A		([*]{WHITE}*)+[*]
-DASH_M		([-]{WHITE}*)+[-]
-DASH_U		([_]{WHITE}*)+[_]
+WS		[\t ]
+DASH_A		([*]{WS}*)+[*]
+DASH_M		([-]{WS}*)+[-]
+DASH_U		([_]{WS}*)+[_]
 DASHES		({DASH_A}|{DASH_M}|{DASH_U})
 DASHED		[=]+
 
-ITEM_A		([*]{WHITE}+[^*])
-ITEM_C		([:]{WHITE}+[^:])
-ITEM_M		([-]{WHITE}+[^-])
-ITEM_O		([[:digit:]]+\.{WHITE}+[[:graph:]])
-ITEM_P		([+]{WHITE}+[^+])
+ITEM_A		([*]{WS}+[^*])
+ITEM_C		([:]{WS}+[^:])
+ITEM_M		([-]{WS}+[^-])
+ITEM_O		([[:digit:]]+\.{WS}+[[:graph:]])
+ITEM_P		([+]{WS}+[^+])
 ITEM		({ITEM_A}|{ITEM_C}|{ITEM_M}|{ITEM_O}|{ITEM_P})
 
 TEXT		[[:graph:]]
 
-CAN_MARK	({TEXT}|{WHITE})
+N_		[^[:alnum:]_\r\n]
+Y_		[^_\r\n]
+T_		[^\r\n]
+
+CODE1		{WS}|[[:alnum:]]|[~!@#$%^&*()_+={}[\]|\\:"<>?;',./]|[-]
+CODE2		{CODE1}|[`]
 
 SIGN		[-+]
 DECIMAL		[[:digit:]_]+
@@ -95,26 +114,66 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 			  if (cur_state == HTML) {
 			    PopQuote();
 			  } else {
-			    ECHO;
+			    flt_bfr_append(yytext, yyleng);
 			  }
 			  new_state(sTEXT);
 			}
 
-<sTEXT>^\<.*\>		{ PushQuote(HTML, Preproc_attr); }
-<HTML>[\r\n]		|
-<HTML>.			{ flt_bfr_append(yytext, yyleng); }
+<sTEXT>^[<]!--		{ PushQuote(NOTE, Comment_attr);
+			  scan_html(yytext, yyleng);
+			}
+<NOTE>--[>]		{ scan_html(yytext, yyleng);
+			  if (html_level <= 0) {
+			    PopQuote();
+			    html_level = 0;
+			  } else {
+			    flt_bfr_append(yytext, yyleng);
+			  }
+			}
+<NOTE>[\r\n]		|
+<NOTE>.			{ flt_bfr_append(yytext, yyleng);
+			  scan_html(yytext, yyleng);
+			}
 
-<sTEXT,HTML>^```[^\r\n]* { fence_start(yytext, yyleng); }
-<FENCE>^```[^\r\n]*	{ fence_finish(yytext, yyleng); }
-<FENCE>^[^\r\n]+	{ WriteToken(String_attr); }
-<FENCE>[\r\n]+		{ ECHO; }
+<sTEXT>^\<		{
+			  PushQuote(HTML, Preproc_attr);
+			  scan_html(yytext, yyleng);
+			}
+<HTML>[\r\n]		{ flt_bfr_append(yytext, yyleng); }
+<HTML>^{WS}*[<]		{ flt_bfr_append(yytext, yyleng);
+			  scan_html(yytext, yyleng);
+			}
+<HTML>^{WS}*[^<]	{ int n;
+			  if (html_level <= 0) {
+			    html_level = 0;
+			    for (n = yyleng; n > 0; --n)
+				unput(yytext[n - 1]);
+			    flt_bfr_finish();
+			    pop_state();
+			  } else {
+			    flt_bfr_append(yytext, yyleng);
+			    scan_html(yytext, yyleng);
+			  }
+			}
+<HTML>[^\r\n]		{
+			  flt_bfr_append(yytext, yyleng);
+			  scan_html(yytext, yyleng);
+			}
 
-<sTEXT>^"#"[^\r\n]+	{ atx_header(yytext, yyleng); }
+<sTEXT>^{WS}*```{T_}*	{ fence_start(yytext, yyleng); }
+<FENCE>^{WS}*```{T_}*	{ fence_finish(yytext, yyleng); }
+<FENCE>^{T_}+		{ WriteToken(String_attr); }
+<FENCE>[\r\n]+		{ flt_bfr_append(yytext, yyleng); }
 
-<sTEXT>^{DASHES}$	{ WriteToken(Action_attr); }
-<sTEXT>^{DASHED}+	{ WriteToken(Action_attr); }
+<sTEXT>"["[^]]+"]("[^)]+")" { link_link(yytext, yyleng); }
+<sTEXT>"["[^]]+"]["[^)]+"]" { link_cite(yytext, yyleng); }
 
-<sTEXT>^{WHITE}*{ITEM}	{ if (valid_indent(yytext, yyleng, 1)) {
+<sTEXT>^"#"{T_}+	{ atx_header(yytext, yyleng); NoItem(); }
+
+<sTEXT>^{DASHES}$	|
+<sTEXT>^{DASHED}+	{ WriteToken(Action_attr); NoItem(); }
+
+<sTEXT>^{WS}*{ITEM}	{ if (valid_indent(yytext, yyleng, 1)) {
 			      WriteToken3(Action_attr, yyleng - 1);
 			      unput(yytext[yyleng-1]);
 			  } else {
@@ -123,45 +182,54 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 			      indent_code(yytext, yyleng);
 			  }
 			}
-<sTEXT>^{WHITE}*{TEXT}	{ if (valid_indent(yytext, yyleng, 0)) {
+<sTEXT>^{WS}*{TEXT}	{ if (valid_indent(yytext, yyleng, 0)) {
 			      WriteToken3(Action_attr, yyleng - 1);
 			      unput(yytext[yyleng-1]);
 			  } else {
+			      if (yyleng < 3 && yytext[0] != '\t')
+			          NoItem();
 			      WriteToken3("", yyleng - 1);
 			      unput(yytext[yyleng-1]);
 			      indent_code(yytext, yyleng);
 			  }
-			}
-<sTEXT>^{WHITE}*$	{ if (item_level >= 0) {
-			    item_level = -1;
-			    item_depth = 0;
-			  }
-			  ECHO;
 			}
 
 <sTEXT>[\\][[:punct:]]	{ WriteToken(Action_attr); }
 
-<sTEXT>[_][_][_]{CAN_MARK}+[_][_][_]	{ emphasize(yytext, yyleng, 2, "IB"); }
-<sTEXT>[_][_]{CAN_MARK}+[_][_]		{ emphasize(yytext, yyleng, 2, "B"); }
-<sTEXT>[_]{CAN_MARK}+[_]		{ emphasize(yytext, yyleng, 1, "I"); }
-<sTEXT>[*][*][*]{CAN_MARK}+[*][*][*]	{ emphasize(yytext, yyleng, 2, "IB"); }
-<sTEXT>[*][*]{CAN_MARK}+[*][*]		{ emphasize(yytext, yyleng, 2, "B"); }
-<sTEXT>[*]{CAN_MARK}+[*]		{ emphasize(yytext, yyleng, 1, "I"); }
-<sTEXT>[`][`]{CAN_MARK}+[`][`]		{ emphasize(yytext, yyleng, 2, String_attr); }
-<sTEXT>[`]{CAN_MARK}+[`]		{ emphasize(yytext, yyleng, 1, String_attr); }
+<sTEXT>^[_][_][_]{Y_}+[_][_][_]$	{ underline(yytext, yyleng, 3, "IB"); }
+<sTEXT>^[_][_][_]{Y_}+[_][_][_]{N_}	{ underline(yytext, yyleng, 3, "IB"); }
+<sTEXT>{N_}[_][_][_]{Y_}+[_][_][_]$	{ underline(yytext, yyleng, 3, "IB"); }
+<sTEXT>{N_}[_][_][_]{Y_}+[_][_][_]{N_}	{ underline(yytext, yyleng, 3, "IB"); }
+
+<sTEXT>^[_][_]{Y_}+[_][_]$		{ underline(yytext, yyleng, 2, "B"); }
+<sTEXT>^[_][_]{Y_}+[_][_]{N_}		{ underline(yytext, yyleng, 2, "B"); }
+<sTEXT>{N_}[_][_]{Y_}+[_][_]$		{ underline(yytext, yyleng, 2, "B"); }
+<sTEXT>{N_}[_][_]{Y_}+[_][_]{N_}	{ underline(yytext, yyleng, 2, "B"); }
+
+<sTEXT>^[_]{Y_}+[_]$			{ underline(yytext, yyleng, 1, "I"); }
+<sTEXT>^[_]{Y_}+[_]{N_}			{ underline(yytext, yyleng, 1, "I"); }
+<sTEXT>{N_}[_]{Y_}+[_]$			{ underline(yytext, yyleng, 1, "I"); }
+<sTEXT>{N_}[_]{Y_}+[_]{N_}		{ underline(yytext, yyleng, 1, "I"); }
+
+<sTEXT>[*][*][*]{T_}+[*][*][*]		{ emphasize(yytext, yyleng, 3, "IB"); }
+<sTEXT>[*][*]{T_}+[*][*]		{ emphasize(yytext, yyleng, 2, "B"); }
+<sTEXT>[*]{T_}+[*]			{ emphasize(yytext, yyleng, 1, "I"); }
+
+<sTEXT>[`][`]{CODE2}+[`][`]		{ emphasize(yytext, yyleng, 2, String_attr); }
+<sTEXT>[`]{CODE1}+[`]			{ emphasize(yytext, yyleng, 1, String_attr); }
 
 <sTEXT,sCODE>{NUMBER}	{ WriteToken(Number_attr); }
-<sTEXT,sCODE>{EMAIL}	{ WriteToken(Ident2_attr); }
+<sTEXT,sCODE>{EMAIL}	|
 <sTEXT,sCODE>{URL}	{ WriteToken(Ident2_attr); }
 
-<sCODE>[^\r\n]+		{ WriteToken(Code_attr); }
-<sCODE>[\r\n]		{ ECHO; BEGIN(sTEXT); }
+<sCODE>{T_}+		{ WriteToken(Code_attr); }
+<sCODE>[\r\n]		{ flt_bfr_append(yytext, yyleng); new_state(sTEXT); }
 
-<QUOTES,QUOTED>{EMAIL}	{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
+<QUOTES,QUOTED>{EMAIL}	|
 <QUOTES,QUOTED>{URL}	{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
 
 <sTEXT>\(\"\)		|
-<sTEXT>\'.\'		{ ECHO; }
+<sTEXT>\'.\'		{ flt_bfr_append(yytext, yyleng); }
 
 <sTEXT>\"		{ PushQuote(QUOTED, String_attr); }
 <QUOTED>\"		{ PopQuote(); }
@@ -175,8 +243,8 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 <QUOTES>^[\n]		{ PopQuote(); }
 <QUOTES>[\n]		{ flt_bfr_append(yytext, yyleng); }
 
-<sTEXT>[\r\n]		{ ECHO; }
-<sTEXT>.		{ ECHO; }
+<sTEXT>[\r\n]		|
+<sTEXT>.		{ flt_bfr_append(yytext, yyleng); }
 
 %%
 
@@ -195,11 +263,38 @@ atx_header(const char *value, int length)
 	    break;
     }
     if (level == length || !isspace(value[level])) {
-	flt_puts(value, length, Error_attr);
+	flt_bfr_embed(value, length, Error_attr);
     } else {
-	flt_puts(value, level, Action_attr);
-	flt_puts(value + level, length - level, String_attr);
+	flt_bfr_embed(value, level, Action_attr);
+	flt_bfr_embed(value + level, length - level, String_attr);
     }
+}
+
+static int
+indent_column(const char *value, int length)
+{
+    int result = 0;
+    int n;
+
+    for (n = 0; n < length; ++n) {
+	int ch = value[n];
+	if (ch == '\t')
+	    result = 1 + (result | 7);
+	else if (ch == ' ')
+	    ++result;
+	else
+	    break;
+    }
+    return result;
+}
+
+static int
+left_margin(void)
+{
+    int result = 0;
+    if (item_depth > 0)
+	result = item_stack[item_depth - 1].c2nd;
+    return result;
 }
 
 /*
@@ -234,7 +329,9 @@ valid_indent(const char *value, int length, int mark)
     if (mark) {
 	mark = *value;
 	c2nd = actual;
-	if (c1st == 0) {
+	if (c1st <= 3
+	    && (item_depth == 0
+		|| item_stack[item_depth - 1].c1st >= c1st)) {
 	    result = 1;
 	    /* begin/resume top-level */
 	    item_depth = 0;
@@ -292,9 +389,6 @@ valid_indent(const char *value, int length, int mark)
 	item_level = (mark
 		      ? item_stack[item_depth - 1].c1st
 		      : item_stack[item_depth - 1].c2nd);
-    } else {
-	item_depth = 0;
-	item_level = -1;
     }
     return result;
 }
@@ -305,6 +399,11 @@ emphasize(const char *value, int length, int margin, const char *attr)
     int actual = length;
     int limit = length - margin;
     int n;
+
+    if (reject_links(value, length)) {
+	flt_bfr_embed(value, 0, "");
+	return;
+    }
 
     /*
      * Validate, determine the actual length, in case there is more than one
@@ -318,42 +417,146 @@ emphasize(const char *value, int length, int margin, const char *attr)
     }
     if (actual < length) {
 	if (actual == 0) {
-	    flt_puts(value, margin, "U");
+	    flt_bfr_embed(value, margin, "U");
 	    actual = margin;
 	}
 	while (length-- > actual)
 	    unput(value[length]);
     }
     if (actual > 0) {
-	flt_puts(value, margin, Action_attr);
-	flt_puts(value + margin, actual - (2 * margin), attr);
-	flt_puts(value, margin, Action_attr);
+	flt_bfr_embed(value, margin, Action_attr);
+	flt_bfr_embed(value + margin, actual - (2 * margin), attr);
+	flt_bfr_embed(value, margin, Action_attr);
     }
 }
 
 static void
 fence_start(const char *value, int length)
 {
-    flt_puts(value, 3, Action_attr);
-    if (length > 3)
-	flt_puts(value + 3, length - 3, String_attr);
-    BEGIN(FENCE);
+    int n;
+    if ((n = indent_column(value, length)) >= left_margin() + 3) {
+	indent_code(value, length);
+    } else {
+	n += 3;
+	flt_bfr_embed(value, n, Action_attr);
+	if (length > n)
+	    flt_bfr_embed(value + n, length - n, String_attr);
+	new_state(FENCE);
+    }
 }
 
 static void
 fence_finish(const char *value, int length)
 {
-    flt_puts(value, 3, Action_attr);
-    if (length > 3)
-	flt_puts(value + 3, length - 3, Error_attr);
-    BEGIN(sTEXT);
+    int n;
+    if ((n = indent_column(value, length)) >= left_margin() + 3) {
+	indent_code(value, length);
+    } else {
+	n += 3;
+	flt_bfr_embed(value, n, Action_attr);
+	if (length > n)
+	    flt_bfr_embed(value + n, length - n, Error_attr);
+	new_state(sTEXT);
+    }
 }
 
 static void
 indent_code(const char *value, int length)
 {
-    if (*value == '\t' || (length > 4 && !strncmp(value, "    ", 4)))
-	BEGIN(sCODE);
+    if (indent_column(value, length) > left_margin() + 3)
+	new_state(sCODE);
+}
+
+static void
+link_link(const char *value, int length)
+{
+    int n;
+
+    flt_bfr_embed(value, 1, Action_attr);
+    for (n = 1; n < length; ++n) {
+	if (value[n] == R_BLOCK)
+	    break;
+    }
+    flt_bfr_embed(value + 1, n - 1, String_attr);
+    flt_bfr_embed(value + n, 1, Action_attr);
+    flt_bfr_embed(value + n + 1, 1, Action_attr);
+    flt_bfr_embed(value + n + 2, length - n - 3, Preproc_attr);
+    flt_bfr_embed(value + length - 1, 1, Action_attr);
+}
+
+static void
+link_cite(const char *value, int length)
+{
+    int n;
+
+    flt_bfr_embed(value, 1, Action_attr);
+    for (n = 1; n < length; ++n) {
+	if (value[n] == R_BLOCK)
+	    break;
+    }
+    flt_bfr_embed(value + 1, n - 1, String_attr);
+    flt_bfr_embed(value + n, 1, Action_attr);
+    flt_bfr_embed(value + n + 1, 1, Action_attr);
+    flt_bfr_embed(value + n + 2, length - n - 3, Preproc_attr);
+    flt_bfr_embed(value + length - 1, 1, Action_attr);
+}
+
+/*
+ * Delimiters used for emphasis (especially "_") are also valid in link
+ * descriptions.  While the beginning of a link is out of reach, recover from
+ * this conflict by rejecting the rest of the unintended emphasis.
+ */
+static int
+reject_links(const char *value, int length)
+{
+    int result = 0;
+    int j;
+
+    for (j = 0; j < length; ++j) {
+	if (value[j] == R_BLOCK) {
+	    int ch = value[j + 1];
+	    int k;
+
+	    if (ch == ' ')
+		ch = value[j + 2];
+	    if (ch == L_BLOCK || ch == L_PAREN) {
+		result = 1;
+		for (k = length; k > 1; --k) {
+		    unput(value[k - 1]);
+		}
+		flt_bfr_embed(value, 1, "");
+		break;
+	    }
+	}
+    }
+    return result;
+}
+
+static void
+scan_html(const char *value, int length)
+{
+    int n;
+    for (n = 0; n < length; ++n) {
+	if (value[n] == L_ANGLE) {
+	    html_level++;
+	} else if (value[n] == R_ANGLE) {
+	    --html_level;
+	}
+    }
+}
+
+static void
+underline(const char *value, int length, int margin, const char *attr)
+{
+    if (*value != '_') {
+	flt_bfr_embed(value, 1, "");
+	underline(value + 1, length - 1, margin, attr);
+    } else if (length > 0 && value[length - 1] != '_') {
+	underline(value, length - 1, margin, attr);
+	flt_bfr_embed(value + length - 1, 1, "");
+    } else {
+	emphasize(value, length, margin, attr);
+    }
 }
 
 static void
@@ -368,6 +571,7 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Action_attr = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);
     Ident2_attr = class_attr(NAME_IDENT2);
     Number_attr = class_attr(NAME_NUMBER);
@@ -377,6 +581,7 @@ do_filter(FILE *inputs)
     nbl = pbl = 0;
     item_depth = 0;
     item_level = -1;
+    html_level = 0;
     if (item_limit == 0) {
 	item_limit = 10;
 	item_stack = typecallocn(ITEM_STACK, item_limit);

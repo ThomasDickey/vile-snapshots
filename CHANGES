@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20220814 (w)
+ 20220818 (w)
 	> Brendan O'Dea:
 	+ the font specification in /etc/X11/app-defaults/UXVile was being
 	  overridden by the one in XVile.  Additionally update the xvile font
@@ -24,7 +24,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ modify error-message from vile-manfilt to show the program name.
 	+ fix a state-transition in sh-filt.l, which left some text uncolored
 	  (report by Wayne Cuddy).
-	+ BEGIN work on markdown mode (mdmode).
+	+ add markdown mode (mdmode).
 	+ update copyright dates
 	+ update package/freebsd/*
 	+ fix a few compiler-warnings.
