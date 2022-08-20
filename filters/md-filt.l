@@ -1,5 +1,5 @@
 %pointer
-%s sTEXT sCODE FENCE QUOTED QUOTES HTML NOTE
+%s sTEXT sCODE FENCE QUOTES HTML NOTE
 
 %a 10000
 %o 10000
@@ -7,23 +7,20 @@
 %{
 
 /*
- * $Id: md-filt.l,v 1.52 2022/08/18 08:19:19 tom Exp $
+ * $Id: md-filt.l,v 1.67 2022/08/20 00:27:08 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a markdown file.
  *
  * https://daringfireball.net/projects/markdown/
  * https://www.markdownguide.org/
  *
- * TODO `code`
- * TODO [label](link)
- * TODO [label][link] reference links
+ * TODO use flt_error where appropriate
  * TODO markup ">line"
  * TODO markup ">paragraph"
  */
 
 #include <filters.h>
 #include <fltstack.h>
-#undef YY_NO_UNPUT
 
 #define flt_puts(b,n,a) flt_bfr_embed(b,n,a)
 
@@ -43,8 +40,8 @@ static void indent_code(const char *, int);
 static void link_link(const char *, int);
 static void link_cite(const char *, int);
 static void scan_html(const char *, int);
-static void underline(const char *, int, int, const char *);
 static int reject_links(const char *, int);
+static int tone_down(const char *, int, int);
 static int valid_indent(const char *, int, int);
 
 static char *Action_attr;
@@ -52,6 +49,7 @@ static char *Code_attr = "";
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident2_attr;
+static char *Null_attr = "";	/* ...just for debugging */
 static char *Number_attr;
 static char *Preproc_attr;
 static char *String_attr;
@@ -65,6 +63,25 @@ static int item_depth;
 static ITEM_STACK *item_stack;
 
 static int html_level;
+
+#define Emphasize(s,l,yl,m,a) { \
+		if (reject_links(s, l)) { \
+			yyless(1 + yl); \
+		} else { \
+			int al = tone_down(s, l, m); \
+			if (al < (l)) yyless(al +yl); \
+			emphasize(s, al, m, a); \
+		} \
+	}
+
+/* anchored to ^ */
+#define UnderKeep1(m,a) { Emphasize(yytext, yyleng, 0, m, a); }
+#define UnderTrim1(m,a) { yyless(yyleng - 1); UnderKeep1(m, a); }
+
+/* anchored to character */
+#define UnderKeep2(m,a) { flt_puts(yytext, 1, Null_attr); \
+			  Emphasize(yytext + 1, yyleng - 1, 1, m, a); }
+#define UnderTrim2(m,a) { yyless(yyleng - 1); UnderKeep2(m, a); }
 
 #define NoItem()  { item_depth = 0; item_level = -1; }
 
@@ -89,17 +106,20 @@ ITEM		({ITEM_A}|{ITEM_C}|{ITEM_M}|{ITEM_O}|{ITEM_P})
 TEXT		[[:graph:]]
 
 N_		[^[:alnum:]_\r\n]
-Y_		[^_\r\n]
+A_		[^*\r\n\t ]
+U_		[^_\r\n\t ]
 T_		[^\r\n]
+Y_		({U_}|({U_}{T_}*{U_}))
+Z_		({A_}|({A_}{T_}*{A_}))
 
 CODE1		{WS}|[[:alnum:]]|[~!@#$%^&*()_+={}[\]|\\:"<>?;',./]|[-]
 CODE2		{CODE1}|[`]
 
 SIGN		[-+]
-DECIMAL		[[:digit:]_]+
-OCTAL		0[0-7_]+
-HEXADECIMAL	0x[[:xdigit:]_]+
-REAL		([[:digit:]_]*\.[[:digit:]][[:digit:]_]*)([eE]{SIGN}?[[:digit:]_]+)?
+DECIMAL		[[:digit:]]+
+OCTAL		0[0-7]+
+HEXADECIMAL	0x[[:xdigit:]]+
+REAL		([[:digit:]]*\.[[:digit:]][[:digit:]]*)([eE]{SIGN}?[[:digit:]]+)?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 NAME		[[:alnum:]_.#-]+
@@ -143,11 +163,11 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 <HTML>^{WS}*[<]		{ flt_bfr_append(yytext, yyleng);
 			  scan_html(yytext, yyleng);
 			}
-<HTML>^{WS}*[^<]	{ int n;
+<HTML>^{WS}*[^<]	{
 			  if (html_level <= 0) {
 			    html_level = 0;
-			    for (n = yyleng; n > 0; --n)
-				unput(yytext[n - 1]);
+			    if (yyleng > 0)
+				yyless(yyleng - 1);
 			    flt_bfr_finish();
 			    pop_state();
 			  } else {
@@ -175,48 +195,48 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 
 <sTEXT>^{WS}*{ITEM}	{ if (valid_indent(yytext, yyleng, 1)) {
 			      WriteToken3(Action_attr, yyleng - 1);
-			      unput(yytext[yyleng-1]);
+			      yyless(yyleng - 1);
 			  } else {
-			      WriteToken3("", yyleng - 1);
-			      unput(yytext[yyleng-1]);
+			      WriteToken3(Null_attr, yyleng - 1);
 			      indent_code(yytext, yyleng);
+			      yyless(yyleng - 1);
 			  }
 			}
 <sTEXT>^{WS}*{TEXT}	{ if (valid_indent(yytext, yyleng, 0)) {
 			      WriteToken3(Action_attr, yyleng - 1);
-			      unput(yytext[yyleng-1]);
+			      yyless(yyleng - 1);
 			  } else {
 			      if (yyleng < 3 && yytext[0] != '\t')
 			          NoItem();
-			      WriteToken3("", yyleng - 1);
-			      unput(yytext[yyleng-1]);
+			      WriteToken3(Null_attr, yyleng - 1);
 			      indent_code(yytext, yyleng);
+			      yyless(yyleng - 1);
 			  }
 			}
 
 <sTEXT>[\\][[:punct:]]	{ WriteToken(Action_attr); }
 
-<sTEXT>^[_][_][_]{Y_}+[_][_][_]$	{ underline(yytext, yyleng, 3, "IB"); }
-<sTEXT>^[_][_][_]{Y_}+[_][_][_]{N_}	{ underline(yytext, yyleng, 3, "IB"); }
-<sTEXT>{N_}[_][_][_]{Y_}+[_][_][_]$	{ underline(yytext, yyleng, 3, "IB"); }
-<sTEXT>{N_}[_][_][_]{Y_}+[_][_][_]{N_}	{ underline(yytext, yyleng, 3, "IB"); }
+<sTEXT>^[_][_][_]{Y_}+[_][_][_]$	{ UnderKeep1(3, "IB"); }
+<sTEXT>^[_][_][_]{Y_}+[_][_][_]{N_}	{ UnderTrim1(3, "IB"); }
+<sTEXT>{N_}[_][_][_]{Y_}+[_][_][_]$	{ UnderKeep2(3, "IB"); }
+<sTEXT>{N_}[_][_][_]{Y_}+[_][_][_]{N_}	{ UnderTrim2(3, "IB"); }
 
-<sTEXT>^[_][_]{Y_}+[_][_]$		{ underline(yytext, yyleng, 2, "B"); }
-<sTEXT>^[_][_]{Y_}+[_][_]{N_}		{ underline(yytext, yyleng, 2, "B"); }
-<sTEXT>{N_}[_][_]{Y_}+[_][_]$		{ underline(yytext, yyleng, 2, "B"); }
-<sTEXT>{N_}[_][_]{Y_}+[_][_]{N_}	{ underline(yytext, yyleng, 2, "B"); }
+<sTEXT>^[_][_]{Y_}+[_][_]$		{ UnderKeep1(2, "B"); }
+<sTEXT>^[_][_]{Y_}+[_][_]{N_}		{ UnderTrim1(2, "B"); }
+<sTEXT>{N_}[_][_]{Y_}+[_][_]$		{ UnderKeep2(2, "B"); }
+<sTEXT>{N_}[_][_]{Y_}+[_][_]{N_}	{ UnderTrim2(2, "B"); }
 
-<sTEXT>^[_]{Y_}+[_]$			{ underline(yytext, yyleng, 1, "I"); }
-<sTEXT>^[_]{Y_}+[_]{N_}			{ underline(yytext, yyleng, 1, "I"); }
-<sTEXT>{N_}[_]{Y_}+[_]$			{ underline(yytext, yyleng, 1, "I"); }
-<sTEXT>{N_}[_]{Y_}+[_]{N_}		{ underline(yytext, yyleng, 1, "I"); }
+<sTEXT>^[_]{Y_}+[_]$			{ UnderKeep1(1, "I"); }
+<sTEXT>^[_]{Y_}+[_]{N_}			{ UnderTrim1(1, "I"); }
+<sTEXT>{N_}[_]{Y_}+[_]$			{ UnderKeep2(1, "I"); }
+<sTEXT>{N_}[_]{Y_}+[_]{N_}		{ UnderTrim2(1, "I"); }
 
-<sTEXT>[*][*][*]{T_}+[*][*][*]		{ emphasize(yytext, yyleng, 3, "IB"); }
-<sTEXT>[*][*]{T_}+[*][*]		{ emphasize(yytext, yyleng, 2, "B"); }
-<sTEXT>[*]{T_}+[*]			{ emphasize(yytext, yyleng, 1, "I"); }
+<sTEXT>[*][*][*]{Z_}[*][*][*]		{ Emphasize(yytext, yyleng, 0, 3, "IB"); }
+<sTEXT>[*][*]{Z_}[*][*]			{ Emphasize(yytext, yyleng, 0, 2, "B"); }
+<sTEXT>[*]{Z_}[*]			{ Emphasize(yytext, yyleng, 0, 1, "I"); }
 
-<sTEXT>[`][`]{CODE2}+[`][`]		{ emphasize(yytext, yyleng, 2, String_attr); }
-<sTEXT>[`]{CODE1}+[`]			{ emphasize(yytext, yyleng, 1, String_attr); }
+<sTEXT>[`][`]{CODE2}+[`][`]		{ Emphasize(yytext, yyleng, 0, 2, String_attr); }
+<sTEXT>[`]{CODE1}+[`]			{ Emphasize(yytext, yyleng, 0, 1, String_attr); }
 
 <sTEXT,sCODE>{NUMBER}	{ WriteToken(Number_attr); }
 <sTEXT,sCODE>{EMAIL}	|
@@ -225,17 +245,11 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 <sCODE>{T_}+		{ WriteToken(Code_attr); }
 <sCODE>[\r\n]		{ flt_bfr_append(yytext, yyleng); new_state(sTEXT); }
 
-<QUOTES,QUOTED>{EMAIL}	|
-<QUOTES,QUOTED>{URL}	{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
+<QUOTES>{EMAIL}		|
+<QUOTES>{URL}		{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
 
 <sTEXT>\(\"\)		|
 <sTEXT>\'.\'		{ flt_bfr_append(yytext, yyleng); }
-
-<sTEXT>\"		{ PushQuote(QUOTED, String_attr); }
-<QUOTED>\"		{ PopQuote(); }
-<QUOTED>.		{ flt_bfr_append(yytext, yyleng); }
-<QUOTED>^[\n]		{ PopQuote(); }
-<QUOTED>[\n]		{ flt_bfr_append(yytext, yyleng); }
 
 <sTEXT>\`\`		{ PushQuote(QUOTES, String_attr); }
 <QUOTES>\'\'		{ PopQuote(); }
@@ -396,38 +410,9 @@ valid_indent(const char *value, int length, int mark)
 static void
 emphasize(const char *value, int length, int margin, const char *attr)
 {
-    int actual = length;
-    int limit = length - margin;
-    int n;
-
-    if (reject_links(value, length)) {
-	flt_bfr_embed(value, 0, "");
-	return;
-    }
-
-    /*
-     * Validate, determine the actual length, in case there is more than one
-     * string to emphasize on the same line.
-     */
-    for (n = margin; n < limit - margin; ++n) {
-	if (!strncmp(value + n, value, margin)) {
-	    actual = n + margin;
-	    break;
-	}
-    }
-    if (actual < length) {
-	if (actual == 0) {
-	    flt_bfr_embed(value, margin, "U");
-	    actual = margin;
-	}
-	while (length-- > actual)
-	    unput(value[length]);
-    }
-    if (actual > 0) {
-	flt_bfr_embed(value, margin, Action_attr);
-	flt_bfr_embed(value + margin, actual - (2 * margin), attr);
-	flt_bfr_embed(value, margin, Action_attr);
-    }
+    flt_bfr_embed(value, margin, Action_attr);
+    flt_bfr_embed(value + margin, length - (2 * margin), attr);
+    flt_bfr_embed(value, margin, Action_attr);
 }
 
 static void
@@ -515,16 +500,12 @@ reject_links(const char *value, int length)
     for (j = 0; j < length; ++j) {
 	if (value[j] == R_BLOCK) {
 	    int ch = value[j + 1];
-	    int k;
 
 	    if (ch == ' ')
 		ch = value[j + 2];
 	    if (ch == L_BLOCK || ch == L_PAREN) {
 		result = 1;
-		for (k = length; k > 1; --k) {
-		    unput(value[k - 1]);
-		}
-		flt_bfr_embed(value, 1, "");
+		flt_bfr_embed(value, 1, Null_attr);
 		break;
 	    }
 	}
@@ -545,18 +526,24 @@ scan_html(const char *value, int length)
     }
 }
 
-static void
-underline(const char *value, int length, int margin, const char *attr)
+/*
+ * Validate, determine the actual length, in case there is more than one string
+ * to emphasize on the same line.
+ */
+static int
+tone_down(const char *value, int length, int margin)
 {
-    if (*value != '_') {
-	flt_bfr_embed(value, 1, "");
-	underline(value + 1, length - 1, margin, attr);
-    } else if (length > 0 && value[length - 1] != '_') {
-	underline(value, length - 1, margin, attr);
-	flt_bfr_embed(value + length - 1, 1, "");
-    } else {
-	emphasize(value, length, margin, attr);
+    int actual = length;
+    int limit = length - margin;
+    int n;
+
+    for (n = margin; n < limit - margin; ++n) {
+	if (!strncmp(value + n, value, margin)) {
+	    actual = n + margin;
+	    break;
+	}
     }
+    return actual;
 }
 
 static void
