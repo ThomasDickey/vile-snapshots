@@ -21,7 +21,7 @@
  */
 
 /*
- * $Id: main.c,v 1.744 2022/01/21 00:05:52 tom Exp $
+ * $Id: main.c,v 1.745 2022/08/20 22:38:01 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -2856,7 +2856,7 @@ char *
 strncpy0(char *dest, const char *src, size_t destlen)
 {
     if (dest != 0 && src != 0 && destlen != 0) {
-	(void) memcpy(dest, src, destlen);
+	(void) strncpy(dest, src, destlen);
 	dest[destlen - 1] = EOS;
     }
     return dest;

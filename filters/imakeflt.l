@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: imakeflt.l,v 1.26 2013/12/02 01:32:53 tom Exp $
+ * $Id: imakeflt.l,v 1.27 2022/08/20 23:03:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
@@ -59,8 +59,9 @@ OPER		[+:?]?=
 
 <NORMAL>{MACRO}			{ WriteToken(Ident2_attr); }
 
-<NORMAL>^{SPACE}\@		{ if (yyleng)
-				    flt_puts(yytext, yyleng-1, "");
+<NORMAL>^{SPACE}\@		{ if (yyleng) {
+				      flt_puts(yytext, yyleng-1, "");
+				  }
 				  flt_puts("@", 1, String_attr); }
 <NORMAL>\\{SPACE}+\n		{ flt_error("trailing whitespace");
 				  WriteToken(Error_attr); continued = 1; }

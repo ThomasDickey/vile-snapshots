@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: makefilt.l,v 1.65 2013/12/02 01:32:53 tom Exp $
+ * $Id: makefilt.l,v 1.66 2022/08/20 23:03:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -67,8 +67,9 @@ OPER		[+:?]?=
 <NORMAL>{SUBST}			{ WriteToken(Preproc_attr); }
 <NORMAL>{MACRO}			{ WriteToken(Ident2_attr); }
 
-<NORMAL>^{SPACE}\@		{ if (yyleng)
-				    flt_puts(yytext, yyleng-1, "");
+<NORMAL>^{SPACE}\@		{ if (yyleng) {
+				      flt_puts(yytext, yyleng-1, "");
+				  }
 				  flt_puts("@", 1, String_attr); }
 <NORMAL>\\{SPACE}+\n		{ flt_error("trailing whitespace");
 				  WriteToken(Error_attr); continued = 1; }

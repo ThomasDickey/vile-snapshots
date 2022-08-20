@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Id: tcap.c,v 1.190 2014/01/25 00:31:52 tom Exp $
+ * $Id: tcap.c,v 1.191 2022/08/20 22:42:11 tom Exp $
  *
  */
 
@@ -397,6 +397,8 @@ static void
 tcap_close(void)
 {
     TRACE((T_CALLED "tcap_close()\n"));
+    if (i_was_closed)
+	returnVoid();
 #if OPT_VIDEO_ATTRS
     if (tc_SE)
 	putpad(tc_SE);
@@ -421,6 +423,10 @@ tcap_close(void)
 #endif
 #if OPT_LOCALE
     vl_close_mbterm();
+#endif
+#if NO_LEAKS && USE_TERMINFO
+    del_curterm(cur_term);
+    cur_term = 0;
 #endif
     i_was_closed = TRUE;
     returnVoid();

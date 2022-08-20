@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.152 2022/01/25 11:03:52 tom Exp $
+; $Id: modes.rc,v 1.153 2022/08/20 16:15:44 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -1276,7 +1276,6 @@ define-majormode yaml
 remove-submode yaml cindent
 ~with define-submode yaml
 	before conf
-	preamble	'^---'
 	suffixes	'\.\(yaml\|yml\)$'
 	notabinsert
 	tabstop=2

@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: md-filt.l,v 1.67 2022/08/20 00:27:08 tom Exp $
+ * $Id: md-filt.l,v 1.71 2022/08/20 18:24:06 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a markdown file.
  *
@@ -45,21 +45,22 @@ static int tone_down(const char *, int, int);
 static int valid_indent(const char *, int, int);
 
 static char *Action_attr;
-static char *Code_attr = "";
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident2_attr;
-static char *Null_attr = "";	/* ...just for debugging */
 static char *Number_attr;
 static char *Preproc_attr;
 static char *String_attr;
+
+static const char *Code_attr = "";
+static const char *Null_attr = "";	/* ...just for debugging */
 
 static int nbl;			/* count characters on non-blank line */
 static int pbl;			/* previous line's count for "nbl" */
 
 static int item_level;		/* if >= 0, index in item_stack[] */
-static int item_limit;
 static int item_depth;
+static size_t item_limit;
 static ITEM_STACK *item_stack;
 
 static int html_level;
@@ -359,10 +360,11 @@ valid_indent(const char *value, int length, int mark)
 		c2nd == item_stack[item_depth - 1].c2nd) {
 		/* continue existing level */
 		result = 1;
-	    } else if (c1st == item_stack[item_depth - 1].c2nd) {
+	    } else if (c1st >= item_stack[item_depth - 1].c2nd &&
+		       c1st <= item_stack[item_depth - 1].c2nd + 3) {
 		result = 1;
 		/* begin newer level */
-		if ((item_depth + 1) >= item_limit) {
+		if ((size_t) (item_depth + 1) >= item_limit) {
 		    item_limit += 10;
 		    item_stack = typereallocn(ITEM_STACK, item_stack, item_limit);
 		}
@@ -385,7 +387,8 @@ valid_indent(const char *value, int length, int mark)
     } else {
 	c1st = c2nd = actual;
 	if (item_depth > 0) {
-	    if (c2nd == item_stack[item_depth - 1].c2nd) {
+	    if (c2nd >= item_stack[item_depth - 1].c2nd &&
+		c2nd <= item_stack[item_depth - 1].c2nd + 3) {
 		result = 1;
 	    } else if (c2nd < item_stack[item_depth - 1].c2nd) {
 		/* look for match in older/upper levels */
@@ -495,15 +498,40 @@ static int
 reject_links(const char *value, int length)
 {
     int result = 0;
+    int blocks = 0;
+    int parens = 0;
+    int escape = 0;
     int j;
 
     for (j = 0; j < length; ++j) {
-	if (value[j] == R_BLOCK) {
-	    int ch = value[j + 1];
+	int c1 = value[j];
+	if (escape) {
+	    escape = 0;
+	} else {
+	    switch (c1) {
+	    case '\\':
+		escape = 1;
+		break;
+	    case L_PAREN:
+		parens++;
+		break;
+	    case R_PAREN:
+		--parens;
+		break;
+	    case L_BLOCK:
+		blocks++;
+		break;
+	    case R_BLOCK:
+		--blocks;
+		break;
+	    }
+	}
+	if (value[j] == R_BLOCK && blocks < 0) {
+	    int c2 = (j < length) ? value[j + 1] : 0;
 
-	    if (ch == ' ')
-		ch = value[j + 2];
-	    if (ch == L_BLOCK || ch == L_PAREN) {
+	    if (c2 == ' ')
+		c2 = (j + 1 < length) ? value[j + 2] : 0;
+	    if (c2 == L_BLOCK || c2 == L_PAREN) {
 		result = 1;
 		flt_bfr_embed(value, 1, Null_attr);
 		break;
@@ -538,7 +566,7 @@ tone_down(const char *value, int length, int margin)
     int n;
 
     for (n = margin; n < limit - margin; ++n) {
-	if (!strncmp(value + n, value, margin)) {
+	if (!strncmp(value + n, value, (size_t) margin)) {
 	    actual = n + margin;
 	    break;
 	}

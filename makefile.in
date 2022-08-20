@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Id: makefile.in,v 1.296 2021/12/09 08:46:15 tom Exp $
+# $Id: makefile.in,v 1.297 2022/08/20 18:59:42 tom Exp $
 
 SHELL		= @SHELL@
 
@@ -47,6 +47,7 @@ LIBS		= @FILTER_LIBS@ @LIBICONV@ @LIBS@
 
 LINT		= @LINT@
 LINT_OPTS	= @LINT_OPTS@
+LINT_LIBS	= # @LINT_LIBS@
 CTAGS		= @CTAGS@
 ETAGS		= @ETAGS@
 
@@ -756,7 +757,7 @@ realclean: distclean
 	- $(RM) tags TAGS vile-perl-api.* pod2html*
 
 lint: $(BUILTHDRS)
-	$(LINT) $(LINT_OPTS) $(CPPFLAGS) $(SRC) $(LIBS)
+	$(LINT) $(LINT_OPTS) $(CPPFLAGS) $(SRC) $(LINT_LIBS)
 	$(LINT) $(LINT_OPTS) $(CPPFLAGS) mktbls.c
 
 TAG_SRC = $(SRC) $(HDRS) $(BUILTSRC) $(BUILTHDRS)

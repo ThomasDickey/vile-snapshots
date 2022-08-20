@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Id: mktbls.c,v 1.202 2022/01/21 00:06:10 tom Exp $
+ * $Id: mktbls.c,v 1.203 2022/08/20 22:44:32 tom Exp $
  *
  */
 
@@ -243,7 +243,7 @@ static char *
 my_strncpy0(char *dest, const char *src, size_t destlen)
 {
     if (dest != 0 && src != 0 && destlen != 0) {
-	(void) memcpy(dest, src, destlen);
+	(void) strncpy(dest, src, destlen);
 	dest[destlen - 1] = EOS;
     }
     return dest;
