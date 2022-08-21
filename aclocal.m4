@@ -1,7 +1,7 @@
-dnl $Id: aclocal.m4,v 1.352 2022/08/20 19:45:31 tom Exp $
+dnl $Id: aclocal.m4,v 1.353 2022/08/21 17:11:58 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
-dnl Copyright 1996-2020,2021 by Thomas E. Dickey
+dnl Copyright 1996-2021,2022 by Thomas E. Dickey
 dnl
 dnl                         All Rights Reserved
 dnl

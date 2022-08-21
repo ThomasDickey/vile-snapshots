@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Id: proto.h,v 1.754 2022/08/04 23:52:09 tom Exp $
+ * $Id: proto.h,v 1.755 2022/08/21 16:20:48 tom Exp $
  */
 
 #ifndef VILE_PROTO_H
@@ -776,7 +776,7 @@ extern int vl_regex2tbuff (TBUFF **buf, REGEXVAL *expr, int whole_line);
 extern void dotcmdstop (void);
 extern void get_kbd_macro (TBUFF **rp);
 extern void incr_dot_kregnum (void);
-extern void kbd_kill_response (TBUFF *buf, size_t *position, int c);
+extern TBUFF * kbd_kill_response (TBUFF *buf, size_t *position, int c);
 extern void kbd_mac_check (void);
 extern void kbd_pushback (TBUFF *buf, int skip);
 extern void set_end_string (int c);

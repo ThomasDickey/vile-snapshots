@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Id: history.c,v 1.92 2015/03/13 08:52:40 tom Exp $
+ * $Id: history.c,v 1.94 2022/08/21 16:46:05 tom Exp $
  *
  */
 
@@ -391,8 +391,8 @@ hst_remove(const char *cmd)
 	TRACE(("hst_remove(%s)\n", cmd));
 	while (*cmd++)
 	    tb_unput(MyText);
-	kbd_kill_response(temp, &len, killc);
-	tb_free(&temp);
+	if ((temp = kbd_kill_response(temp, &len, killc)) != 0)
+	    tb_free(&temp);
     }
 }
 
@@ -661,7 +661,6 @@ edithistory(TBUFF **buffer,
     HST param;
     BUFFER *bp;
     LINE *lp1, *lp2;
-    int escaped = FALSE;
     int c = *given;
 
     if (!isSpecial(c)) {
@@ -713,20 +712,19 @@ edithistory(TBUFF **buffer,
 	    *given = c;
 	    return FALSE;
 
-	} else if ((h_direction != 0) && (escaped || !isGraph(c))) {
+	} else if ((h_direction != 0) && !isGraph(c)) {
 
 	    if ((lp2 = hst_scroll(lp1, &param)) != 0)
 		lp1 = lp2;
 	    else		/* cannot scroll */
 		kbd_alarm();
-	} else if (!escaped) {
+	} else {
 	    *given = c;
 	    if (h_was_edited)
 		unkeystroke(c);
 	    return h_was_edited;
 
-	} else
-	    kbd_alarm();
+	}
 
 	c = keystroke();
     }

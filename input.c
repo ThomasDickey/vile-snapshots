@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Id: input.c,v 1.373 2022/08/04 22:52:31 tom Exp $
+ * $Id: input.c,v 1.374 2022/08/21 16:20:10 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1366,7 +1366,7 @@ is_edit_char(int c)
 /*
  * Erases the response from the screen for 'kbd_string()'
  */
-void
+TBUFF *
 kbd_kill_response(TBUFF *buffer, size_t *position, int c)
 {
     char *buf = tb_values(buffer);
@@ -1399,6 +1399,7 @@ kbd_kill_response(TBUFF *buffer, size_t *position, int c)
 	}
 	tb_free(&tmp);
     }
+    return buffer;
 }
 
 /*

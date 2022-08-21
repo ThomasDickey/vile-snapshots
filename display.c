@@ -4,7 +4,7 @@
  * physical display screen the same as the virtual display screen. These
  * functions use hints that are left in the windows by the commands.
  *
- * $Id: display.c,v 1.580 2021/05/09 21:32:16 Lois.Mansot Exp $
+ * $Id: display.c,v 1.581 2022/08/21 16:24:00 tom Exp $
  */
 
 #include	"estruct.h"
@@ -4374,6 +4374,8 @@ hilite(int row, int colfrom, int colto, int on)
 #endif
 #ifdef WMDLINEWRAP
     WINDOW *wp = row2window(row);
+    if (wp == 0)
+	return;
     if (w_val(wp, WMDLINEWRAP)) {
 	if (colfrom < 0)
 	    colfrom = 0;

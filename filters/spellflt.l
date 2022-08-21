@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Id: spellflt.l,v 1.61 2019/06/23 20:28:42 tom Exp $
+ * $Id: spellflt.l,v 1.62 2022/08/21 15:42:52 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -341,7 +341,14 @@ do_filter(FILE *inputs GCC_UNUSED)
 		while (len-- && isspace(CharOf(buffer[len]))) {
 		    buffer[len] = 0;
 		}
-		if (*buffer) {
+		/*
+		 * Ignore the word if it is all blanks, or if it contains
+		 * wildcards which would make the insertion expand into
+		 * multiple entries.
+		 */
+		if (len != 0
+		    && vl_index(buffer, zero_or_more) == 0
+		    && vl_index(buffer, zero_or_all) == 0) {
 		    /*
 		     * If user did not override with an entry in
 		     * spell.keywords, add the latest as a misspelled word to

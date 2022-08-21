@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Id: mktbls.c,v 1.203 2022/08/20 22:44:32 tom Exp $
+ * $Id: mktbls.c,v 1.204 2022/08/21 14:51:39 tom Exp $
  *
  */
 
@@ -2478,11 +2478,11 @@ main(int argc, char *argv[])
 
 	    case SECT_VARS:
 		if (r != 1
-		    || (!strcmp(vec[1], "bool")
-			&& !strcmp(vec[1], "enum")
-			&& !strcmp(vec[1], "int")
-			&& !strcmp(vec[1], "string")
-			&& !strcmp(vec[1], "regex")))
+		    || (strcmp(vec[1], "bool")
+			&& strcmp(vec[1], "enum")
+			&& strcmp(vec[1], "int")
+			&& strcmp(vec[1], "string")
+			&& strcmp(vec[1], "regex")))
 		    badfmt("looking for mode datatype");
 		(void) my_strncpy(modetype, vec[1], sizeof(modetype));
 		break;

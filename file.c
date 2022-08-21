@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Id: file.c,v 1.463 2018/10/26 01:19:45 tom Exp $
+ * $Id: file.c,v 1.465 2022/08/21 15:18:12 tom Exp $
  */
 
 #include "estruct.h"
@@ -222,7 +222,7 @@ check_visible_files_changed(void)
 
 #ifdef MDCHK_MODTIME
 int
-get_modtime(BUFFER *bp, time_t * the_time)
+get_modtime(BUFFER *bp, time_t *the_time)
 {
     if (isInternalName(bp->b_fname))
 	*the_time = 0;
@@ -315,7 +315,7 @@ CleanAfterPipe(int Wrote)
  */
 #if SYS_UNIX && OPT_SHELL
 static int
-slowtime(time_t * refp)
+slowtime(time_t *refp)
 {
     int status = FALSE;
 
@@ -975,7 +975,9 @@ insfile(int f GCC_UNUSED, int n GCC_UNUSED)
 
     TRACE((T_CALLED "insfile(%d, %d)\n", f, n));
 
-    if (!calledbefore) {
+    if (calledbefore) {
+	(void) vl_strncpy(fname, tb_values(last), sizeof(fname));
+    } else {
 	if ((status = mlreply_file("Insert file: ", &last,
 				   FILEC_READ | FILEC_PROMPT, fname)) != TRUE)
 	    returnCode(status);
@@ -1457,7 +1459,7 @@ quickreadf(BUFFER *bp, int *nlinep)
 	rc = FIOMEM;
     }
 #if OPT_ENCRYPT
-    else if ((rc = vl_resetkey(bp, (const char *) buffer)) != TRUE) {
+    else if ((rc = vl_resetkey(bp, bp->b_fname)) != TRUE) {
 	free(buffer);
     }
 #endif
