@@ -12,7 +12,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Id: wvwrap.cpp,v 1.23 2016/07/27 09:28:11 tom Exp $
+ * $Id: wvwrap.cpp,v 1.24 2022/08/21 23:38:55 tom Exp $
  */
 
 #include "w32vile.h"
@@ -91,7 +91,7 @@ asc_charstring(const LPTSTR source)
 				       NULL);
 	}
 #else
-	unsigned len = strlen(source) + 1;
+	size_t len = strlen(source) + 1;
 	target = typecallocn(char, len + 1);
 	if (target != 0)
 	    memcpy(target, source, len);
@@ -124,7 +124,7 @@ w32_charstring(const char *source)
 				       len);
 	}
 #else
-	unsigned len = strlen(source) + 1;
+	size_t len = strlen(source) + 1;
 	target = typecallocn(TCHAR, len + 1);
 	if (target != 0)
 	    memcpy(target, source, len);

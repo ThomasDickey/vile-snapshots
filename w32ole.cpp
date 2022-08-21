@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Id: w32ole.cpp,v 1.36 2020/01/17 23:12:35 tom Exp $
+ * $Id: w32ole.cpp,v 1.37 2022/08/21 23:37:31 tom Exp $
  */
 
 #include "w32vile.h"
@@ -1587,8 +1587,8 @@ oleauto_redirected_key(ULONG vk, ULONG modifier)
 
         ntwinio_redirect_hwnd(FALSE);
         sprintf(msg,
-        "Keyboard redirection to window hwnd %#0x failed, redirection disabled",
-                redirect_hwnd);
+        "Keyboard redirection to window hwnd %#0lx failed, redirection disabled",
+                (unsigned long) redirect_hwnd);
 
         /* Killed keyboard redirection, so make sure user sees error */
         w32_message_box((HWND) winvile_hwnd(), msg, MB_OK|MB_ICONSTOP);

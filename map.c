@@ -3,10 +3,9 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Id: map.c,v 1.129 2022/08/05 07:40:25 tom Exp $
+ * $Id: map.c,v 1.130 2022/08/21 23:10:09 tom Exp $
  */
 
-#include "config.h"
 #include "estruct.h"
 #include "edef.h"
 

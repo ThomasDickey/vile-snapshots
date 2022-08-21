@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Id: insert.c,v 1.191 2022/08/05 07:38:41 tom Exp $
+ * $Id: insert.c,v 1.192 2022/08/21 23:10:57 tom Exp $
  */
 
 #include	"estruct.h"
@@ -33,7 +33,7 @@
  \
 	    if ((vl_encoding >= enc_UTF8) \
 		&& b_is_utfXX(curbp) \
-		&& (limit = strlen(source)) > 1 \
+		&& (limit = (B_COUNT) strlen(source)) > 1 \
 		&& (test = vl_check_utf8(source, limit)) > 1 \
 		&& vl_conv_to_utf32(&utf8, source, (B_COUNT) test) == test) { \
 		target = (int) utf8; \
