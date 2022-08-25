@@ -1,9 +1,8 @@
-# Created by: pgf
-
 PORTNAME=	vile
-PORTVERSION=	9.8v
+PORTVERSION=	9.8w
 CATEGORIES=	editors
-MASTER_SITES=	ftp://ftp.invisible-island.net/pub/vile/current/ \
+MASTER_SITES=	https://invisible-island.net/archives/vile/current/ \
+		ftp://ftp.invisible-island.net/pub/vile/current/ \
 		https://invisible-mirror.net/archives/vile/current/
 PKGNAMEPREFIX=	x
 
@@ -14,6 +13,7 @@ MAINTAINER=	dickey@invisible-island.net
 COMMENT=	VI Like Emacs -- X11 version
 
 LICENSE=	GPLv2
+LICENSE_FILE=	${WRKSRC}/COPYING
 
 BUILD_DEPENDS=	reflex:textproc/reflex
 

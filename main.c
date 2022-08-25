@@ -21,7 +21,7 @@
  */
 
 /*
- * $Id: main.c,v 1.745 2022/08/20 22:38:01 tom Exp $
+ * $Id: main.c,v 1.748 2022/08/25 22:43:16 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -2870,22 +2870,26 @@ strncpy0(char *dest, const char *src, size_t destlen)
 char *
 vl_strncpy(char *dest, const char *src, size_t destlen)
 {
-    size_t srclen = (src != 0) ? (strlen(src) + 1) : 0;
-    return ((srclen > destlen)
-	    ? strncpy0(dest, src, destlen)
-	    : strncpy0(dest, src, srclen));
+    size_t n;
+
+    if ((src != NULL) && (destlen != 0)) {
+	for (n = 0; n < destlen; ++n) {
+	    if ((dest[n] = src[n]) == EOS)
+		break;
+	}
+	dest[destlen - 1] = EOS;
+    }
+    return dest;
 }
 
 char *
 vl_strncat(char *dest, const char *src, size_t destlen)
 {
-    size_t srclen = (src != 0) ? (strlen(src) + 1) : 0;
     size_t oldlen = strlen(dest);
 
-    if (srclen > (destlen - oldlen))
-	srclen = (destlen - oldlen);
-
-    (void) strncpy0(dest + oldlen, src, srclen);
+    if ((destlen != 0) && (oldlen < destlen)) {
+	vl_strncpy(dest + oldlen, src, destlen - oldlen);
+    }
     return dest;
 }
 
@@ -3244,10 +3248,10 @@ free_all_leaks(void)
     show_elapsed();
     trace_leaks();
 #endif
-#if defined(HAVE__NC_FREEALL)
-    _nc_freeall();
-#elif defined(HAVE__NC_FREE_TINFO)
-    _nc_free_tinfo();
+#if DISP_TERMCAP
+    tcap_leaks();
+#elif DISP_CURSES
+    curses_leaks();
 #endif
 }
 #endif /* NO_LEAKS */

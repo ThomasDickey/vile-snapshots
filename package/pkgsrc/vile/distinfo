@@ -1,7 +1,5 @@
-$NetBSD: distinfo,v 1.19 2021/10/26 10:21:42 nia Exp $
+$NetBSD: distinfo,v 1.22 2022/08/23 08:52:37 wiz Exp $
 
-BLAKE2s (vile-9.8v.tgz) = df2fbd19e655c0fd4255b929b57ece031a3c891688a77ff9e41b87a5ee24e1a3
-SHA512 (vile-9.8v.tgz) = f2f49b7f400fd11bc541be3a4a25977a89c0517fea888847cc3e185478576c8465bc81e7365bc0d86150dd91c3c86a9768862b23918f6fbecb8fde0ff5d44a02
-Size (vile-9.8v.tgz) = 2416308 bytes
-SHA1 (patch-filters_makefile.in) = c2127de2f65ee09bce3ee0fd9163be95bf686c61
-SHA1 (patch-makefile.in) = b4c61651576f48ff54a6c944cb03744110af4569
+BLAKE2s (vile-9.8w.tgz) = fea2f35a917772b1029c4ad5d62418136c92ef2d25abc80e7faa8458604591a3
+SHA512 (vile-9.8w.tgz) = 54a96b400f479c633b917691fdab5ec5098ff1d6a6f5390c085635b4449ee7f02988e52c6b442918917455d02d5d74781ed57e4f944422576cf6532caaa446af
+Size (vile-9.8w.tgz) = 2407322 bytes

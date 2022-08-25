@@ -1,5 +1,15 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20220825 (x)
+	> Tom Dickey:
+	+ add configure check for exit_curses(), exit_terminfo(), use in
+	  leak-checking
+	+ improve configure check for crypt(), non-working with OpenBSD
+	+ update package/freebsd/*
+	+ update package/pkgsrc/*
+	+ add package/openbsd/*
+	+ fix a few compiler-warnings.
+
  20220821 (w)
 	> Brendan O'Dea:
 	+ the font specification in /etc/X11/app-defaults/UXVile was being

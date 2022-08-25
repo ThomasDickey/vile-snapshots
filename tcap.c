@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Id: tcap.c,v 1.191 2022/08/20 22:42:11 tom Exp $
+ * $Id: tcap.c,v 1.192 2022/08/25 20:34:41 tom Exp $
  *
  */
 
@@ -1059,5 +1059,19 @@ TERM term =
     nullterm_mclose,		/* filled in by xterm_open() */
     nullterm_mevent,		/* filled in by xterm_open() */
 };
+
+#if NO_LEAKS
+void
+tcap_leaks(void)
+{
+#if defined(HAVE_EXIT_TERMINFO)
+    exit_terminfo(0);
+#elif defined(HAVE__NC_FREEALL)
+    _nc_freeall();
+#elif defined(HAVE__NC_FREE_TINFO)
+    _nc_free_tinfo();
+#endif
+}
+#endif
 
 #endif /* DISP_TERMCAP */

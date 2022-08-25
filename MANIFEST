@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8w
+MANIFEST for vile, version v9_8w2
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -512,13 +512,19 @@ package/freebsd/xvile/pkg-descr build-script
 package/freebsd/xvile/pkg-plist build-script
 package                         subdirectory
 package/minvile.nsi             NSIS package for minvile
-package/pkgsrc/vile               subdirectory
-package/pkgsrc/vile/ALTERNATIVES  build-script
+package/openbsd                 subdirectory
+package/openbsd/Makefile        build-script
+package/openbsd/distinfo        build-script
+package/openbsd/patches              subdirectory
+package/openbsd/patches/patch-crypt  build-script
+package/openbsd/pkg             subdirectory
+package/openbsd/pkg/DESCR       build-script
+package/openbsd/pkg/PLIST       build-script
+package/pkgsrc/vile             subdirectory
 package/pkgsrc/vile/DESCR       build-script
 package/pkgsrc/vile/Makefile    build-script
 package/pkgsrc/vile/PLIST       build-script
 package/pkgsrc/vile/distinfo    build-script
-package/pkgsrc/vile/options.mk  build-script
 package/pkgsrc/xvile            subdirectory
 package/pkgsrc/xvile/DESCR      build-script
 package/pkgsrc/xvile/Makefile   build-script

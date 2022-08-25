@@ -1,4 +1,4 @@
-dnl $Id: aclocal.m4,v 1.353 2022/08/21 17:11:58 tom Exp $
+dnl $Id: aclocal.m4,v 1.354 2022/08/25 19:39:58 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2021,2022 by Thomas E. Dickey
@@ -1185,7 +1185,7 @@ esac
 ])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CRYPT_FUNC version: 6 updated: 2020/09/08 19:32:19
+dnl CF_CRYPT_FUNC version: 7 updated: 2022/08/25 15:38:15
 dnl -------------
 dnl Check if we have a working crypt() function
 AC_DEFUN([CF_CRYPT_FUNC],
@@ -1211,14 +1211,16 @@ AC_TRY_RUN([
 extern char *crypt();
 int main(void) {
 	char *s = crypt("vi-crypt", "vi");
-	${cf_cv_main_return:-return}(strcmp("vi6r2tczBYLvM", s) != 0);
+	${cf_cv_main_return:-return}(strcmp("vi6r2tczBYLvM", s ? s : "") != 0);
 }
 	],[
 	cf_cv_crypt_works=yes],[
 	cf_cv_crypt_works=no],[
 	cf_cv_crypt_works=unknown])
 	LIBS="$cf_save_LIBS"])
-	if test "$cf_cv_crypt_works" != no ; then
+	if test "$cf_cv_crypt_works" = no ; then
+		cf_cv_crypt_func=no
+	else
 		AC_DEFINE(HAVE_CRYPT)
 		if test "$cf_cv_crypt_func" != yes ; then
 			LIBS="$cf_cv_crypt_func $LIBS"

@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Id: curses.c,v 1.51 2021/11/30 09:05:53 tom Exp $
+ * $Id: curses.c,v 1.53 2022/08/25 22:47:39 tom Exp $
  */
 
 #include "estruct.h"
@@ -45,7 +45,7 @@ static const char ANSI_palette[] =
 #define DEFAULT_BG        COLOR_BLACK
 #endif
 
-#define	Num2Color(n,dft)  ((n >= 0) ? ctrans[(n) & (ncolors-1)] : DefaultColor(dft))
+#define	Num2Color(n,dft)  ((n >= 0) ? (short)ctrans[(n) & (ncolors-1)] : DefaultColor(dft))
 #define Num2Fore(n)       Num2Color(n, DEFAULT_FG)
 #define Num2Back(n)       Num2Color(n, DEFAULT_BG)
 #endif /* OPT_COLOR */
@@ -80,9 +80,9 @@ static int used_bcolor = -999;
 static int
 compute_pair(int fg, int bg, int updateit)
 {
-    int pair;
-    int map_fg = DEFAULT_FG;
-    int map_bg = DEFAULT_BG;
+    short pair;
+    short map_fg = DEFAULT_FG;
+    short map_bg = DEFAULT_BG;
 
     if (is_default(fg) && is_default(bg)) {
 	pair = 0;
@@ -98,7 +98,7 @@ compute_pair(int fg, int bg, int updateit)
 	else
 	    map_bg = Num2Back(bg);
 	map_fg = Num2Fore(fg);
-	pair = 2 + fg;
+	pair = (short) (2 + fg);
     }
 
     if (updateit) {
@@ -506,7 +506,7 @@ curs_attr(UINT attr)
 	}
     }
 #endif
-    attrset(result);
+    attrset((int) result);
 }
 
 #else /* highlighting is a minimum attribute */
@@ -606,5 +606,17 @@ TERM term =
     nullterm_mclose,
     nullterm_mevent,
 };
+
+#if NO_LEAKS
+void
+curses_leaks(void)
+{
+#if defined(HAVE_EXIT_CURSES)
+    exit_curses(0);
+#elif defined(HAVE__NC_FREEALL)
+    _nc_freeall();
+#endif
+}
+#endif
 
 #endif /* DISP_CURSES */

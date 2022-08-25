@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Id: mktbls.c,v 1.204 2022/08/21 14:51:39 tom Exp $
+ * $Id: mktbls.c,v 1.205 2022/08/25 22:46:54 tom Exp $
  *
  */
 
@@ -239,16 +239,6 @@ static FILE *nefsms;
 static jmp_buf my_top;
 
 /******************************************************************************/
-static char *
-my_strncpy0(char *dest, const char *src, size_t destlen)
-{
-    if (dest != 0 && src != 0 && destlen != 0) {
-	(void) strncpy(dest, src, destlen);
-	dest[destlen - 1] = EOS;
-    }
-    return dest;
-}
-
 /*
  * This is probably more efficient for copying short strings into a large
  * fixed-size buffer, because strncpy always zero-pads the destination to
@@ -257,22 +247,26 @@ my_strncpy0(char *dest, const char *src, size_t destlen)
 static char *
 my_strncpy(char *dest, const char *src, size_t destlen)
 {
-    size_t srclen = (src != 0) ? (strlen(src) + 1) : 0;
-    return ((srclen > destlen)
-	    ? my_strncpy0(dest, src, destlen)
-	    : my_strncpy0(dest, src, srclen));
+    size_t n;
+
+    if ((src != NULL) && (destlen != 0)) {
+	for (n = 0; n < destlen; ++n) {
+	    if ((dest[n] = src[n]) == EOS)
+		break;
+	}
+	dest[destlen - 1] = EOS;
+    }
+    return dest;
 }
 
 static char *
 my_strncat(char *dest, const char *src, size_t destlen)
 {
-    size_t srclen = (src != 0) ? (strlen(src) + 1) : 0;
     size_t oldlen = strlen(dest);
 
-    if (srclen > (destlen - oldlen))
-	srclen = (destlen - oldlen);
-
-    (void) my_strncpy0(dest + oldlen, src, srclen);
+    if ((destlen != 0) && (oldlen < destlen)) {
+	my_strncpy(dest + oldlen, src, destlen - oldlen);
+    }
     return dest;
 }
 

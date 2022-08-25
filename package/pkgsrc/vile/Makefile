@@ -1,9 +1,10 @@
-# $NetBSD: Makefile,v 1.73 2020/05/21 07:40:28 wiz Exp $
+# $NetBSD: Makefile,v 1.79 2022/08/23 08:52:37 wiz Exp $
 
-DISTNAME=		vile-9.8v
+DISTNAME=		vile-9.8w
 CATEGORIES=		editors
-MASTER_SITES=		ftp://ftp.invisible-island.net/pub/vile/current/ \
-			https://invisible-mirror.net/archives/vile/current/
+MASTER_SITES=		https://invisible-island.net/archives/vile/current/
+MASTER_SITES+=		ftp://ftp.invisible-island.net/vile/current/
+MASTER_SITES+=		https://invisible-mirror.net/archives/vile/current/
 EXTRACT_SUFX=		.tgz
 
 MAINTAINER=		pkgsrc-users@NetBSD.org
@@ -26,7 +27,6 @@ CPPFLAGS.NetBSD+=	-DMISSING_EXTERN_ENVIRON
 MAKE_FILE=		makefile
 INSTALL_TARGET=		install install-doc install-perl
 
-DATADIR=		${PREFIX}/share/vile
 FILTERDIR=		${PREFIX}/libexec/vile
 EGDIR=			${PREFIX}/share/examples/vile
 

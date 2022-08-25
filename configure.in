@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.344 $)
+AC_REVISION($Revision: 1.346 $)
 AC_PREREQ(2.52.20210105)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Id: configure.in,v 1.344 2021/12/09 23:17:39 tom Exp $
+dnl $Id: configure.in,v 1.346 2022/08/25 20:38:59 tom Exp $
 
 define(MAKELIST, sh "$srcdir/filters/makelist.sh" "$srcdir/filters/genmake.mak")
 
@@ -646,9 +646,10 @@ CF_STDIO_UNLOCKED
 AC_HAVE_FUNCS( \
 _nc_freeall \
 _nc_free_tinfo \
+exit_curses \
+exit_terminfo \
 access \
 alarm \
-crypt \
 getcwd \
 getegid \
 geteuid \

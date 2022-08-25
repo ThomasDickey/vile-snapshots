@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Id: proto.h,v 1.755 2022/08/21 16:20:48 tom Exp $
+ * $Id: proto.h,v 1.756 2022/08/25 20:38:21 tom Exp $
  */
 
 #ifndef VILE_PROTO_H
@@ -1692,6 +1692,7 @@ extern	void	gui_update_scrollbar	(WINDOW *uwp);
 #if NO_LEAKS
 extern	void	bind_leaks (void);
 extern	void	bp_leaks (void);
+extern	void	curses_leaks (void);
 extern	void	eightbit_leaks (void);
 extern	void	ev_leaks (void);
 extern	void	fileio_leaks (void);
@@ -1706,6 +1707,7 @@ extern	void	onel_leaks (void);
 extern	void	path_leaks (void);
 extern	void	tags_leaks (void);
 extern	void	tb_leaks (void);
+extern	void	tcap_leaks (void);
 extern	void	trace_leaks (void);
 extern	void	vars_leaks (void);
 extern	void	vl_ctype_leaks(void);
