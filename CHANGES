@@ -1,7 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20220825 (x)
+ 20221115 (x)
 	> Tom Dickey:
+	+ update configure script to work around regression in grep 3.8
 	+ add configure check for exit_curses(), exit_terminfo(), use in
 	  leak-checking
 	+ improve configure check for crypt(), non-working with OpenBSD
@@ -9,6 +10,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ update package/pkgsrc/*
 	+ add package/openbsd/*
 	+ fix a few compiler-warnings.
+	+ update install-sh
+	+ update config.guess, config.sub
 
  20220821 (w)
 	> Brendan O'Dea:
