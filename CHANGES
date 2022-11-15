@@ -2,6 +2,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 
  20221115 (x)
 	> Tom Dickey:
+	+ modify configure script to "always" check for gcc attributes, working
+	  around spurious warnings reported by packagers (Gentoo #880941).
 	+ update configure script to work around regression in grep 3.8
 	+ add configure check for exit_curses(), exit_terminfo(), use in
 	  leak-checking

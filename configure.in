@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.346 $)
+AC_REVISION($Revision: 1.347 $)
 AC_PREREQ(2.52.20210105)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Id: configure.in,v 1.346 2022/08/25 20:38:59 tom Exp $
+dnl $Id: configure.in,v 1.347 2022/11/15 23:53:22 tom Exp $
 
 define(MAKELIST, sh "$srcdir/filters/makelist.sh" "$srcdir/filters/genmake.mak")
 
@@ -864,7 +864,8 @@ elif test "${enable_leaks}" = no ; then
 	test -z "${with_valgrind}" && EXTRAOBJS="$EXTRAOBJS trace\$o"
 fi
 
-CF_ENABLE_WARNINGS(Wno-unknown-pragmas)
+dnl "yes" forces check for attributes even when warnings are unwanted
+CF_ENABLE_WARNINGS(Wno-unknown-pragmas,yes)
 
 CF_INSTALL_OPTS
 
