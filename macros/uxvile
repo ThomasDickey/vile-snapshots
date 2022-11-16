@@ -1,11 +1,11 @@
 #!/bin/sh
-# $XTermId: uxvile,v 1.1 2009/10/02 22:29:33 tom Exp $
+# $XTermId: uxvile,v 1.2 2022/11/16 00:33:08 tom Exp $
 #
 # wrapper script to setup xvile with UTF-8 locale
 
 whoami=uxvile
 
-: ${XVILE_PROGRAM=xvile}
+: "${XVILE_PROGRAM:=xvile}"
 
 # Check if there is a workable locale program.  If there is not, we will read
 # something via the standard error.  Ignore whatever is written to the
@@ -65,7 +65,7 @@ if test $found != yes ; then
 		# The 'locale' program tries to do a sanity check.
 		check=`sh -c "locale >/dev/null" 2>&1`
 		if test -n "$check" ; then
-			eval ${name}=${save}
+			eval "${name}"="${save}"
 			eval export ${name}
 
 			echo "$whoami tried to use locale $value by setting \$$name" >&2

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: vile-libdir-path,v 1.3 2018/10/31 00:11:51 tom Exp $
+# $Id: vile-libdir-path,v 1.5 2022/11/16 20:43:27 tom Exp $
 # Find the given vile helper-program, either in $PATH, or in a related
 # lib-directory.  If the program is already in $PATH, echo the existing
 # $PATH, but if it is found in a related lib-directory, prepend that to $PATH
@@ -19,13 +19,13 @@ SAVE="$IFS"
 IFS=':'
 for dir in ${VILE_LIBDIR_PATH:-$PATH}
 do
-	if test -f $dir/$HELPER
+	if test -f "$dir"/"$HELPER"
 	then
 		OK_BIN=yes
 		break
 	elif test -z "$OK_LIB"
 	then
-		test -f $dir/vile || continue
+		test -f "$dir/"vile || continue
 		head=${dir%/*}
 		for libs in \
 			$head/lib \
@@ -34,7 +34,7 @@ do
 			$head/lib[1-9]*/*vile
 		do
 			test -d "$libs" || continue
-			if test -f $libs/$HELPER
+			if test -f "$libs"/"$HELPER"
 			then
 				OK_LIB=$libs
 			fi
