@@ -1,7 +1,14 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20221115 (x)
+ 20221118 (x)
 	> Tom Dickey:
+	+ re-use the configure check for -rdynamic to replace -export-dynamic
+	  in the --enable-plugins configure option (Savannah #62785).
+	+ use setgroups() to clear supplementary group-IDs when resetting
+	  uid/gid values.
+	+ when retrieving a "'" mark, it may not have been set.  For that case,
+	  use the first-line and first-column of the current buffer (report by
+	  Yuriy).
 	+ modify vile-pager to decompress the input file if it is compressed.
 	+ clean up shellcheck warnings in non-configure scripts.
 	+ modify configure script to "always" check for gcc attributes, working

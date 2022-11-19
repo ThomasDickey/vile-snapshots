@@ -8,7 +8,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Id: w32oo.cpp,v 1.21 2018/11/05 01:29:09 tom Exp $
+ * $Id: w32oo.cpp,v 1.22 2022/11/18 23:44:36 tom Exp $
  */
 
 #include "w32vile.h"
@@ -124,6 +124,7 @@ BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
     W32_CHAR      szDir[MAX_PATH];
     LPWSTR        wide_path;
 
+    (void) pData;
     switch(uMsg)
     {
         case BFFM_INITIALIZED:

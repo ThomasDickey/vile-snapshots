@@ -21,7 +21,7 @@
  */
 
 /*
- * $Id: main.c,v 1.748 2022/08/25 22:43:16 tom Exp $
+ * $Id: main.c,v 1.750 2022/11/18 23:28:31 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -37,6 +37,10 @@
 #if OPT_LOCALE
 #include	<locale.h>
 #endif /* OPT_LOCALE */
+
+#if defined(HAVE_SETGROUPS)
+#include	<grp.h>
+#endif
 
 #if CC_NEWDOSCC
 #include <io.h>
@@ -502,9 +506,16 @@ MainProgram(int argc, char *argv[])
      * or setgid'd.
      */
 #if defined(HAVE_SETUID) && defined(HAVE_SETGID) && defined(HAVE_GETEGID) && defined(HAVE_GETEUID)
-    IGNORE_RC(setgid(getegid()));
-    IGNORE_RC(setuid(geteuid()));
+    if (geteuid() != getuid() || getegid() != getgid()) {
+#if defined(HAVE_SETGROUPS)
+	gid_t gid_list[2];
+	gid_list[0] = getegid();
+	IGNORE_RC(setgroups(1, gid_list));
 #endif
+	IGNORE_RC(setgid(getegid()));
+	IGNORE_RC(setuid(geteuid()));
+    }
+#endif /* HAVE_SETUID, etc */
 
     get_executable_dir();
 

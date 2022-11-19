@@ -1,4 +1,4 @@
-dnl $Id: aclocal.m4,v 1.355 2022/10/02 23:55:56 tom Exp $
+dnl $Id: aclocal.m4,v 1.357 2022/11/18 00:33:00 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2021,2022 by Thomas E. Dickey
@@ -2230,7 +2230,7 @@ rm -rf ./conftest*
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_OPT_RDYNAMIC version: 6 updated: 2020/12/31 20:19:42
+dnl CF_GCC_OPT_RDYNAMIC version: 7 updated: 2022/11/17 19:29:37
 dnl -------------------
 dnl "Newer" versions of gcc support the -rdynamic option:
 dnl		Pass the flag -export-dynamic to the ELF linker, on targets that
@@ -2244,7 +2244,7 @@ AC_DEFUN([CF_GCC_OPT_RDYNAMIC],[
 if test "x$CLANG_COMPILER" = "xyes"
 then
 	AC_MSG_WARN(clang may only pretend to honor gcc -rdynamic option)
-else
+fi
 
 AC_CACHE_CHECK([if $CC has -rdynamic option],cf_cv_gcc_opt_rdynamic,[
 
@@ -2269,7 +2269,6 @@ AC_TRY_LINK([#include <stdio.h>],
 
 CFLAGS="$cf_save_CFLAGS"
 ])
-fi
 
 if test "$cf_cv_gcc_opt_rdynamic" = yes ; then
 	CF_ADD_CFLAGS([-rdynamic])

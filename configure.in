@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.347 $)
+AC_REVISION($Revision: 1.349 $)
 AC_PREREQ(2.52.20210105)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Id: configure.in,v 1.347 2022/11/15 23:53:22 tom Exp $
+dnl $Id: configure.in,v 1.349 2022/11/18 00:03:15 tom Exp $
 
 define(MAKELIST, sh "$srcdir/filters/makelist.sh" "$srcdir/filters/genmake.mak")
 
@@ -669,6 +669,7 @@ realpath \
 select \
 setbuffer \
 setgid \
+setgroups \
 setitimer \
 setsid \
 setuid \
@@ -1017,11 +1018,11 @@ cf_need_libdl=no
 test "$VILE_LOADABLE_FILTERS" != none && cf_need_libdl=yes
 test "$enable_plugins"        != no   && cf_need_libdl=yes
 
+if test "$VILE_LOADABLE_FILTERS" != none || test "$enable_plugins" != no ; then
+	CF_GCC_OPT_RDYNAMIC
+fi
+
 if test "$enable_plugins" != no ; then
-	if test "$GCC" = yes ; then
-		LDFLAGS="$LDFLAGS -export-dynamic"
-	# TODO: how to do with other compilers ? can libtool help ?
-	fi
 	AC_DEFINE(OPT_PLUGIN,1,[Define to 1 if plugin support should be compiled-in])
 	EXTRAOBJS="$EXTRAOBJS plugin\$o"
 fi
@@ -1031,26 +1032,26 @@ if test "$cf_need_libdl" = yes ; then
 fi
 
 if test "$VILE_LOADABLE_FILTERS" != none ; then
-	if test "$GCC" = yes ; then
-		CF_GCC_OPT_RDYNAMIC
-		if test "x$cf_cv_gcc_opt_rdynamic" = "xno"
+	if test "x$cf_cv_gcc_opt_rdynamic" = "xno"
+	then
+		if test "$VILE_BUILT_IN_FILTERS" = none
 		then
-			if test "$VILE_BUILT_IN_FILTERS" = none
-			then
-				VILE_BUILT_IN_FILTERS="$VILE_LOADABLE_FILTERS"
-				VILE_LOADABLE_FILTERS=none
-				AC_MSG_WARN(will use built-in filters instead)
-			else
-				AC_MSG_ERROR(cannot mix built-in and loadable-filters)
-			fi
+			VILE_BUILT_IN_FILTERS="$VILE_LOADABLE_FILTERS"
+			VILE_LOADABLE_FILTERS=none
+			AC_MSG_WARN(will use built-in filters instead)
 		else
-			SH_CFLAGS="-fPIC"
-			SH_LDFLAGS="-shared"
+			AC_MSG_ERROR(cannot mix built-in and loadable-filters)
 		fi
 	else
-		# this works for Solaris and IRIX64
-		SH_CFLAGS="-KPIC"
-		SH_LDFLAGS="-G"
+		if test "$GCC" = yes ; then
+			SH_CFLAGS="-fPIC"
+			SH_LDFLAGS="-shared"
+		else
+			# FIXME - CF_SHARED_OPTS?
+			# this works for Solaris and IRIX64
+			SH_CFLAGS="-KPIC"
+			SH_LDFLAGS="-G"
+		fi
 	fi
 fi
 

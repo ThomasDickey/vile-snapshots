@@ -1,5 +1,5 @@
 /*
- * $Id: w32vile.h,v 1.10 2014/03/24 23:03:08 tom Exp $
+ * $Id: w32vile.h,v 1.11 2022/11/18 23:42:23 tom Exp $
  *
  * Do the pragmas in a separate file to avoid contaminating portable code.
  */
@@ -22,7 +22,7 @@
 #define _MSC_VER 0		/* could be MinGW */
 #endif
 
-#if (_MSC_VER >= 1300)
+#if (_MSC_VER >= 1300) || defined(__x86_64) || defined(_IA64_) || defined(_AMD64_)
 #define CWAIT_PARAM_TYPE   intptr_t
 #define DIALOG_PROC_RETVAL INT_PTR	/* but it still returns TRUE or FALSE */
 #define SETTIMER_RETVAL    UINT_PTR

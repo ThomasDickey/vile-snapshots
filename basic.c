@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Id: basic.c,v 1.179 2022/08/04 21:19:27 tom Exp $
+ * $Id: basic.c,v 1.180 2022/11/17 22:30:41 tom Exp $
  *
  */
 
@@ -1503,6 +1503,10 @@ get_nmmark(int c, MARK *markp)
     *markp = nullmark;
     if (c == SQUOTE) {		/* use the 'last dot' mark */
 	*markp = curwp->w_lastdot;
+	if (markp->l == NULL) {
+	    markp->l = lforw(buf_head(curbp));
+	    markp->o = 0;
+	}
     } else {
 #if OPT_SELECTIONS
 	if (c == '<') {
