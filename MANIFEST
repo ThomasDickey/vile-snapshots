@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8w6
+MANIFEST for vile, version v9_8w7
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -429,6 +429,7 @@ icons/sink.xpm                  X bitmap for vile icon
 icons/sink_48x48.png            png-formatted sink-icon 48x48
 icons/sink_48x48.svg            svg-formatted sink-icon on 48x48 grid
 icons/sink_48x48.xcf            Gimp-formatted sink-icon scaled to 48x48
+icons/vile-mini.ico             Windows icon, for vile
 icons/vile-mini.svg             just the tildes from vile_48x48.svg, resized.
 icons/vile-mini_16x16.xpm       16x16 pixmap from vile-mini.svg
 icons/vile-mini_32x32.xpm       32x32 pixmap from vile-mini.svg
@@ -519,11 +520,13 @@ package/openbsd/patches/patch-crypt  build-script
 package/openbsd/pkg             subdirectory
 package/openbsd/pkg/DESCR       build-script
 package/openbsd/pkg/PLIST       build-script
-package/pkgsrc/vile             subdirectory
+package/pkgsrc/vile               subdirectory
+package/pkgsrc/vile/ALTERNATIVES  build-script
 package/pkgsrc/vile/DESCR       build-script
 package/pkgsrc/vile/Makefile    build-script
 package/pkgsrc/vile/PLIST       build-script
 package/pkgsrc/vile/distinfo    build-script
+package/pkgsrc/vile/options.mk  build-script
 package/pkgsrc/xvile            subdirectory
 package/pkgsrc/xvile/DESCR      build-script
 package/pkgsrc/xvile/Makefile   build-script

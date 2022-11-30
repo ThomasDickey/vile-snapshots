@@ -1,4 +1,4 @@
-// $Id: w32info.rc,v 1.21 2022/08/25 18:29:57 tom Exp $
+// $Id: w32info.rc,v 1.22 2022/11/29 00:14:12 tom Exp $
 // vile:rcmode fk=8bit
 
 #include <windows.h>
@@ -16,7 +16,7 @@ BEGIN
   BEGIN
     BLOCK "040904B0"
     BEGIN
-      VALUE "CompanyName",      "http://invisible-island.net/vile/"
+      VALUE "CompanyName",      "https://invisible-island.net/vile/"
       VALUE "FileDescription",  "vile - Vi LIke Emacs"
       VALUE "FileVersion",      "9.8.24.0"
       VALUE "InternalName",     "WinVile"

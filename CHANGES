@@ -1,7 +1,19 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20221118 (x)
+ 20221130 (x)
 	> Tom Dickey:
+	+ improve icons for WinVile:
+	  + generate ".ico" files using Inkscape to convert the ".svg" files to
+	    512x512 ".png" file, and then ImageMagick to convert those into
+	    multi-image icons.  This includes a 256x256 32-bit color image, for
+	    Windows' "Large" icons.
+	  + change the default directory for the winvile ".iss" installers to
+	    use "-" rather than " " in the directory name.  This works around
+	    two of the bugs seen with Windows 10: if the pathname used for the
+	    icon (i.e., the ".exe" file) contains blanks, Windows 10 shows only
+	    the lowest-resolution image for "Medium" icons.  It also ignores
+	    the largest image.
+	+ update URLs in help-file, adding /archives on main site.
 	+ re-use the configure check for -rdynamic to replace -export-dynamic
 	  in the --enable-plugins configure option (Savannah #62785).
 	+ use setgroups() to clear supplementary group-IDs when resetting
