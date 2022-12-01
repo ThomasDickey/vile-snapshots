@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Id: statevar.c,v 1.167 2021/11/29 22:45:32 tom Exp $
+ * $Id: statevar.c,v 1.169 2022/12/01 22:43:12 tom Exp $
  */
 
 #include	<estruct.h>
@@ -1551,6 +1551,18 @@ var_SEED(TBUFF **rp, const char *vp)
 }
 
 #if OPT_SHELL
+int
+var_LOOK_IN_CWD(TBUFF **rp, const char *vp)
+{
+    return any_rw_BOOL(rp, vp, &look_in_cwd);
+}
+
+int
+var_LOOK_IN_HOME(TBUFF **rp, const char *vp)
+{
+    return any_rw_BOOL(rp, vp, &look_in_home);
+}
+
 int
 var_SHELL(TBUFF **rp, const char *vp)
 {

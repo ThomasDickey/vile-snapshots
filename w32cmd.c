@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Id: w32cmd.c,v 1.61 2020/01/17 23:25:02 tom Exp $
+ * $Id: w32cmd.c,v 1.62 2022/12/01 23:50:00 tom Exp $
  */
 
 #include "estruct.h"
@@ -1705,11 +1705,9 @@ get_printing_font(HDC hdc, HWND hwnd)
 		     * context that does not match the display context.  This is an
 		     * informational message only -- printing can proceed.
 		     */
-		    sprintf(msg,
-			    "info: Fontmapper substituted \"%s\" for \"%s\"",
+		    mlforce("info: Fontmapper substituted \"%s\" for \"%s\"",
 			    mapper_face,
 			    str_rslts.face);
-		    mlforce(msg);
 		}
 		RestoreDC(hdc, -1);
 		free(mapper_face);

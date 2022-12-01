@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Id: bind.c,v 1.378 2018/10/24 00:14:57 tom Exp $
+ * $Id: bind.c,v 1.379 2022/12/01 22:48:02 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1818,13 +1818,13 @@ cfg_locate(char *fname, UINT which)
 	returnString(fname);
 
     /* look in the current directory */
-    if (which & FL_CDIR) {
+    if (look_in_cwd && (which & FL_CDIR)) {
 	if (check_file_access(fname, FL_CDIR | mode) == TRUE) {
 	    returnString(fname);
 	}
     }
 
-    if ((which & FL_HOME)	/* look in the home directory */
+    if (look_in_home && (which & FL_HOME)	/* look in the home directory */
 	&&((sp = locate_fname(home_dir(), fname, FL_HOME | mode)) != 0))
 	returnString(sp);
 
@@ -1950,12 +1950,12 @@ list_which(LIST_ARGS)
 	    fname);
 
     /* look in the current directory */
-    if (uflag & FL_CDIR) {
+    if (look_in_cwd && (uflag & FL_CDIR)) {
 	bprintf("\n$cwd");
 	list_one_fname(fname, FL_CDIR | mode);
     }
 
-    if (uflag & FL_HOME) {	/* look in the home directory */
+    if (look_in_home && (uflag & FL_HOME)) {	/* look in the home directory */
 	bprintf("\n$HOME");
 	list_which_fname(home_dir(), fname, FL_HOME | mode);
     }

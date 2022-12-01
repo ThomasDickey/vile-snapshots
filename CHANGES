@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20221130 (x)
+ 20221201 (x)
 	> Tom Dickey:
+	+ add $look-in-cwd, $look-in-home variables to allow override of macro
+	  search path.
 	+ improve icons for WinVile:
 	  + generate ".ico" files using Inkscape to convert the ".svg" files to
 	    512x512 ".png" file, and then ImageMagick to convert those into

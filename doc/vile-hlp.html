@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.123 2022/11/29 00:19:41 tom Exp $
+  $Id: vile-hlp.html,v 1.124 2022/12/01 22:54:00 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
@@ -5840,6 +5840,23 @@ unbind-selmode-key
       <td><a name="modevar-locale" id="modevar-locale">$locale</a>
       </td>
       <td>locale, which determines character type (read only)</td>
+    </tr>
+
+    <tr>
+      <td><a name="modevar-look-in-cwd" id=
+      "modevar-look-in-cwd">$look-in-cwd</a>
+      </td>
+      <td>true if startup files are sought in the current directory
+      before trying <code>$HOME</code> or
+      <code>$startup-path</code>.</td>
+    </tr>
+
+    <tr>
+      <td><a name="modevar-look-in-home" id=
+      "modevar-look-in-home">$look-in-home</a>
+      </td>
+      <td>true if startup files are sought in the home directory
+      before trying <code>$startup-path</code>.</td>
     </tr>
 
     <tr>

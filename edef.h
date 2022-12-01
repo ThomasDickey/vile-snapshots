@@ -6,7 +6,7 @@
  */
 
 /*
- * $Id: edef.h,v 1.376 2020/01/17 22:36:11 tom Exp $
+ * $Id: edef.h,v 1.378 2022/12/01 22:43:12 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -331,6 +331,8 @@ decl_uninit( B_COUNT old_working );	/* previous-value for slowreadf	*/
 
 #if OPT_SHELL
 decl_init( int cd_on_open, FALSE );
+decl_init( int look_in_cwd, FALSE );
+decl_init( int look_in_home, FALSE );
 #endif
 
 	/* These pointers are nonnull only while animating a given buffer or

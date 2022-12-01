@@ -21,7 +21,7 @@
  */
 
 /*
- * $Id: main.c,v 1.750 2022/11/18 23:28:31 tom Exp $
+ * $Id: main.c,v 1.751 2022/12/01 22:25:29 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -2002,6 +2002,13 @@ init_state_value(int which)
     case VAR_LIBDIR_PATH:
 	value = default_libdir_path();
 	break;
+#if OPT_SHELL
+    case VAR_LOOK_IN_CWD:
+	/* FALLTHRU */
+    case VAR_LOOK_IN_HOME:
+	value = "true";
+	break;
+#endif
 #if OPT_MENUS
     case VAR_MENU_FILE:
 	value = default_menu_file();
