@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: vilefilt.l,v 1.76 2022/08/21 14:48:45 tom Exp $
+ * $Id: vilefilt.l,v 1.78 2022/12/02 23:22:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -15,9 +15,9 @@
 
 #include <filters.h>
 
-#define FLTSTACK_EXTRA int with_state; int with_active;
+#define FLTSTACK_EXTRA int with_state;
 #define FltStack_WITH_STATE   FLTSTACK_THIS.with_state
-#define FltStack_WITH_ACTIVE  FLTSTACK_THIS.with_active
+#define FltStack_WITH_ACTIVE  FLTSTACK_THIS.with_state
 #include <fltstack.h>
 
 #if defined(_estruct_h) && !SMALLER

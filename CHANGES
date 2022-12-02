@@ -2,6 +2,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 
  20221201 (x)
 	> Tom Dickey:
+	+ amend change in filters/vilefilt.l for Coverity warning (cf: 9.8w)
 	+ add $look-in-cwd, $look-in-home variables to allow override of macro
 	  search path.
 	+ improve icons for WinVile:
