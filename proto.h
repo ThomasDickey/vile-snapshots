@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Id: proto.h,v 1.756 2022/08/25 20:38:21 tom Exp $
+ * $Id: proto.h,v 1.757 2022/12/20 01:19:34 tom Exp $
  */
 
 #ifndef VILE_PROTO_H
@@ -902,6 +902,10 @@ extern void addtosysmap (const char *seq, int seqlen, int code);
 extern void delfromsysmap (const char *seq, int seqlen);
 extern void map_drain (void);
 extern void mapungetc (int c);
+
+#if OPT_MULTIBYTE
+extern int map_to_command_char (int c);
+#endif
 
 /* menu.c */
 #if OPT_MENUS

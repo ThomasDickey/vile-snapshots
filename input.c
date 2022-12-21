@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Id: input.c,v 1.374 2022/08/21 16:20:10 tom Exp $
+ * $Id: input.c,v 1.375 2022/12/21 00:58:23 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1677,12 +1677,17 @@ reallyEditMiniBuffer(TBUFF **buf,
     /*
      * Anything that does not fit into 8 bits has to be chopped up to pass it
      * into the command-interpreting and data-insertion.  Do this by converting
-     * to UTF-8 and recurring.
+     * to UTF-8 and (if that does not map to a byte) recurring.
      *
      * As a special case, codes in 128..255 have to be converted to UTF-8, but
      * we want to do this only for the case where input is assumed to be in
      * UTF-8.  That makes it still usable for ASCII and Latin-1 editing.
      */
+    if (!is8Bits(c) && b_is_utfXX(bminip) && !insertmode) {
+	int c2 = map_to_command_char(c);
+	if (c2 >= 0)
+	    c = c2;
+    }
     if (!recur
 	&& ((char2int(c) >= (int) iBIT(MinCBits))
 	    || (char2int(c) >= 128 && b_is_utfXX(bminip)))) {

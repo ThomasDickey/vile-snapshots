@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Id: map.c,v 1.130 2022/08/21 23:10:09 tom Exp $
+ * $Id: map.c,v 1.131 2022/12/21 00:36:43 tom Exp $
  */
 
 #include "estruct.h"
@@ -756,6 +756,27 @@ sysmapped_c(void)
 	return c;		/* see comment in ttgetc */
 
     TRACE(("mapped/getc:%c (0x%X)\n", c, c));
+#if OPT_MULTIBYTE
+    if (!is8Bits(c)) {
+	TRACE(("reading_msg_line  %d\n", reading_msg_line));
+	TRACE(("insertmode        %d\n", insertmode));
+	if (!reading_msg_line && !insertmode) {
+	    UCHAR temp[MAX_UTF8];
+	    int j;
+	    int rc;
+	    rc = vl_conv_to_utf8(temp, (UINT) c, (B_COUNT) MAX_UTF8);
+	    if (rc > 1) {
+		TRACE(("...push back UTF-8 encoding\n"));
+		for (j = 1; j < rc; ++j) {
+		    TRACE(("...pushing back 0x%02x\n", temp[j]));
+		    itb_append(&sysmappedchars, temp[j]);
+		}
+		c = temp[0];
+		TRACE(("...proceed with 0x%02x\n", temp[0]));
+	    }
+	}
+    }
+#endif
 
     save_keystroke(c);
 
@@ -867,21 +888,27 @@ mapped_c(int remap, int raw)
     int speckey = FALSE;
     static ITBUFF *mappedchars = NULL;
 
+    TRACE((T_CALLED "mapped_c(remap:%d, raw:%d)\n", remap, raw));
+
     /* still some pushback left? */
     mapgetc_raw_flag = raw;
     c = mapgetc();
 
     if (((UINT) c & YESREMAP) == 0 && (!remap || ((UINT) c & NOREMAP)))
-	return STRIP_REMAPFLAGS(c);
+	returnCode(STRIP_REMAPFLAGS(c));
 
     c = STRIP_REMAPFLAGS(c);
 
-    if (reading_msg_line)
+    if (reading_msg_line) {
 	mp = 0;
-    else if (insertmode)
+	TRACE(("...using no mapping\n"));
+    } else if (insertmode) {
 	mp = map_insert;
-    else
+	TRACE(("...using insert-mapping\n"));
+    } else {
 	mp = map_command;
+	TRACE(("...using command-mapping\n"));
+    }
 
     /* if we got a function key from the lower layers, turn it into '#c'
        and see if the user remapped that */
@@ -917,7 +944,7 @@ mapped_c(int remap, int raw)
 	    c = STRIP_REMAPFLAGS(mapgetc());
 	    if (c != poundc)
 		dbgwrite("BUG: # problem in mapped_c");
-	    return (STRIP_REMAPFLAGS(mapgetc()) | (int) SPEC);
+	    returnCode((STRIP_REMAPFLAGS(mapgetc()) | (int) SPEC));
 	}
 
 	c = mapgetc();
@@ -949,9 +976,63 @@ mapped_c(int remap, int raw)
     } while (matched &&
 	     ((remap && !((UINT) c & NOREMAP)) || ((UINT) c & YESREMAP)));
 
-    return STRIP_REMAPFLAGS(c);
-
+    returnCode(STRIP_REMAPFLAGS(c));
 }
+
+#if OPT_MULTIBYTE
+static ITBUFF *u2b_input;
+
+static int
+u2b_mapgetc(void)
+{
+    return itb_next(u2b_input);
+}
+
+static int
+u2b_mapped_c_avail(void)
+{
+    return itb_more(u2b_input);
+}
+
+static int
+u2b_mapped_c_start(void)
+{
+    return TRUE;
+}
+
+/*
+ * Check if the given character maps (using the command-mapping) to one byte.
+ * If so, return that (i.e., in the range 0..255).  Otherwise, return -1.
+ */
+int
+map_to_command_char(int c)
+{
+    UCHAR temp[MAX_UTF8];
+    int used = vl_conv_to_utf8(temp, (UINT) c, sizeof(temp));
+    if (used > 1) {
+	int j;
+	int matched;
+	static ITBUFF *u2b_output;
+
+	(void) itb_init(&u2b_input, esc_c);
+	(void) itb_init(&u2b_output, esc_c);
+	for (j = 0; j < used; ++j) {
+	    itb_append(&u2b_input, temp[j]);
+	}
+	matched = maplookup(u2b_mapgetc(),
+			    &u2b_output,
+			    map_command,
+			    u2b_mapgetc,
+			    u2b_mapped_c_avail,
+			    u2b_mapped_c_start,
+			    TRUE);
+	if (matched == used && itb_length(u2b_output) == 1) {
+	    c = itb_values(u2b_output)[0];
+	}
+    }
+    return c;
+}
+#endif
 
 static int abbr_curr_off;
 static int abbr_search_lim;

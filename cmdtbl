@@ -17,7 +17,7 @@
 # The entries are functions within the editor.  They _must_ match the
 #  functions' names.  On the same line as the name is the set of flags
 #  describing that function.
-# Also accompanying each function is a list of english names  for the
+# Also accompanying each function is a list of English names  for the
 #  command, in double quotes, and a list of keys bound to the command,
 #  in single quotes.  These are the default key bindings -- they can change
 #  at runtime.  English names must be all lowercase.
@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Id: cmdtbl,v 1.273 2013/03/31 14:13:46 tom Exp $
+# $Id: cmdtbl,v 1.274 2022/12/05 23:07:26 tom Exp $
 #
 #
 
@@ -572,7 +572,7 @@ desall_s_bind	NONE			OPT_REBIND
 des_keynames	NONE			OPT_REBIND
 	"list-key-names"		!FEWNAMES
 	"show-key-names"
-	<show a list of all function-key that may be bound with #-syntax>
+	<show a list of all function-keys that may be bound with #-syntax>
 descolors	NONE			OPT_SHOW_COLORS
 	"list-colors"			!FEWNAMES
 	"show-colors"

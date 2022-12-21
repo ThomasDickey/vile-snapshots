@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Id: trace.c,v 1.121 2018/10/24 00:15:22 tom Exp $
+ * $Id: trace.c,v 1.122 2022/12/18 23:24:42 tom Exp $
  */
 
 #include <estruct.h>
@@ -312,7 +312,7 @@ retrace_code(int code)
 void *
 retrace_ptr(void *code)
 {
-    Trace(T_RETURN "%p\n", TRACE_NULL(code));
+    Trace(T_RETURN "%p\n", code);
     return code;
 }
 

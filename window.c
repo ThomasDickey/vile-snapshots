@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Id: window.c,v 1.133 2020/08/30 23:44:12 tom Exp $
+ * $Id: window.c,v 1.134 2022/12/05 23:08:38 tom Exp $
  */
 
 #include	"estruct.h"
@@ -640,7 +640,7 @@ splitw(int f, int n)
 	lp = curwp->w_line.l;
 	ntrd = 0;
 	if (f == FALSE) {
-	    /* pop-up should go whereever dot is not */
+	    /* pop-up should go wherever dot is not */
 	    while (lp != DOT.l) {
 		ntrd += line_height(wp, lp);
 		lp = lforw(lp);

@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20221201 (x)
+ 20221220 (x)
 	> Tom Dickey:
+	+ modify command- and minibuffer-mapping to allow for a ":map" command
+	  to map a Unicode value past 255 into an ASCII byte (report by Yuriy)
 	+ amend change in filters/vilefilt.l for Coverity warning (cf: 9.8w)
 	+ add $look-in-cwd, $look-in-home variables to allow override of macro
 	  search path.
@@ -127,7 +129,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ improve c-filt.c support for JavaScript
 	  + handle ranges, i.e., to avoid stopping on "/"
 	  + check for regex after ":"
-	  + add m,s,u,y to permissable flags ending regex
+	  + add m,s,u,y to permissible flags ending regex
 	+ quoting-fixes in autoconf macros, per shellcheck warnings.
 	+ add check for 'U' in read_quoted() needed to make ^VUxxxx work.
 	+ modify lins_chars() to handle a case where a script inserts a UTF-8

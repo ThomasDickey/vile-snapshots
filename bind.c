@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Id: bind.c,v 1.379 2022/12/01 22:48:02 tom Exp $
+ * $Id: bind.c,v 1.380 2022/12/18 23:29:38 tom Exp $
  */
 
 #include	"estruct.h"
@@ -323,22 +323,22 @@ kcode2kbind(const BINDINGS * bs, int code)
 {
     KBIND *kbp;
 
-    TRACE(("kcode2kbind(%s, %#x)\n", bs->bufname, code));
+    TRACE((T_CALLED "kcode2kbind(%s, %#x)\n", bs->bufname, code));
 #if OPT_REBIND
     for (kbp = bs->kb_extra; kbp != bs->kb_special; kbp = kbp->k_link) {
 	if (kbp->k_code == code) {
 	    TRACE(("...found in extra-bindings\n"));
-	    return kbp;
+	    returnPtr(kbp);
 	}
     }
 #endif
     for (kbp = bs->kb_special; kbp->k_cmd; kbp++) {
 	if (kbp->k_code == code) {
 	    TRACE(("...found in special-bindings\n"));
-	    return kbp;
+	    returnPtr(kbp);
 	}
     }
-    return 0;
+    returnPtr(0);
 }
 
 #if OPT_REBIND
