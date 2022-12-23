@@ -3,7 +3,6 @@
 DISTNAME=		vile-9.8w
 CATEGORIES=		editors
 MASTER_SITES=		https://invisible-island.net/archives/vile/current/
-MASTER_SITES+=		ftp://ftp.invisible-island.net/vile/current/
 MASTER_SITES+=		https://invisible-mirror.net/archives/vile/current/
 EXTRACT_SUFX=		.tgz
 

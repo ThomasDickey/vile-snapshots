@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.124 2022/12/01 22:54:00 tom Exp $
+  $Id: vile-hlp.html,v 1.126 2022/12/23 00:54:27 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
@@ -2820,6 +2820,17 @@ describe-insmode-key
     <dd>When user toggles editing mode in the minibuffer (^G,
     mini-edit), display the minibuffer with the given attribute.
     These are the same as for visual-matches. (U)</dd>
+
+    <dt><a name="mode-mini-map" id="mode-mini-map">mini-map
+    (mm)</a>
+    </dt>
+
+    <dd>When processing keyboard input, check for the special case
+    of a Unicode value, i.e., given in UTF-8, is mapped to an ASCII
+    character with the "map" command. In this case, use the direct
+    mapping rather than interpreting the successive bytes of the
+    UTF-8 sequence. This mode is used for screen commands such as
+    h,j,k,l as well as editing the minibuffer. (U)</dd>
 
     <dt><a name="mode-mode-filename" id=
     "mode-mode-filename">mode-filename (mf)</a>
@@ -9006,7 +9017,7 @@ unbind-selmode-key
     source distribution. This step is optional on a win32 host, as
     precompiled binaries (editor and filters) are available from
     <a href=
-    "ftp://ftp.invisible-island.net/vile/">ftp://ftp.invisible-island.net/vile/</a>&nbsp;.
+    "https://invisible-island.net/archives/vile/">https://invisible-island.net/archives/vile/</a>&nbsp;.
     Note that almost all filters require preprocessing with flex
     (not a standard Windows tool) prior to compilation.</li>
   </ul>
@@ -9188,10 +9199,10 @@ $startup-path
 
   <blockquote>
     <p><a href=
-    "ftp://ftp.invisible-island.net/vile/filters.zip">ftp://ftp.invisible-island.net/vile/filters.zip</a><br>
+    "https://invisible-island.net/archives/vile/filters.zip">https://invisible-island.net/archives/vile/filters.zip</a><br>
 
     <a href=
-    "ftp://ftp.invisible-island.net/vile/vile-w32.zip">ftp://ftp.invisible-island.net/vile/vile-w32.zip</a></p>
+    "https://invisible-island.net/archives/vile/vile-w32.zip">https://invisible-island.net/archives/vile/vile-w32.zip</a></p>
   </blockquote>
 
   <p>3) extract the contents of filters.zip into COLORDIR.</p>
@@ -13187,28 +13198,17 @@ set-rgb-palette red 200 0 0
     "https://invisible-island.net/archives/vile/">https://invisible-island.net/archives/vile/</a></li>
 
     <li><a href=
-    "ftp://ftp.invisible-island.net/vile/">ftp://ftp.invisible-island.net/vile/</a></li>
-  </ul>
-
-  <p>which is mirrored at<br></p>
-
-  <ul>
-    <li><a href=
     "https://invisible-mirror.net/archives/vile/">https://invisible-mirror.net/archives/vile/</a></li>
   </ul>
 
-  <p>There are also links on vile's homepage, for both ftp and
-  http/https connections for the most often used executables and
-  sources.</p>
+  <p>There are also links on vile's homepage, for the most often
+  used executables and sources.</p>
 
   <p>Development patches are found at<br></p>
 
   <ul>
     <li><a href=
     "https://invisible-island.net/archives/vile/patches/">https://invisible-island.net/archives/vile/patches/</a></li>
-
-    <li><a href=
-    "ftp://ftp.invisible-island.net/vile/patches/">ftp://ftp.invisible-island.net/vile/patches/</a></li>
 
     <li><a href=
     "https://invisible-mirror.net/archives/vile/patches/">https://invisible-mirror.net/archives/vile/patches/</a></li>

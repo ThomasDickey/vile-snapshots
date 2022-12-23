@@ -1,5 +1,5 @@
 .\" obligatory man page for vile
-.\" $Id: vile.1,v 1.47 2018/10/31 00:36:53 tom Exp $
+.\" $Id: vile.1,v 1.48 2022/12/22 20:51:16 tom Exp $
 .ie \n(.g .ds `` \(lq
 .el       .ds `` ``
 .ie \n(.g .ds '' \(rq
@@ -129,6 +129,7 @@ and write the attributed text to the standard output.
 Invokes
 .I vile
 on the helpfile.
+See \*(``\-?\*('' for a short usage message.
 .IP "\-i | \-I"
 Tells
 .I vile
@@ -186,6 +187,15 @@ in this mode (see \*(``\-e\*(''.
 .IP \-V
 .I vile
 will report its version number.
+.IP \-?
+If an option is not recognized (or the special option \*(``?\*('' is given),
+.I vile
+prints a short usage message.
+Normally that is sent to the standard output.
+The GUI \fIwinvile\fP displays this information in a window.
+.SS SCREENSIZE OPTIONS
+.PP
+Screensize can be set from the command line for certain configurations:
 .IP "\-25 \-43 \-50 \-60"
 On PC systems you may be able to set the initial screen resolution from the
 command line.

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.22 2015/07/08 00:17:26 tom Exp $
+# $Id: makefile,v 1.24 2022/12/23 00:55:56 tom Exp $
 # construct ".doc" and ".hlp" files from the ".html" files
 
 # NOTE: the perl script uses the version from the running copy of vile rather
@@ -57,6 +57,7 @@ vile-toc.html : $(SOURCES)
 	sh make-toc.sh $(SOURCES)
 
 vile-man.html : ../vile.1
+	rm -f $@
 	MAN2HTML_OPTS=-toc ../man2html.tmp ../vile 1 man | sed -e 's,\.\./vile,vile', >$@
 
 ../vile.hlp : vile-hlp.html

@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20221220 (x)
+ 20221222 (x)
 	> Tom Dickey:
+	+ drop ftp URLs from documentation.
+	+ document short usage message "-?" option in manpage.
+	+ make the new mapping feature a mode: "mini-map".
 	+ modify command- and minibuffer-mapping to allow for a ":map" command
 	  to map a Unicode value past 255 into an ASCII byte (report by Yuriy)
 	+ amend change in filters/vilefilt.l for Coverity warning (cf: 9.8w)

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Id: input.c,v 1.375 2022/12/21 00:58:23 tom Exp $
+ * $Id: input.c,v 1.376 2022/12/23 00:31:13 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1683,7 +1683,7 @@ reallyEditMiniBuffer(TBUFF **buf,
      * we want to do this only for the case where input is assumed to be in
      * UTF-8.  That makes it still usable for ASCII and Latin-1 editing.
      */
-    if (!is8Bits(c) && b_is_utfXX(bminip) && !insertmode) {
+    if (global_g_val(GMDMINI_MAP) && !is8Bits(c) && b_is_utfXX(bminip) && !insertmode) {
 	int c2 = map_to_command_char(c);
 	if (c2 >= 0)
 	    c = c2;

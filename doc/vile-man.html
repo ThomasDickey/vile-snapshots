@@ -13,9 +13,9 @@
 </PRE><H2 id="h2-SYNOPSIS-toc"><a name="h2-SYNOPSIS">SYNOPSIS</a></H2><PRE>       <B>vile</B>  <B>[@</B><I>cmdfile</I><B>]</B> <B>[+</B><I>command</I><B>]</B> <B>[-FhIiRVv]</B> <B>[-g</B><I>NNN</I><B>]</B> <B>[-k</B><I>cryptkey</I><B>]</B> <B>[-s</B><I>pattern</I><B>]</B>
        <B>[-t</B><I>tag</I><B>]</B> <B>[</B><I>filename</I><B>]...</B>
 
-</PRE><H2 id="h2-DESCRIPTION-toc"><a name="h2-DESCRIPTION">DESCRIPTION</a></H2><PRE>       <I>vile</I> is a text editor.  This man page is fairly terse.   More  informa-
-       tion  can  be  obtained  from  the internal help, available with the <B>-h</B>
-       option or by using the ":help" command from within <I>vile</I>.
+</PRE><H2 id="h2-DESCRIPTION-toc"><a name="h2-DESCRIPTION">DESCRIPTION</a></H2><PRE>       <I>vile</I>  is  a  text  editor.   This  man  page  is  fairly  terse.   More
+       information  can be obtained from the internal help, available with the
+       <B>-h</B> option or by using the ":help" command from within <I>vile</I>.
 
        <I>xvile</I> is the same text editor, built as an X-windows application,  with
        fully integrated mouse support, scrollbars, etc.
@@ -28,14 +28,14 @@
        a font chosen to match the current locale environment.
 
 </PRE><H2 id="h2-SPIRIT-toc"><a name="h2-SPIRIT">SPIRIT</a></H2><PRE>       <I>vile</I> retains the "finger-feel" if you will, of  <I>vi</I>,  while  adding  the
-       multiple  buffer  and  multiple window features of emacs and other edi-
-       tors.  It is definitely not a vi clone, in that some substantial  stuff
-       is  missing,  and  the  screen doesn't look quite the same.  The things
-       that you tend to type over and over probably work.   Things  done  less
-       frequently,  like  configuring  a  startup file, are somewhat (or very,
-       depending on how ambitious you are) different.  But what  matters  most
-       is that one's "muscle memory" does the right thing to the text in front
-       of you, and that is what <I>vile</I> tries to do for vi users.
+       multiple  buffer  and  multiple  window  features  of  emacs  and other
+       editors.  It is definitely not a vi clone,  in  that  some  substantial
+       stuff  is  missing,  and  the  screen doesn't look quite the same.  The
+       things that you tend to type over and over probably work.  Things  done
+       less  frequently,  like  configuring  a  startup file, are somewhat (or
+       very, depending on how ambitious you are) different.  But what  matters
+       most  is that one's "muscle memory" does the right thing to the text in
+       front of you, and that is what <I>vile</I> tries to do for vi users.
 
 </PRE><H2 id="h2-OPTIONS-toc"><a name="h2-OPTIONS">OPTIONS</a></H2><PRE>       Vile accumulates most options into two temporary buffers <I>[vileinit]</I> and
        <I>[vileopts]</I>.   The former is executed before reading the first file into
@@ -65,8 +65,8 @@
 
                  vile -c'123' -c'10*goto-col' filename
 
-              to put the cursor on column 10 of line 123.  The "*"(or ":" sep-
-              arates  the  repeat  count  (used by <I>goto-col</I>) from the line- or
+              to put the cursor on column 10 of  line  123.   The  "*"(or  ":"
+              separates  the repeat count (used by <I>goto-col</I>) from the line- or
               range-specification used by line-oriented commands.
 
        @<I>cmdfile</I>
@@ -74,45 +74,46 @@
               bypass  any  normal  startup file (i.e.  <I>.vilerc</I>) or environment
               variable (i.e.  <I>$VILEINIT</I>).  This is added to <I>[vileinit]</I>.
 
-       -D     tells <I>vile</I> to trace the results of macro execution into the hid-
-              den buffer "[Trace]".
+       -D     tells <I>vile</I> to trace the results  of  macro  execution  into  the
+              hidden buffer "[Trace]".
 
        -e | -E
               Invokes  <I>vile</I>  in  "noview"  mode - changes are permitted to any
               buffer while in this mode (see "-v".
 
        -F     will run the syntax filter that applies to each filename on  the
-              command-line, and write the attributed text to the standard out-
-              put.
+              command-line,  and  write  the  attributed  text to the standard
+              output.
 
-       -h     Invokes <I>vile</I> on the helpfile.
+       -h     Invokes <I>vile</I> on the  helpfile.   See  "-?"  for  a  short  usage
+              message.
 
        -i | -I
-              Tells <I>vile</I> to use <I>vileinit.rc</I> (which is installed) as  the  ini-
-              tialization  file.  If you do not have a .vilerc, <I>vile</I> will make
-              a  short  one  that  sources  <I>vileinit.rc</I>  This  is   added   to
+              Tells  <I>vile</I>  to  use  <I>vileinit.rc</I>  (which  is  installed) as the
+              initialization file.  If you do not have a  .vilerc,  <I>vile</I>  will
+              make  a  short  one  that  sources  <I>vileinit.rc</I> This is added to
               <I>[vileinit]</I>.
 
        -k <I>cryptkey</I> | -K <I>cryptkey</I>
-              Specifies  an  encryption/decryption key.  See below for further
-              discussion.  This option applies only  locally  to  the  buffers
+              Specifies an encryption/decryption key.  See below  for  further
+              discussion.   This  option  applies  only locally to the buffers
               named on the command-line, and is not added to <I>[vileopts]</I>, since
               that is executed too late.
 
-       -R     Invokes <I>vile</I> in "readonly" mode - no writes are permitted  while
-              in  this  mode.   (This  will also be true if <I>vile</I> is invoked as
+       -R     Invokes  <I>vile</I> in "readonly" mode - no writes are permitted while
+              in this mode.  (This will also be true if  <I>vile</I>  is  invoked  as
               <I>view</I>, or if "readonly" mode is set in the startup file.)
 
        -s <I>pattern</I> | -S <I>pattern</I>
-              In the first file, <I>vile</I> will execute an initial search  for  the
-              given  pattern.  This is not the same as "-c/<I>pattern</I>" since that
-              positions the cursor to the line  matching  the  pattern.   This
+              In  the  first file, <I>vile</I> will execute an initial search for the
+              given pattern.  This is not the same as "-c/<I>pattern</I>" since  that
+              positions  the  cursor  to  the line matching the pattern.  This
               option positions the cursor within the line.
 
        -t <I>tag</I>
-              <I>vile</I> will edit the correct file and move the cursor to the loca-
-              tion of the tag.  This requires  a  tagsfile  created  with  the
-              <B>ctags(1)</B>  command.  The option -T is equivalent, and can be used
+              <I>vile</I> will edit the correct file  and  move  the  cursor  to  the
+              location  of the tag.  This requires a tagsfile created with the
+              <B>ctags(1)</B> command.  The option -T is equivalent, and can be  used
               when X11 option parsing eats the -t.
 
        -U     overrides the $system-crlf variable, making new buffers start in
@@ -121,22 +122,29 @@
        -u     overrides the $system-crlf variable, making new buffers start in
               nodos mode.
 
-       -v     Invokes <I>vile</I> in "view" mode - no changes are  permitted  to  any
+       -v     Invokes  <I>vile</I>  in  "view" mode - no changes are permitted to any
               buffer while in this mode (see "-e".
 
        -V     <I>vile</I> will report its version number.
 
+       -?     If an option is not recognized (or the  special  option  "?"  is
+              given),  <I>vile</I>  prints  a  short usage message.  Normally that is
+              sent to the standard output.   The  GUI  <I>winvile</I>  displays  this
+              information in a window.
+
+</PRE><H3 id="h3-SCREENSIZE-OPTIONS-toc"><a name="h3-SCREENSIZE-OPTIONS">SCREENSIZE OPTIONS</a></H3><PRE>       Screensize can be set from the command line for certain configurations:
+
        -25 -43 -50 -60
-              On  PC systems you may be able to set the initial screen resolu-
-              tion from the command line.
+              On  PC  systems  you  may  be  able  to  set  the initial screen
+              resolution from the command line.
 
        -80 -132
-              On VMS systems you may be able to set the initial screen resolu-
-              tion from the command line.  See <I>vile.hlp</I> for details.
+              On VMS systems you  may  be  able  to  set  the  initial  screen
+              resolution from the command line.  See <I>vile.hlp</I> for details.
 
 </PRE><H3 id="h3-X11-OPTIONS-toc"><a name="h3-X11-OPTIONS">X11 OPTIONS</a></H3><PRE>       <I>xvile</I>-specific  command-line options are detailed in the help file (see
-       "Standard X command line arguments".  The standard  ones  (e.g.,  -dis-
-       play, -fn, -geometry, -name, etc.) are all supported.
+       "Standard  X  command  line  arguments".   The  standard  ones   (e.g.,
+       -display, -fn, -geometry, -name, etc.) are all supported.
 
 </PRE><H3 id="h3-OBSOLETE-OPTIONS-toc"><a name="h3-OBSOLETE-OPTIONS">OBSOLETE OPTIONS</a></H3><PRE>       vile  recognizes  some options which duplicate the functionality of the
        POSIX "-c" option:
@@ -163,9 +171,9 @@
        <I>$HOME/.vilerc</I>,  as  a  last  resort.  See the help file for examples of
        what sorts of things might go into these command files.
 
-</PRE><H2 id="h2-COMMANDS-toc"><a name="h2-COMMANDS">COMMANDS</a></H2><PRE>       Please refer to the help available within <I>vile</I> for  <I>vile</I>-specific  com-
-       mands.   (That  document, however, assumes familiarity with vi.)  Short
-       descriptions  of  each  <I>vile</I>  command  may   be   obtained   with   the
+</PRE><H2 id="h2-COMMANDS-toc"><a name="h2-COMMANDS">COMMANDS</a></H2><PRE>       Please refer to  the  help  available  within  <I>vile</I>  for  <I>vile</I>-specific
+       commands.   (That  document,  however,  assumes  familiarity  with vi.)
+       Short descriptions of each  <I>vile</I>  command  may  be  obtained  with  the
        ":describe-function" and ":describe-key" commands.  All commands may be
        listed with ":show-commands"
 
@@ -174,11 +182,11 @@
        source.
 
 </PRE><H2 id="h2-RELATED-PROGRAMS-toc"><a name="h2-RELATED-PROGRAMS">RELATED PROGRAMS</a></H2><PRE></PRE><H3 id="h3-xvile-toc"><a name="h3-xvile">xvile</a></H3><PRE>       <I>vile</I> may also be built and installed as <I>xvile</I>, in which case it behaves
-       as  a  native X Windows application, with scrollbars, better mouse sup-
-       port, etc.
+       as  a  native  X  Windows  application,  with  scrollbars, better mouse
+       support, etc.
 
-       The help file has more information on this in the section <I>X</I> <I>Window</I> <I>Sys-</I>
-       <I>tem</I> <I>specifics</I>.
+       The help file has more information on this  in  the  section  <I>X</I>  <I>Window</I>
+       <I>System</I> <I>specifics</I>.
 
 </PRE><H3 id="h3-vile-manfilt-toc"><a name="h3-vile-manfilt">vile-manfilt</a></H3><PRE>       There  is  a  program distributed with the vile source which is usually
        installed as <I>vile-manfilt</I>.  It may be used in conjunction with <I>vile</I>  or
@@ -193,8 +201,8 @@
        which  can  embolden,  underline, or perform coloring on program source
        code.
 
-       Again, see the help file section on <I>Syntax</I> <I>Coloring</I> for  more  informa-
-       tion.
+       Again,  see  the  help  file  section  on  <I>Syntax</I>  <I>Coloring</I>  for   more
+       information.
 
 </PRE><H2 id="h2-UTILITY-SCRIPTS-toc"><a name="h2-UTILITY-SCRIPTS">UTILITY SCRIPTS</a></H2><PRE>       Vile  is not simply an interactive program.  Its macro language and use
        of environment variables lets it be useful in scripting.
@@ -210,13 +218,13 @@
 
        Unlike  a  typical  pager,  <I>vile-pager</I>  handles multi-line color escape
        sequences, and multiple levels of overstrikes.  But  unlike  a  typical
-       pager,  <I>vile-pager</I>  expects the pipe to be closed before it starts dis-
-       playing.
+       pager,  <I>vile-pager</I>  expects  the  pipe  to  be  closed before it starts
+       displaying.
 
-</PRE><H3 id="h3-vile-to-html-toc"><a name="h3-vile-to-html">vile-to-html</a></H3><PRE>       Vile's "-F" option makes it act like a smart interface to  the  collec-
-       tion  of  syntax  filters.   But its output uses vile's internal markup
-       rather than standard escape sequences.  Vile's utilities  include  pro-
-       grams which translate that markup into different formats:
+</PRE><H3 id="h3-vile-to-html-toc"><a name="h3-vile-to-html">vile-to-html</a></H3><PRE>       Vile's "-F"  option  makes  it  act  like  a  smart  interface  to  the
+       collection  of  syntax  filters.   But  its output uses vile's internal
+       markup rather than standard escape sequences.  Vile's utilities include
+       programs which translate that markup into different formats:
 
        <I>atr2ansi</I>
               converts the markup to ANSI escape sequences.
@@ -281,9 +289,9 @@
 </PRE><H2 id="h2-AUTHORS-toc"><a name="h2-AUTHORS">AUTHORS</a></H2><PRE>       <I>vile</I> was created by Paul Fox, Tom Dickey, and Kevin Buettner.
 
 </PRE><H2 id="h2-BUGS-toc"><a name="h2-BUGS">BUGS</a></H2><PRE>       The  "<B>VI</B> <B>L</B>ike <B>E</B>macs" joke isn't really funny.  It only sounds that way.
-       :-) Other suspicious behavior should be reported via the project  mail-
-       ing list, or via the web-based bug reporting system.  Both of these are
-       available here:
+       :-) Other suspicious  behavior  should  be  reported  via  the  project
+       mailing list, or via the web-based bug reporting system.  Both of these
+       are available here:
 
        https://savannah.nongnu.org/projects/vile
 
@@ -298,6 +306,7 @@
 <li><a href="#h2-OPTIONS-toc">OPTIONS</a>
 <ul>
 <li><a href="#h3-COMMON-OPTIONS-toc">COMMON OPTIONS</a></li>
+<li><a href="#h3-SCREENSIZE-OPTIONS-toc">SCREENSIZE OPTIONS</a></li>
 <li><a href="#h3-X11-OPTIONS-toc">X11 OPTIONS</a></li>
 <li><a href="#h3-OBSOLETE-OPTIONS-toc">OBSOLETE OPTIONS</a></li>
 </ul>

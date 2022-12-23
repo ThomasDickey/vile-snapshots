@@ -135,7 +135,7 @@ the termcap library distributed with EMX does not work well.  use ncurses:
 	+ ncurses 4.2 or later, with patches through September 1998, from
 
 	  https://invisible-island.net/ncurses/ncurses.faq.html
-	  ftp://ftp.invisible-island.net/ncurses/
+	  https://invisible-island.net/archives/ncurses/
 
 	+ use '$TERM=ansi', or start customizing from that.
 
@@ -256,5 +256,5 @@ tom dickey, dickey@invisible-island.net
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Id: README.PC,v 1.36 2022/11/29 00:16:09 tom Exp $
+$Id: README.PC,v 1.37 2022/12/22 21:05:54 tom Exp $
 ------------------------

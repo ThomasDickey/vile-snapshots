@@ -2,7 +2,6 @@ PORTNAME=	vile
 PORTVERSION=	9.8w
 CATEGORIES=	editors
 MASTER_SITES=	https://invisible-island.net/archives/vile/current/ \
-		ftp://ftp.invisible-island.net/pub/vile/current/ \
 		https://invisible-mirror.net/archives/vile/current/
 
 PATCH_SITES=	${MASTER_SITES:S,vile/current/,vile/patches/,g}

@@ -1,5 +1,5 @@
 Summary: VI Like Emacs editor
-# $Id: vile.spec,v 1.66 2022/08/25 18:29:57 tom Exp $
+# $Id: vile.spec,v 1.67 2022/12/22 21:06:51 tom Exp $
 Name: vile
 %define AppVersion 9.8
 Version: %{AppVersion}x
@@ -7,7 +7,7 @@ Version: %{AppVersion}x
 Release: dev
 License: GPLv2
 Group: Applications/Editors
-URL: ftp://ftp.invisible-island.net/pub/vile
+URL: https://invisible-island.net/archives/vile
 Source0: vile-9.8.tgz
 Patch1: vile-9.8a.patch.gz
 Patch2: vile-9.8b.patch.gz

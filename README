@@ -18,7 +18,6 @@ of the newest stuff is at the end, not up here where you are.
 visit
 	https://invisible-island.net/archives/vile/
 	https://invisible-mirror.net/archives/vile/
-	ftp://ftp.invisible-island.net/vile
 to be sure it's still the latest.
 
 impatient?  just type "./configure; make", and get a cup of coffee, decaf
@@ -39,7 +38,7 @@ want PC support?  look for precompiled binaries at the various ftp sites.
 want to build vile on a PC host?  refer to the file README.PC .
 
 want VMS support?  some precompiled binaries are available at
-	ftp://ftp.invisible-island.net/pub/vile
+	https://invisible-island.net/archives/vile/
 otherwise, you'll need to build vile yourself.  In either case, refer to the
 file README.VMS .
 
@@ -54,13 +53,11 @@ tom dickey, dickey@invisible-island.net (current maintainer)
 ------------------------------------------------------
 Up-to-date copies of vile, including executables for DOS, Win32 and
 OS/2 are found at
-	ftp://ftp.invisible-island.net/vile/
-
-which is mirrored at
+	https://invisible-island.net/archives/vile/
 	https://invisible-mirror.net/archives/vile/
 
 Development patches are found at
-	ftp://ftp.invisible-island.net/vile/patches/
+	https://invisible-island.net/archives/vile/patches/
 	https://invisible-mirror.net/archives/vile/patches/
 
 In addition, we have distributed copies at other sites, including
@@ -2149,5 +2146,5 @@ filters.
 	  conversions.
 
 -------------------------------
-$Id: README,v 1.108 2022/11/29 00:15:33 tom Exp $
+$Id: README,v 1.109 2022/12/22 21:05:22 tom Exp $
 -------------------------------

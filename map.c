@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Id: map.c,v 1.131 2022/12/21 00:36:43 tom Exp $
+ * $Id: map.c,v 1.132 2022/12/23 00:32:02 tom Exp $
  */
 
 #include "estruct.h"
@@ -757,7 +757,7 @@ sysmapped_c(void)
 
     TRACE(("mapped/getc:%c (0x%X)\n", c, c));
 #if OPT_MULTIBYTE
-    if (!is8Bits(c)) {
+    if (global_g_val(GMDMINI_MAP) && !is8Bits(c)) {
 	TRACE(("reading_msg_line  %d\n", reading_msg_line));
 	TRACE(("insertmode        %d\n", insertmode));
 	if (!reading_msg_line && !insertmode) {
