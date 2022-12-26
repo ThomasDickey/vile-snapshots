@@ -5,4 +5,5 @@
 /usr/share/applications
 /usr/share/icons
 /usr/share/pixmaps
-/usr/share/vile
+/usr/share/vile/vilemenu.rc
+/usr/share/vile/xshell.sh

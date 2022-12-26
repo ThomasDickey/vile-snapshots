@@ -1,13 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: macros.html,v 1.34 2020/01/18 01:58:19 tom Exp $
+  $Id: macros.html,v 1.35 2022/12/25 23:32:09 tom Exp $
 -->
-
 <html>
 <head>
   <meta name="generator" content=
-  "HTML Tidy for HTML5 for Linux version 5.2.0">
-
+  "HTML Tidy for HTML5 for Linux version 5.6.0">
   <title>Programmed Macros in vile</title>
   <meta http-equiv="Content-Type" content=
   "text/html; charset=us-ascii">
@@ -17,7 +15,6 @@
   <link rel="stylesheet" href="/css/simplestyle.css" type=
   "text/css">
 </head>
-
 <body>
   <hr>
   <a href="/">http://invisible-island.net/</a><a href=
@@ -68,33 +65,25 @@
 
     <tr>
       <th>command</th>
-
       <th>applies to</th>
-
       <th>example</th>
     </tr>
 
     <tr>
       <td>execute-buffer</td>
-
       <td>buffer</td>
-
       <td>execute-buffer cfgcmds</td>
     </tr>
 
     <tr>
       <td>execute-file</td>
-
       <td>disk file</td>
-
       <td>execute-file ~/.projcfg</td>
     </tr>
 
     <tr>
       <td>source</td>
-
       <td>disk file</td>
-
       <td>source c:/utils/proj.cfg</td>
     </tr>
   </table>
@@ -158,7 +147,6 @@
   <h3 id="numbered-toc"><a name="numbered" id="numbered">Numbered
   macros (anachronism</a>)</h3>
   The numbered macro syntax looks like so:
-
   <blockquote>
     <!--{{atr2html-->
 
@@ -239,10 +227,8 @@
   <pre>
         --with-exec-macros=N    specify count of numbered macros
 </pre>
-
   <h3 id="named-toc"><a name="named" id="named">Named macros</a></h3>
   A named macro, aka "stored procedure", uses this syntax:
-
   <blockquote>
     <!--{{atr2html-->
 
@@ -279,7 +265,6 @@
   <pre>
         bind-key &lt;unique-name&gt; &lt;keystroke&gt;
 </pre>
-
   <p>Here's the stored procedure equivalent of macro number 30
   above:</p>
 
@@ -355,7 +340,6 @@
         string
         variable
 </pre>
-
   <p>Unless overridden, the prompt for each parameter is named
   after the keyword. Override the prompt by an assignment,
   e.g.,</p>
@@ -461,12 +445,10 @@
         visual-matches
         vtflash
 </pre>
-
   <h3 id="returning-toc"><a name="returning" id=
   "returning">Returning values</a></h3>
   Any macro can return a value to a calling script. This is done
   using special variables:
-
   <dl>
     <dt><a name="modevar-return" id="modevar-return">$return</a>
     </dt>
@@ -481,7 +463,6 @@
       was assigned to $return within the macro, $_ will contain a
       readable form of the exit status. These are the standard
       values used within vile:
-
       <blockquote>
         <pre>
 TRUE
@@ -508,7 +489,6 @@ SORTOFTRUE
   <hr>
   This concludes the discussion of the macro language execution
   framework.
-
   <p>The remainder of this document describes individual language
   constructs. The presentation is bottom-up (i.e., reference
   format), so individual sections may be read in any order.</p>
@@ -580,107 +560,81 @@ SORTOFTRUE
 
     <tr>
       <th align="left">Escape code</th>
-
       <th align="left">Actual character</th>
-
       <th align="left">Example</th>
     </tr>
 
     <tr>
       <td>\n</td>
-
       <td>newline character</td>
-
       <td>(control-J)</td>
     </tr>
 
     <tr>
       <td>\r</td>
-
       <td>carriage return</td>
-
       <td>(control-M)</td>
     </tr>
 
     <tr>
       <td>\\</td>
-
       <td>backslash</td>
-
       <td>(itself: '\')</td>
     </tr>
 
     <tr>
       <td>\b</td>
-
       <td>backspace</td>
-
       <td>(control-H)</td>
     </tr>
 
     <tr>
       <td>\f</td>
-
       <td>formfeed</td>
-
       <td>(control-L)</td>
     </tr>
 
     <tr>
       <td>\t</td>
-
       <td>tab</td>
-
       <td>(control-I)</td>
     </tr>
 
     <tr>
       <td>\a</td>
-
       <td>bell</td>
-
       <td>(control-G)</td>
     </tr>
 
     <tr>
       <td>\s</td>
-
       <td>space</td>
-
       <td>(ASCII SPACE)</td>
     </tr>
 
     <tr>
       <td>\"</td>
-
       <td>quote</td>
-
       <td>(the '"' character)</td>
     </tr>
 
     <tr>
       <td>\xNN</td>
-
       <td>the character in hex (i.e. 0xNN)</td>
-
       <td>
       </td>
     </tr>
 
     <tr>
       <td>\NNN</td>
-
       <td>the character in octal (i.e. 0NNN)</td>
-
       <td>
       </td>
     </tr>
 
     <tr>
       <td>\C</td>
-
       <td>(any char)</td>
-
       <td>itself</td>
     </tr>
   </table>
@@ -713,37 +667,31 @@ SORTOFTRUE
 
     <tr>
       <th align="left">Class</th>
-
       <th align="left">Example</th>
     </tr>
 
     <tr>
       <td>Temporary variable</td>
-
       <td>%foo</td>
     </tr>
 
     <tr>
       <td>State variable</td>
-
       <td>$curcol</td>
     </tr>
 
     <tr>
       <td>Buffer variable</td>
-
       <td>&lt;main.c</td>
     </tr>
 
     <tr>
       <td>Interactive variable</td>
-
       <td>@"Enter a filename: "</td>
     </tr>
 
     <tr>
       <td>Mode variable</td>
-
       <td>$autoindent</td>
     </tr>
   </table>
@@ -838,7 +786,6 @@ SORTOFTRUE
     <dd>
       [READ ONLY] Status flags for current buffer, as shown in
       [Buffer List].
-
       <table border="1" summary="$sres versus screen size">
         <colgroup>
           <col width="100px">
@@ -846,43 +793,36 @@ SORTOFTRUE
 
         <tr>
           <th align="left">Flag</th>
-
           <th align="left">Description</th>
         </tr>
 
         <tr>
           <td>a</td>
-
           <td>autobuffer caused this to be created</td>
         </tr>
 
         <tr>
           <td>d</td>
-
           <td>directory listing</td>
         </tr>
 
         <tr>
           <td>i</td>
-
           <td>invisible, e.g., tags</td>
         </tr>
 
         <tr>
           <td>m</td>
-
           <td>modified</td>
         </tr>
 
         <tr>
           <td>s</td>
-
           <td>scratch, will be removed when popped down</td>
         </tr>
 
         <tr>
           <td>u</td>
-
           <td>unread</td>
         </tr>
       </table>
@@ -957,7 +897,6 @@ SORTOFTRUE
     <dd>
       [READ ONLY] Comma-delimited list of "interesting" compiled
       options. Currently tracked options include:
-
       <table border="1" summary="Configure Options">
         <colgroup>
           <col width="100px">
@@ -965,85 +904,66 @@ SORTOFTRUE
 
         <tr>
           <th align="left">Option</th>
-
           <th align="left">Description</th>
         </tr>
 
         <tr>
           <td>athena</td>
-
           <td>xvile built with Athena widgets</td>
         </tr>
 
         <tr>
           <td>curses</td>
-
           <td>editor uses curses terminal driver</td>
         </tr>
 
         <tr>
           <td>locale</td>
-
           <td>editor uses system's LC_CTYPE locale</td>
         </tr>
 
         <tr>
           <td>motif</td>
-
           <td>xvile built with Motif libraries</td>
         </tr>
 
         <tr>
           <td>nextaw</td>
-
           <td>xvile built with Athena widgets (NeXtaw)</td>
         </tr>
 
         <tr>
           <td>noshell</td>
-
           <td>shell commands are disabled</td>
         </tr>
 
         <tr>
           <td>oleauto</td>
-
           <td>editor supports OLE automation.</td>
         </tr>
 
         <tr>
-          <td>openlook</td>
-
-          <td>xvile built with OpenLook libraries</td>
-        </tr>
-
-        <tr>
           <td>perl</td>
-
           <td>editor includes perl interpreter</td>
         </tr>
 
         <tr>
           <td>termcap</td>
-
           <td>editor reads TERMCAP db for screen info.</td>
         </tr>
 
         <tr>
           <td>terminfo</td>
-
           <td>editor reads TERMINFO db for screen info.</td>
         </tr>
 
         <tr>
           <td>xaw</td>
-
           <td>xvile built with Athena widgets (Xaw)</td>
         </tr>
 
         <tr>
           <td>xaw3d</td>
-
           <td>xvile built with Athena widgets (Xaw3D)</td>
         </tr>
       </table>
@@ -1091,7 +1011,6 @@ SORTOFTRUE
       [READ ONLY] Returns the motion (keyword) associated with the
       current macro if it was defined using store-operator. Use
       with $cmd-count to compose the complete motion, e.g.,
-
       <blockquote>
         <!--{{atr2html-->
 
@@ -1323,7 +1242,6 @@ SORTOFTRUE
       $bufname, $identifier, $pathname) or character type ($line,
       $qidentifier, $word) must include the current editing
       position "dot".
-
       <p>The default (false) allows vile to search forward until it
       gets a match which may not necessarily include "dot".</p>
     </dd>
@@ -1337,7 +1255,6 @@ SORTOFTRUE
       return a match for a regular expression (such as $bufname,
       $identifier, $pathname) or character type ($line,
       $qidentifier, $word) to the complete match.
-
       <p>The default (false) behavior in vile matches from the
       current editing position onward.</p>
     </dd>
@@ -1351,7 +1268,6 @@ SORTOFTRUE
       variable which is a match for a regular expression (such as
       $bufname, $identifier, $pathname) or character type ($line,
       $qidentifier, $word).
-
       <p>The number is the character offset (starting at zero) of
       the match. It is set to -1 if there is no match.</p>
     </dd>
@@ -1365,7 +1281,6 @@ SORTOFTRUE
       variable which is a match for a regular expression (such as
       $bufname, $identifier, $pathname) or character type ($line,
       $qidentifier, $word).
-
       <p>The number is the character length of the match. It is set
       to -1 if there is no match.</p>
     </dd>
@@ -1649,7 +1564,6 @@ SORTOFTRUE
     <dd>
       Current screen size on a DOS PC (meaningless on a Win32
       host). Values:
-
       <table border="1" summary="$sres versus screen size">
         <colgroup>
           <col width="200px">
@@ -1657,31 +1571,26 @@ SORTOFTRUE
 
         <tr>
           <th align="left">$sres</th>
-
           <th align="left">screen size</th>
         </tr>
 
         <tr>
           <td>"2"</td>
-
           <td>"25"</td>
         </tr>
 
         <tr>
           <td>"4"</td>
-
           <td>"43"</td>
         </tr>
 
         <tr>
           <td>"5"</td>
-
           <td>"50"</td>
         </tr>
 
         <tr>
           <td>"6"</td>
-
           <td>"60"</td>
         </tr>
 
@@ -1691,7 +1600,6 @@ SORTOFTRUE
 
         <tr>
           <td>"WIDE"</td>
-
           <td>"NORMAL"</td>
         </tr>
       </table>
@@ -1862,7 +1770,6 @@ SORTOFTRUE
   they're really more like functions that return a string, entered
   by the user in response to a prompt. The prompt is the name of
   the "variable".
-
   <p>They are so similar to a query function that there is function
   which serves this exact purpose, and which should be used in
   preference. Thus, one might have previously written:</p>
@@ -1914,7 +1821,6 @@ SORTOFTRUE
 
   <ul>
     <li>Numeric arguments can be any of the following:
-
       <ul>
         <li>hexadecimal values (digits beginning with leading
         "0x")</li>
@@ -1932,7 +1838,6 @@ SORTOFTRUE
 
     <li>Boolean (or "logical") arguments will be interpreted as
     follows (without regard to upper/lowercase):
-
       <ul>
         <li>Logically "true" values:<br>
         "true", "t", "yes", "y", "on", and non-zero numerics.</li>
@@ -2069,7 +1974,6 @@ SORTOFTRUE
     <dd>
       Prompt for and return name-completion. There are two
       parameters:
-
       <ol>
         <li>category (any of "command", "buffer", "directory",
         "filename", "tags")</li>
@@ -2103,7 +2007,6 @@ SORTOFTRUE
     <dd>
       Get a key sequence from user which must be bound to a motion.
       The parameter is one of the binding names:
-
       <ul>
         <li>"command"</li>
 
@@ -2365,7 +2268,6 @@ SORTOFTRUE
     <dd>
       Evaluate value of "S" as a macro language variable itself.
       Thus if %foo has value "HOME", then
-
       <blockquote>
         <!--{{atr2html-->
 
@@ -2392,7 +2294,6 @@ SORTOFTRUE
     <dd>
       The "N" keyword tells which field to use looking for the file
       "P":
-
       <p>bin &ndash; look in vile's directory<br>
       current &ndash; look in the current directory<br>
       home &ndash; look in user's $HOME directory<br>
@@ -2452,7 +2353,6 @@ SORTOFTRUE
     <dd>
       The "N" keyword tells which field to extract from the
       pathname "P":
-
       <p>end &ndash; suffix of the filename<br>
       full &ndash; absolute path<br>
       head &ndash; directory<br>
@@ -2931,7 +2831,6 @@ SORTOFTRUE
   appends to the [Trace] buffer a copy of each line executed, the
   local variables saved/restored and intermediate states of
   expression evaluation.
-
   <p>For example,</p>
 
   <blockquote>
@@ -2996,7 +2895,6 @@ optional-command-name-aliases
   explained in the "Motion commands" section below). An example of
   a simple command is "find-tag", and here's the listing returned
   by show-commands:
-
   <blockquote>
     <pre class="code-block">
 "find-tag"               ^]
@@ -3037,7 +2935,6 @@ optional-command-name-aliases
         "join-lines"     J
           ( join CNT lines together with the current one )
 </pre>And here's a macro that joins 4 lines:
-
   <blockquote>
     <!--{{atr2html-->
 
@@ -3057,7 +2954,6 @@ optional-command-name-aliases
   a region. This latter property is an important aspect of an
   "operator command". The "show-motions" command lists the editor's
   motion commands.
-
   <p>Within a macro, the following general syntax invokes a
   motion:</p>
 
@@ -3136,7 +3032,6 @@ optional-command-name-aliases
   </dl>
   An example operator is "flip-til", and here's its show-commands
   info:
-
   <blockquote>
     <pre class="code-block">
 "flip-til"               ^A-~

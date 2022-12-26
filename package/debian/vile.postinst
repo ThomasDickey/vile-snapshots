@@ -1,4 +1,6 @@
-#!/bin/sh -e
+#!/bin/sh
+
+set -e
 
 update-alternatives --install /usr/bin/editor editor /usr/bin/vile 50 \
     --slave /usr/share/man/man1/editor.1.gz editor.1.gz \

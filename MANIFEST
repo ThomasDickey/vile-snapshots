@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8w12
+MANIFEST for vile, version v9_8w14
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -157,7 +157,7 @@ winvile.rc                      resource definitions for winvile
 word.c                          commands that operate upon words or paragraphs
 wordmov.c                       cursor-movement commands (e.g., word, spaces)
 wvwrap.cpp                      wrapper for winvile, e.g., from NT Explorer
-x11.c                           X11 (Xt, Motif or Openlook) terminal driver
+x11.c                           X11 (Xaw, Xt or Motif) terminal driver
 x11menu.c                       X11-specific part of menu support
 x11plain.c                      draw text for xvile using X11, no fontsets
 x11vile.h                       common definitions for xvile modules
@@ -473,9 +473,7 @@ macros/xvile.desktop            desktop-file for xvile
 package                         subdirectory
 package/convile.nsi             NSIS package for convile
 package/debian                  subdirectory
-package/debian/README.Debian    debian build script
 package/debian/changelog        debian build script
-package/debian/compat           debian build script
 package/debian/control          debian build script
 package/debian/copyright        debian build script
 package/debian/overrides        subdirectory
@@ -484,11 +482,11 @@ package/debian                  subdirectory
 package/debian/rules            debian build script
 package/debian/source           subdirectory
 package/debian/source/format    build-script
-package/debian                  subdirectory
+package/debian                            subdirectory
+package/debian/vile-common.README.Debian  Debian build-script
 package/debian/vile-common.docs debian build script
 package/debian/vile-common.examples  debian build script
 package/debian/vile-common.files  debian build script
-package/debian/vile-common.manpages  debian build script
 package/debian/vile-filters.files  debian build script
 package/debian/vile-filters.links  debian build script
 package/debian/vile.files       debian build script

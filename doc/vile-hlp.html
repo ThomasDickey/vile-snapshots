@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.126 2022/12/23 00:54:27 tom Exp $
+  $Id: vile-hlp.html,v 1.127 2022/12/25 23:32:24 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
@@ -5423,11 +5423,6 @@ unbind-selmode-key
           <tr>
             <td>oleauto</td>
             <td>editor supports OLE automation.</td>
-          </tr>
-
-          <tr>
-            <td>openlook</td>
-            <td>xvile built with OpenLook libraries</td>
           </tr>
 
           <tr>
@@ -11009,15 +11004,15 @@ $startup-path
   PRIMARY selection. This selection is set and manipulated as
   described in the above section entitled "Mouse Buttons".</p>
 
-  <p>Other applications, most notably OpenLook applications, use
-  the CLIPBOARD selection to exchange data between applications. On
-  many Sun keyboards, selected text is moved to the clipboard by
-  pressing the "Copy" key and pasted by pressing the "Paste" key.
-  If you find that you can not paste text selected in xvile in
-  other applications or vice-versa, it may well be that these
-  applications use the CLIPBOARD selection instead of the PRIMARY
-  selection. (The other mechanism used among really old
-  applications involves the use of a ring of cut buffers.)</p>
+  <p>Other applications use the CLIPBOARD selection to exchange
+  data between applications. On many Sun keyboards, selected text
+  is moved to the clipboard by pressing the "Copy" key and pasted
+  by pressing the "Paste" key. If you find that you can not paste
+  text selected in xvile in other applications or vice-versa, it
+  may well be that these applications use the CLIPBOARD selection
+  instead of the PRIMARY selection. (The other mechanism used among
+  really old applications involves the use of a ring of cut
+  buffers.)</p>
 
   <p>xvile provides two commands for manipulating with the
   clipboard. These are copy-to-clipboard and paste-from-clipboard.
@@ -11068,34 +11063,18 @@ $startup-path
   "drag" the slider from one place to another causing text to
   scroll continuously.</p>
 
-  <p>The Motif and OpenLook versions provide scrollbars from their
-  respective widget sets. Both versions have a slider indicating
-  the position of the window over the buffer. OpenLook's slider is
-  fixed in size with little arrows at the top and bottom of the
-  slider. Pressing on one of these arrows will cause scrolling in
-  the appropriate direction. The slider may be "grabbed" and moved
-  by pressing and dragging the middle portion between the arrows.
-  Motif's slider is solid with size varying to indicate the size of
-  the window with respect to the size of the buffer. Any portion of
-  it may be grabbed for movement. There are little arrows at the
-  top and bottom of the scroll bar which may be clicked upon to
-  cause scrolling by one line. In both of these widget sets,
-  clicking on the scrollbar either above or below the slider will
-  cause scrolling by a full page. OpenLook has two additional
-  control areas; the buffer position may be set to either the
-  beginning or end of the buffer by pressing on one of the little
-  rectangular areas at either the top or bottom of the
-  scrollbar.</p>
+  <p>The Motif version provides scrollbars from its widget set.
+  This version has a slider indicating the position of the window
+  over the buffer. In the Motif widget set, clicking on the
+  scrollbar either above or below the slider will cause scrolling
+  by a full page.</p>
 
   <p>In all versions built with scrollbars enabled, you can resize
   windows by moving the border between corresponding scrollbars
   (with the mouse). The X toolkit version is probably the most
   functional, with the windows being continuously resized as the
-  mouse is moved. The OpenLook and Motif versions wait until after
-  a position is selected to resize the windows. The OpenLook
-  version is perhaps the least functional; there is no visible
-  indication (other than the position of the mouse pointer) to
-  indicate where the new border will be.</p>
+  mouse is moved. The Motif version waits until after a position is
+  selected to resize the windows.</p>
 
   <p>Splitting and deleting of windows may also be done with the
   mouse. In each case the action is selected by pressing one of the

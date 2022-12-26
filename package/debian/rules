@@ -4,159 +4,79 @@
 # debian/rules for vile/xvile
 #
 
-# packages
-PACKAGES.indep = vile-common
-PACKAGES.arch  = vile vile-filters xvile
+SHELL = /bin/bash
+DPKG_EXPORT_BUILDFLAGS = 1
 
-# Debian 7 builds deprecate passing CFLAGS in the environment, preferring to
-# use a new "--export=make" flag.  This script works around that, to allow
-# builds with Debian 5 and 6:
-MYFLAGS= echo >myvars; \
-	test -n "$(CFLAGS)" || dpkg-buildflags --export=sh >myvars; \
-	. ./myvars; \
-	rm myvars
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
-configure = \
-	$(MYFLAGS); ../../configure \
-	--prefix=/usr \
-	--mandir='$${prefix}/share/man' \
-	--with-app-defaults=/etc/X11/app-defaults \
-	--with-locale \
-	--with-loadable-filters=all \
-	--disable-rpath-hack
+include /usr/share/dpkg/buildflags.mk
+
+configure_flags = \
+    --with-locale \
+    --with-perl \
+    --with-loadable-filters=all \
+    --disable-rpath-hack \
+    --disable-stripping
+
+xshell = x-terminal-emulator -e /usr/share/vile/xshell.sh
 
 # install path for upstream make
 TMP = $(CURDIR)/debian/tmp
 
-# use debhelper v5
-#export DH_COMPAT = 5
-
-# add -g if DEB_BUILD_OPTIONS contains the string "debug" (policy 11.1)
-ifeq ($(findstring debug,$(DEB_BUILD_OPTIONS)),)
-    debug =
-else
-    debug = -g
-endif
-
-verbose = # -v
-
-xshell = x-terminal-emulator -e $${prefix}/share/vile/xshell.sh
-
-.PHONY: all config build install binary clean config-indep config-arch \
-    build-indep build-arch install-indep install-arch binary-indep \
-    binary-arch
-
-all: build
-
-config: config-indep config-arch
-build: build-indep build-arch
-install: install-indep install-arch
-binary: binary-indep binary-arch
-clean:
+build: build-arch build-indep
+build-arch build-indep: build-stamp
+build-stamp:
 	dh_testdir
-	dh_testroot
-	dh_clean $(verbose)
 	rm -rf t
 
-config-indep: $(PACKAGES.indep:%=config-%-stamp)
-config-arch: $(PACKAGES.arch:%=config-%-stamp)
+	# Update config.guess, config.sub
+	dh_update_autotools_config
 
-build-indep: $(PACKAGES.indep:%=build-%-stamp)
-build-arch: $(PACKAGES.arch:%=build-%-stamp)
+	# Configure vile
+	dh_auto_configure --builddirectory=t/vile -- $(configure_flags)
 
-install-indep: $(PACKAGES.indep:%=install-%-stamp)
-install-arch: $(PACKAGES.arch:%=install-%-stamp)
-
-binary-indep: install-indep
-ifneq ($(PACKAGES.indep),)
-	rm -f $(PACKAGES.indep:%=install-%-stamp)
-	dh_testdir
-	dh_testroot
-	dh_installdocs       $(verbose) $(PACKAGES.indep:%=-p%)
-	dh_installman        $(verbose) $(PACKAGES.indep:%=-p%)
-	dh_installexamples   $(verbose) $(PACKAGES.indep:%=-p%)
-	dh_installchangelogs $(verbose) $(PACKAGES.indep:%=-p%) -k CHANGES
-	dh_compress          $(verbose) $(PACKAGES.indep:%=-p%)
-	dh_fixperms          $(verbose) $(PACKAGES.indep:%=-p%)
-	dh_installdeb        $(verbose) $(PACKAGES.indep:%=-p%)
-	dh_gencontrol        $(verbose) $(PACKAGES.indep:%=-p%)
-	dh_md5sums           $(verbose) $(PACKAGES.indep:%=-p%)
-	dh_builddeb          $(verbose) $(PACKAGES.indep:%=-p%)
-endif
-
-binary-arch: install-arch
-ifneq ($(PACKAGES.arch),)
-	rm -f $(PACKAGES.arch:%=install-%-stamp)
-	dh_testdir
-	dh_testroot
-	dh_link              $(verbose) $(PACKAGES.arch:%=-p%)
-	dh_installdocs       $(verbose) $(PACKAGES.arch:%=-p%)
-	dh_installmenu       $(verbose) -pvile
-	dh_strip             $(verbose) $(PACKAGES.arch:%=-p%)
-	dh_compress          $(verbose) $(PACKAGES.arch:%=-p%)
-	dh_fixperms          $(verbose) $(PACKAGES.arch:%=-p%)
-	dh_installdeb        $(verbose) $(PACKAGES.arch:%=-p%)
-	dh_shlibdeps         $(verbose) $(PACKAGES.arch:%=-p%)
-	dh_gencontrol        $(verbose) $(PACKAGES.arch:%=-p%)
-	dh_md5sums           $(verbose) $(PACKAGES.arch:%=-p%)
-	dh_builddeb          $(verbose) $(PACKAGES.arch:%=-p%)
-endif
-
-config-vile-stamp:
-	dh_testdir
-	rm -rf t/vile
-	mkdir -p t/vile
-	cd t/vile; $(configure) --with-perl
-	touch $@
-
-%-vile-common-stamp %-vile-filters-stamp: %-vile-stamp
-	touch $@
-
-config-xvile-stamp:
-	dh_testdir
-	rm -rf t/xvile
-	mkdir -p t/xvile
-	cd t/xvile; $(configure) \
-		--with-perl \
-		--with-xpm \
-		--with-screen=Xaw \
-		--with-pixmapdir='$${prefix}/share/pixmaps' \
-		--with-icondir='$${prefix}/share/icons' \
-		--with-icon-theme=hicolor
-	echo '#define DEFAULT_XSHELL "${xshell}"' >> t/xvile/config.h
-	touch $@
-
-build-vile-stamp: config-vile-stamp
-	dh_testdir
-	$(MAKE) -C t/vile all vile-perl-api.doc EXTRA_CFLAGS="$(debug)"
+	# Build vile, vile-common, vile-filters
+	$(MAKE) -C t/vile all vile-perl-api.doc
 	mkdir -p t/vile/perl
 	(cd perl; find * -type f -name '*.p[lm]' -print | \
 	    xargs grep -l =head1 | \
 	    while read file; do \
 		out=$$(echo $$file | sed 's#/#::#g; s/\.p.$$/.doc/'); \
-		pod2text $$file ../t/vile/perl/$$out; \
-		if fgrep "POD ERRORS" ../t/vile/perl/$$out >/dev/null; \
-		then \
-			echo "** errors in $$file";\
-		fi \
+		pod2text --stderr $$file ../t/vile/perl/$$out; \
 	    done)
+
+	# Configure xvile
+	dh_auto_configure --builddirectory=t/xvile -- $(configure_flags) \
+	    --with-xpm --with-screen=Xaw \
+	    --with-app-defaults=/etc/X11/app-defaults \
+	    --with-pixmapdir='$$(prefix)/share/pixmaps' \
+	    --with-icondir='$$(prefix)/share/icons' \
+	    --with-icon-theme=hicolor
+	echo '#define DEFAULT_XSHELL "$(xshell)"' >> t/xvile/config.h
+
+	# Build xvile
+	$(MAKE) -C t/xvile xvile
+
 	touch $@
 
-build-xvile-stamp: config-xvile-stamp
-	dh_testdir
-	$(MAKE) -C t/xvile xvile EXTRA_CFLAGS="$(debug)"
-	touch $@
-
-install-vile-stamp: build-vile-stamp
+clean:
 	dh_testdir
 	dh_testroot
-	dh_prep -pvile-filters -pvile-common -pvile
+	rm -f build-stamp install-stamp
+	dh_clean
+	rm -rf t
 
-	sed -i 's,^#!.*perl,#!/usr/bin/perl,' perl/vileget
+install: install-stamp
+install-stamp: build-stamp
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
 
+	# Install vile, vile-filters, vile-common
 	$(MAKE) -C t/vile DESTDIR=$(TMP) install
-	#rm -f $(TMP)/usr/bin/vile-pager  # examples
-	rm -f $(TMP)/usr/share/man/man1/vile.1  # docs
+	ls -l $(TMP)/usr/bin/vile-pager $(TMP)/usr/bin/vile-libdir-path \
+	    $(TMP)/usr/bin/vile-to-html  # examples
 	pod2man $(TMP)/usr/bin/vileget > \
 	    $(TMP)/usr/share/man/man1/vileget.1
 
@@ -164,46 +84,63 @@ install-vile-stamp: build-vile-stamp
 	install -c -m 644 debian/overrides/vile \
 	    $(TMP)/usr/share/lintian/overrides
 
-	dh_movefiles $(verbose) -pvile-filters -pvile-common -pvile
-
-	# the manpage will be compressed, but the makefile made these:
-	rm -vf $(TMP)/usr/share/man/man1/vile-*.1
-
-	# ensure that all files have been moved from debian/tmp
-	test `find $(TMP) ! -type d | wc -l` -eq 0
-
-	touch $@
-
-install-xvile-stamp: build-xvile-stamp
-	dh_testdir
-	dh_testroot
-	dh_prep -pxvile
-
-	install -d $(TMP)/usr/bin \
-	    $(TMP)/etc/X11/app-defaults \
-	    $(TMP)/usr/share/applications \
-	    $(TMP)/usr/share/icons \
-	    $(TMP)/usr/share/pixmaps \
+	# Install xvile
+	install -d $(TMP)/usr/bin $(TMP)/etc/X11/app-defaults \
+            $(TMP)/usr/share/applications $(TMP)/usr/share/pixmaps \
 	    $(TMP)/usr/share/vile
 
-	sed -i 's,^#!.*perl,#!/usr/bin/perl,' macros/lxvile
-
-	install -c t/xvile/xvile $(TMP)/usr/bin/xvile
-	install -c macros/uxvile $(TMP)/usr/bin/uxvile
-	install -c macros/lxvile $(TMP)/usr/bin/lxvile
-
-	# all of the build-scripts were moved
-	( cd t/xvile ; make install-desktop \
-		DESKTOP_DIR=$(TMP)/usr/share/applications \
-		DESKTOP_FILES="$(CURDIR)/macros/xvile.desktop $(CURDIR)/macros/uxvile.desktop" )
-
-	install -c -m 644 debian/*.xpm $(TMP)/usr/share/pixmaps
+	install -c t/xvile/xvile macros/lxvile macros/uxvile $(TMP)/usr/bin
 
 	$(MAKE) -C t/xvile DESTDIR=$(TMP) install-app install-icon
-	$(MAKE) -C t/xvile DESTDIR=$(TMP) bindir='$${datadir}' \
+	$(MAKE) -C t/xvile DESTDIR=$(TMP) bindir='$$(datadir)' \
 	    $(TMP)/usr/share/vile/vilemenu.rc \
 	    $(TMP)/usr/share/vile/xshell.sh
 
-	dh_movefiles $(verbose) -pxvile
-	dh_icons $(verbose) -pxvile
+	install -c debian/vile.mini.xpm $(TMP)/usr/share/pixmaps
+
+	(cd macros && for P in *.desktop; \
+	 do \
+	     install -c -m 644 $$P $(TMP)/usr/share/applications/dickey-$$P; \
+	 done)
+
+	dh_movefiles
 	touch $@
+
+# Build architecture-independent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_link              -a
+	dh_strip             -a
+	dh_compress          -a
+	dh_fixperms          -a
+	dh_installdeb        -a
+	dh_shlibdeps         -a
+	dh_gencontrol        -a
+	dh_md5sums           -a
+	dh_builddeb          -a
+
+# Build architecture-dependent files here.
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_installdocs       -i
+	dh_installexamples   -i
+	dh_installchangelogs -i -k CHANGES
+
+	# Cleanup permissions and #! lines.
+	chmod +x debian/vile-common/usr/share/doc/vile-common/examples/*
+	sed -i '1s%#!/usr/bin/env perl%#!/usr/bin/perl%' \
+	    debian/xvile/usr/bin/lxvile \
+	    debian/vile-common/usr/bin/vileget \
+	    debian/vile-common/usr/share/doc/vile-common/examples/*
+
+	dh_compress          -i
+	dh_fixperms          -i
+	dh_installdeb        -i
+	dh_gencontrol        -i
+	dh_md5sums           -i
+	dh_builddeb          -i
+
+binary: binary-indep binary-arch
+.PHONY: build build-arch build-indep clean install binary-arch binary-indep binary

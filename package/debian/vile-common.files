@@ -1,3 +1,6 @@
 /usr/bin/vileget
+/usr/share/man/man1/vile.1
 /usr/share/man/man1/vileget.1
-/usr/share/vile
+/usr/share/vile/vile.hlp
+/usr/share/vile/*.rc
+/usr/share/vile/perl/*

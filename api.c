@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Id: api.c,v 1.54 2020/01/17 23:11:28 tom Exp $
+ * $Id: api.c,v 1.55 2022/12/26 18:26:56 tom Exp $
  */
 
 #include "estruct.h"
@@ -621,7 +621,7 @@ api_edit(char *fname, VileBuf ** retvbpp)
     if (fname == NULL) {
 	char bufname[NBUFN];
 	static int unnamed_cnt = 0;
-	sprintf(bufname, "[unnamed-%d]", ++unnamed_cnt);
+	sprintf(bufname, "[unnamed-%d]", (++unnamed_cnt % 1000));
 	bp = bfind(bufname, 0);
 	bp->b_active = TRUE;
     } else {

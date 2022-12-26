@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20221222 (x)
+ 20221226 (x)
 	> Tom Dickey:
+	+ trim some obsolete comments about OpenLook from the help-file.
+	+ update Debian test-package, based on Brendan's package.
 	+ drop ftp URLs from documentation.
 	+ document short usage message "-?" option in manpage.
 	+ make the new mapping feature a mode: "mini-map".
