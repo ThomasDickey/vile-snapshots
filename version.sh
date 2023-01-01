@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: version.sh,v 1.2 2010/01/25 10:39:29 tom Exp $
+# $Id: version.sh,v 1.3 2023/01/01 17:32:14 tom Exp $
 # Extract vile's version from source-files to make it simple to generate
 # versioned binaries.
 if test $# != 0 ; then
@@ -8,8 +8,10 @@ else
 	SOURCE=patchlev.h
 fi
 
-RELEASE=`fgrep VILE_RELEASE "$SOURCE" |sed -e 's/^[^"]*"//' -e 's/".*//'`
-VERSION=`fgrep VILE_VERSION "$SOURCE" |sed -e 's/^[^"]*"//' -e 's/".*//'`
-PATCHED=`fgrep VILE_PATCHLE "$SOURCE" |sed -e 's/^[^"]*"//' -e 's/".*//'`
+: "${FGREP:=grep -F}"
+
+RELEASE=`$FGREP VILE_RELEASE "$SOURCE" |sed -e 's/^[^"]*"//' -e 's/".*//'`
+VERSION=`$FGREP VILE_VERSION "$SOURCE" |sed -e 's/^[^"]*"//' -e 's/".*//'`
+PATCHED=`$FGREP VILE_PATCHLE "$SOURCE" |sed -e 's/^[^"]*"//' -e 's/".*//'`
 
 echo "${RELEASE}.${VERSION}${PATCHED}"

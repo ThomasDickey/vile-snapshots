@@ -1,4 +1,4 @@
-; $Id: minvile.nsi,v 1.39 2022/08/25 18:29:57 tom Exp $
+; $Id: minvile.nsi,v 1.41 2023/01/01 17:52:17 tom Exp $
 ; vile:fk=8bit
 ; Script originally generated with the Venis Install Wizard, but customized.
 ; The Inno Setup script is preferred; but this can be built via cross-compiling.
@@ -9,8 +9,8 @@
 
 !define VERSION_MAJOR "9"
 !define VERSION_MINOR "8"
-!define VERSION_LEVEL "24"
-!define VERSION_PATCH "x"
+!define VERSION_LEVEL "25"
+!define VERSION_PATCH "y"
 !define VERSION_BUILT "0"
 
 !define SUBKEY "VI like Emacs"
@@ -29,7 +29,7 @@ SetCompressor /SOLID lzma
 
 VIAddVersionKey ProductName "${SUBKEY}"
 VIAddVersionKey CompanyName "Thomas E. Dickey"
-VIAddVersionKey LegalCopyright "© 1997-2021,2022, Thomas E. Dickey"
+VIAddVersionKey LegalCopyright "© 1997-2022,2023, Thomas E. Dickey"
 VIAddVersionKey FileDescription "WinVile Installer (MinGW)"
 VIAddVersionKey FileVersion "${VERSION}"
 VIAddVersionKey ProductVersion "${VERSION}"

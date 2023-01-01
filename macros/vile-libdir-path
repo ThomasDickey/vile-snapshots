@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: vile-libdir-path,v 1.5 2022/11/16 20:43:27 tom Exp $
+# $Id: vile-libdir-path,v 1.7 2023/01/01 18:00:11 tom Exp $
 # Find the given vile helper-program, either in $PATH, or in a related
 # lib-directory.  If the program is already in $PATH, echo the existing
 # $PATH, but if it is found in a related lib-directory, prepend that to $PATH
@@ -10,30 +10,33 @@ failed() {
 }
 
 HELPER=vile-manfilt
-test $# != 0 && HELPER="$1"
+[ $# != 0 ] && HELPER="$1"
 
 OK_BIN=no
 OK_LIB=
 
+ARCH="`arch 2>/dev/null`"
+[ -n "$ARCH" ] || ARCH=.
 SAVE="$IFS"
 IFS=':'
 for dir in ${VILE_LIBDIR_PATH:-$PATH}
 do
-	if test -f "$dir"/"$HELPER"
+	if [ -f "$dir"/"$HELPER" ]
 	then
 		OK_BIN=yes
 		break
-	elif test -z "$OK_LIB"
+	elif [ -z "$OK_LIB" ]
 	then
-		test -f "$dir/"vile || continue
+		[ -f "$dir/"vile ] || continue
 		head=${dir%/*}
 		for libs in \
-			$head/lib \
-			$head/lib[1-9]* \
-			$head/lib/*vile \
-			$head/lib[1-9]*/*vile
+			"$head"/lib \
+			"$head"/lib[1-9]* \
+			"$head"/lib/*vile \
+			"$head"/lib[1-9]*/*vile \
+			"$head"/lib/"$ARCH"*/vile
 		do
-			test -d "$libs" || continue
+			[ -d "$libs" ] || continue
 			if test -f "$libs"/"$HELPER"
 			then
 				OK_LIB=$libs
@@ -43,10 +46,10 @@ do
 done
 IFS="$SAVE"
 
-if test $OK_BIN = yes
+if [ $OK_BIN = yes ]
 then
 	echo "$PATH"
-elif test -n "$OK_LIB"
+elif [ -n "$OK_LIB" ]
 then
 	echo "$OK_LIB:$PATH"
 else

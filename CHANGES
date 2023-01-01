@@ -1,5 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20230101 (y)
+	> Tom Dickey:
+	+ fix shellcheck warnings in version.sh and xshell.sh
+	+ add pattern to vile-libdir-path to allow for Debian multiarch.
+
  20221226 (x)
 	> Tom Dickey:
 	+ trim some obsolete comments about OpenLook from the help-file.

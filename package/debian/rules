@@ -96,7 +96,7 @@ install-stamp: build-stamp
 	    $(TMP)/usr/share/vile/vilemenu.rc \
 	    $(TMP)/usr/share/vile/xshell.sh
 
-	install -c debian/vile.mini.xpm $(TMP)/usr/share/pixmaps
+	install -c -m 644 debian/vile.mini.xpm $(TMP)/usr/share/pixmaps
 
 	(cd macros && for P in *.desktop; \
 	 do \
