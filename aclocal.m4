@@ -1,4 +1,4 @@
-dnl $Id: aclocal.m4,v 1.358 2022/12/04 20:45:56 tom Exp $
+dnl $Id: aclocal.m4,v 1.359 2023/01/05 00:04:35 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2021,2022 by Thomas E. Dickey
@@ -1485,7 +1485,7 @@ fi
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_TERMCAP version: 12 updated: 2015/05/15 19:42:24
+dnl CF_CURSES_TERMCAP version: 13 updated: 2022/12/21 19:46:38
 dnl -----------------
 dnl Check if we should include <curses.h> to pick up prototypes for termcap
 dnl functions.  On terminfo systems, these are normally declared in <curses.h>,
@@ -1513,7 +1513,7 @@ do
 
     AC_TRY_LINK([/* $cf_c_opts $cf_t_opts */
 $CHECK_DECL_HDRS],
-	[char *x = (char *)tgoto("")],
+	[char *x = (char *)tgoto(""); (void)x],
 	[test "$cf_cv_need_curses_h" = no && {
 	     cf_cv_need_curses_h=maybe
 	     cf_ok_c_opts=$cf_c_opts
@@ -1522,7 +1522,7 @@ $CHECK_DECL_HDRS],
 	[echo "Recompiling with corrected call (C:$cf_c_opts, T:$cf_t_opts)" >&AC_FD_CC
 	AC_TRY_LINK([
 $CHECK_DECL_HDRS],
-	[char *x = (char *)tgoto("",0,0)],
+	[char *x = (char *)tgoto("",0,0); (void)x],
 	[cf_cv_need_curses_h=yes
 	 cf_ok_c_opts=$cf_c_opts
 	 cf_ok_t_opts=$cf_t_opts])])
@@ -2150,6 +2150,7 @@ then
 	AC_CHECKING([for $CC __attribute__ directives])
 cat > "conftest.$ac_ext" <<EOF
 #line __oline__ "${as_me:-configure}"
+#include <stdio.h>
 #include "confdefs.h"
 #include "conftest.h"
 #include "conftest.i"
@@ -4445,7 +4446,7 @@ $1=`echo "$2" | \
 		-e 's/-[[UD]]'"$3"'\(=[[^ 	]]*\)\?[$]//g'`
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_RESTARTABLE_PIPEREAD version: 9 updated: 2020/09/08 19:32:19
+dnl CF_RESTARTABLE_PIPEREAD version: 10 updated: 2023/01/04 18:06:18
 dnl -----------------------
 dnl CF_RESTARTABLE_PIPEREAD is a modified version of AC_RESTARTABLE_SYSCALLS
 dnl from acspecific.m4, which uses a read on a pipe (surprise!) rather than a
@@ -4466,6 +4467,9 @@ AC_TRY_RUN(
 #endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h>
 #endif
 #include <sys/types.h>
 #include <signal.h>
@@ -4911,7 +4915,7 @@ AC_DEFUN([CF_SYS_ERRLIST],
     CF_CHECK_ERRNO(sys_errlist)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_TERMCAP_LIBS version: 16 updated: 2022/12/02 20:06:52
+dnl CF_TERMCAP_LIBS version: 17 updated: 2022/12/21 19:42:05
 dnl ---------------
 dnl Look for termcap libraries, or the equivalent in terminfo.
 dnl
@@ -4920,8 +4924,12 @@ AC_DEFUN([CF_TERMCAP_LIBS],
 [
 AC_CACHE_VAL(cf_cv_termlib,[
 cf_cv_termlib=none
-AC_TRY_LINK([extern char *tgoto(const char*,int,int);],[char *x=tgoto("",0,0)],
-[AC_TRY_LINK([extern char *tigetstr(const char *)],[char *x=tigetstr("")],
+AC_TRY_LINK(
+	[extern char *tgoto(const char*,int,int);],
+	[char *x=tgoto("",0,0); (void)x;],
+[AC_TRY_LINK(
+	[extern char *tigetstr(const char *);],
+	[char *x=tigetstr(""); (void)x;],
 	[cf_cv_termlib=terminfo],
 	[cf_cv_termlib=termcap])
 	CF_VERBOSE(using functions in predefined $cf_cv_termlib LIBS)
@@ -4944,7 +4952,11 @@ if test "$cf_cv_termlib" = none; then
 		for cf_func in tigetstr tgetstr
 		do
 			AC_MSG_CHECKING(for $cf_func in -l$cf_lib)
-			AC_TRY_LINK([],[int x=$cf_func("")],[cf_result=yes],[cf_result=no])
+			AC_TRY_LINK(
+				[extern char *$cf_func(const char *);],
+				[int x=$cf_func(""); (void)x],
+				[cf_result=yes],
+				[cf_result=no])
 			AC_MSG_RESULT($cf_result)
 			if test "$cf_result" = yes ; then
 				if test "$cf_func" = tigetstr ; then
@@ -6442,7 +6454,7 @@ esac
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_SOURCE version: 62 updated: 2022/10/02 19:55:56
+dnl CF_XOPEN_SOURCE version: 63 updated: 2022/12/29 10:10:26
 dnl ---------------
 dnl Try to get _XOPEN_SOURCE defined properly that we can use POSIX functions,
 dnl or adapt to the vendor's definitions to get equivalent functionality,
@@ -6545,10 +6557,12 @@ case "$host_os" in
 	cf_save_xopen_cppflags="$CPPFLAGS"
 	CF_POSIX_C_SOURCE($cf_POSIX_C_SOURCE)
 	# Some of these niche implementations use copy/paste, double-check...
-	CF_VERBOSE(checking if _POSIX_C_SOURCE inteferes)
-	AC_TRY_COMPILE(CF__XOPEN_SOURCE_HEAD,CF__XOPEN_SOURCE_BODY,,[
-		AC_MSG_WARN(_POSIX_C_SOURCE definition is not usable)
-		CPPFLAGS="$cf_save_xopen_cppflags"])
+	if test "$cf_cv_xopen_source" != no ; then
+		CF_VERBOSE(checking if _POSIX_C_SOURCE inteferes)
+		AC_TRY_COMPILE(CF__XOPEN_SOURCE_HEAD,CF__XOPEN_SOURCE_BODY,,[
+			AC_MSG_WARN(_POSIX_C_SOURCE definition is not usable)
+			CPPFLAGS="$cf_save_xopen_cppflags"])
+	fi
 	;;
 esac
 

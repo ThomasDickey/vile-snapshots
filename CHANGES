@@ -1,7 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20230101 (y)
+ 20230104 (y)
 	> Tom Dickey:
+	+ modify CF_RESTARTABLE_PIPEREAD to include <sys/wait.h>, if found, to
+	  prototype wait() (Redhat #2158163).
+	+ improve configure macros CF_CURSES_TERMCAP, CF_TERMCAP_LIBS, and
+	  CF_XOPEN_SOURCE.
 	+ fix shellcheck warnings in version.sh and xshell.sh
 	+ add pattern to vile-libdir-path to allow for Debian multiarch.
 
