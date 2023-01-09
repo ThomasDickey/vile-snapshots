@@ -1,7 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20230104 (y)
+ 20230109 (y)
 	> Tom Dickey:
+	+ reduce compiler warnings in configure script checks.
 	+ modify CF_RESTARTABLE_PIPEREAD to include <sys/wait.h>, if found, to
 	  prototype wait() (Redhat #2158163).
 	+ improve configure macros CF_CURSES_TERMCAP, CF_TERMCAP_LIBS, and

@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.349 $)
+AC_REVISION($Revision: 1.350 $)
 AC_PREREQ(2.52.20210105)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Id: configure.in,v 1.349 2022/11/18 00:03:15 tom Exp $
+dnl $Id: configure.in,v 1.350 2023/01/08 12:00:00 tom Exp $
 
 define(MAKELIST, sh "$srcdir/filters/makelist.sh" "$srcdir/filters/genmake.mak")
 
@@ -351,14 +351,13 @@ then
 fi
 
 ###	checks for header files
-AC_STDC_HEADERS
+AC_CHECK_DECL(exit)
 AC_HEADER_DIRENT
 AM_LANGINFO_CODESET
 AC_CHECK_HEADERS( \
 fcntl.h \
 ioctl.h \
 limits.h \
-memory.h \
 poll.h \
 pwd.h \
 search.h \
@@ -368,8 +367,6 @@ sgtty.h \
 signal.h \
 stdarg.h \
 stddef.h \
-stdlib.h \
-string.h \
 sys/filio.h \
 sys/ioctl.h \
 sys/itimer.h \
@@ -381,7 +378,6 @@ sys/time.h \
 sys/wait.h \
 termio.h \
 termios.h \
-unistd.h \
 utime.h \
 varargs.h \
 )

@@ -1,7 +1,7 @@
-dnl $Id: aclocal.m4,v 1.359 2023/01/05 00:04:35 tom Exp $
+dnl $Id: aclocal.m4,v 1.361 2023/01/09 15:45:52 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
-dnl Copyright 1996-2021,2022 by Thomas E. Dickey
+dnl Copyright 1996-2022,2023 by Thomas E. Dickey
 dnl
 dnl                         All Rights Reserved
 dnl
@@ -1210,18 +1210,22 @@ esac
 ])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CRYPT_FUNC version: 7 updated: 2022/08/25 15:38:15
+dnl CF_CRYPT_FUNC version: 9 updated: 2023/01/09 10:45:04
 dnl -------------
 dnl Check if we have a working crypt() function
 AC_DEFUN([CF_CRYPT_FUNC],
 [
 AC_CACHE_CHECK(for crypt function,cf_cv_crypt_func,[
 cf_cv_crypt_func=
-AC_TRY_LINK([],[crypt()],[
+cf_crypt_headers="\
+$ac_includes_default
+extern char *crypt(const char *, const char *);
+"
+AC_TRY_LINK([$cf_crypt_headers],[crypt(NULL,NULL)],[
 	cf_cv_crypt_func=yes],[
 	cf_save_LIBS="$LIBS"
 	LIBS="-lcrypt $LIBS"
-	AC_TRY_LINK([],[crypt()],[
+	AC_TRY_LINK([$cf_crypt_headers],[crypt(NULL,NULL)],[
 		cf_cv_crypt_func="-lcrypt"],[
 		cf_cv_crypt_func=no])
 	LIBS="$cf_save_LIBS"
@@ -1231,9 +1235,8 @@ if test "$cf_cv_crypt_func" != no ; then
 	cf_save_LIBS="$LIBS"
 	test "$cf_cv_crypt_func" != yes && LIBS="$cf_cv_crypt_func $LIBS"
 AC_CACHE_CHECK(if crypt works,cf_cv_crypt_works,[
-AC_TRY_RUN([
-#include <string.h>
-extern char *crypt();
+AC_TRY_RUN([$cf_crypt_headers
+
 int main(void) {
 	char *s = crypt("vi-crypt", "vi");
 	${cf_cv_main_return:-return}(strcmp("vi6r2tczBYLvM", s ? s : "") != 0);
@@ -2918,7 +2921,7 @@ cf_save_CFLAGS="$cf_save_CFLAGS -we147"
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_KILLPG version: 7 updated: 2020/09/08 19:32:19
+dnl CF_KILLPG version: 8 updated: 2023/01/05 18:53:19
 dnl ---------
 dnl Note: relies upon AC_FUNC_SETPGRP, but cannot use AC_REQUIRE, since that
 dnl messes up the messages...
@@ -2943,7 +2946,8 @@ fi
 if test "$cross_compiling" = yes ; then
 	AC_CHECK_FUNC(getpgrp,[
 	AC_TRY_COMPILE([
-#include <sys/types.h>
+#ac_includes_default
+
 #include <signal.h>
 ],[
     (void) getpgrp();
@@ -2955,14 +2959,10 @@ fi
 
 AC_CACHE_CHECK(if killpg is needed, cf_cv_need_killpg,[
 AC_TRY_RUN([
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#include <sys/types.h>
+$ac_includes_default
+
 #include <signal.h>
+
 RETSIGTYPE
 handler(s)
     int s;
@@ -3581,7 +3581,7 @@ fi
 test "$cf_cv_mixedcase" = yes && AC_DEFINE(MIXEDCASE_FILENAMES,1,[Define to 1 if filesystem supports mixed-case filenames.])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MKSTEMP version: 11 updated: 2021/01/01 13:31:04
+dnl CF_MKSTEMP version: 12 updated: 2023/01/05 17:53:11
 dnl ----------
 dnl Check for a working mkstemp.  This creates two files, checks that they are
 dnl successfully created and distinct (AmigaOS apparently fails on the last).
@@ -3592,14 +3592,8 @@ unistd.h \
 AC_CACHE_CHECK(for working mkstemp, cf_cv_func_mkstemp,[
 rm -rf ./conftest*
 AC_TRY_RUN([
-#include <sys/types.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/stat.h>
+$ac_includes_default
+
 int main(void)
 {
 	char *tmpl = "conftestXXXXXX";
@@ -3995,7 +3989,7 @@ CF_UPPER(cf_nculib_ROOT,HAVE_LIB$cf_nculib_root)
 AC_DEFINE_UNQUOTED($cf_nculib_ROOT)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NCURSES_VERSION version: 16 updated: 2020/12/31 20:19:42
+dnl CF_NCURSES_VERSION version: 17 updated: 2023/01/05 18:54:02
 dnl ------------------
 dnl Check for the version of ncurses, to aid in reporting bugs, etc.
 dnl Call CF_CURSES_CPPFLAGS first, or CF_NCURSES_CPPFLAGS.  We don't use
@@ -4008,8 +4002,10 @@ AC_CACHE_CHECK(for ncurses version, cf_cv_ncurses_version,[
 	cf_tempfile=out$$
 	rm -f "$cf_tempfile"
 	AC_TRY_RUN([
+$ac_includes_default
+
 #include <${cf_cv_ncurses_header:-curses.h}>
-#include <stdio.h>
+
 int main(void)
 {
 	FILE *fp = fopen("$cf_tempfile", "w");
@@ -4446,7 +4442,7 @@ $1=`echo "$2" | \
 		-e 's/-[[UD]]'"$3"'\(=[[^ 	]]*\)\?[$]//g'`
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_RESTARTABLE_PIPEREAD version: 10 updated: 2023/01/04 18:06:18
+dnl CF_RESTARTABLE_PIPEREAD version: 11 updated: 2023/01/05 17:55:18
 dnl -----------------------
 dnl CF_RESTARTABLE_PIPEREAD is a modified version of AC_RESTARTABLE_SYSCALLS
 dnl from acspecific.m4, which uses a read on a pipe (surprise!) rather than a
@@ -4462,17 +4458,14 @@ AC_TRY_RUN(
 [/* Exit 0 (true) if wait returns something other than -1,
    i.e. the pid of the child, which means that wait was restarted
    after getting the signal.  */
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+$ac_includes_default
+
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
-#include <sys/types.h>
+
 #include <signal.h>
+
 #ifdef SA_RESTART
 static void sigwrapper(int sig, RETSIGTYPE (*disp)(int))
 {
