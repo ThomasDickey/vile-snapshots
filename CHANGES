@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20230109 (y)
+ 20230113 (y)
 	> Tom Dickey:
+	+ amend fix for 9.8w change to map.c, so that both UTF-8 in scripts as
+	  well as interactive insertions of UTF-8 are handled (report by Chris
+	  Green).
 	+ reduce compiler warnings in configure script checks.
 	+ modify CF_RESTARTABLE_PIPEREAD to include <sys/wait.h>, if found, to
 	  prototype wait() (Redhat #2158163).

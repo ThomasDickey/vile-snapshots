@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Id: input.c,v 1.376 2022/12/23 00:31:13 tom Exp $
+ * $Id: input.c,v 1.377 2023/01/12 09:26:35 tom Exp $
  */
 
 #include	"estruct.h"
@@ -555,6 +555,7 @@ tgetc(int quoted)
 {
     int c;			/* character read from terminal */
 
+    TRACE((T_CALLED "tgetc\n"));
     if (tgetc_ungotcnt > 0) {
 	tgetc_ungotcnt--;
 	c = itb_last(tgetc_ungottenchars);
@@ -597,7 +598,7 @@ tgetc(int quoted)
 	       kcod2prc(c, temp), c));
     }
 #endif
-    return c;
+    returnCode(c);
 }
 
 /*

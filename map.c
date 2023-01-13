@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Id: map.c,v 1.132 2022/12/23 00:32:02 tom Exp $
+ * $Id: map.c,v 1.134 2023/01/13 08:51:24 tom Exp $
  */
 
 #include "estruct.h"
@@ -823,6 +823,9 @@ mapgetc(void)
 {
     int result;
     UINT remapflag;
+
+    TRACE((T_CALLED "mapgetc\n"));
+
     if (global_g_val(GMDREMAP))
 	remapflag = 0;
     else
@@ -846,7 +849,7 @@ mapgetc(void)
 	infloopcount = 0;
 	result = tgetc(mapgetc_raw_flag);
     }
-    return result;
+    returnCode(result);
 }
 
 int
@@ -923,6 +926,18 @@ mapped_c(int remap, int raw)
     }
 
     do {
+	/*
+	 * This is a workaround for an ambiguity between the different return
+	 * values from mapgetc(), on entry to this function:
+	 * - If infloopcount is zero, mapgetc() has just called tgetc(), which
+	 *   in turn called sysmapped_c(), and then term.getc().  That pointer
+	 *   is initialized to vl_mb_getch(), which will decode UTF-8 into a
+	 *   Unicode value.
+	 * - If infloopcount is nonzero, the function returns a byte (of UTF-8),
+	 *   which must be decoded later in this function.
+	 */
+	int full_c = (infloopcount == 0);	/* tgetc returned full char? */
+
 	(void) itb_init(&mappedchars, esc_c);
 
 	matched = maplookup(c,
@@ -934,7 +949,9 @@ mapped_c(int remap, int raw)
 			    TRUE);
 
 	while (itb_more(mappedchars)) {
-	    mapungetc(itb_next(mappedchars));
+	    int cc = itb_next(mappedchars);
+	    TRACE(("...ungetting %d\n", cc));
+	    mapungetc(cc);
 	}
 
 	/* if the user has not mapped '#c', we return the wide code we got
@@ -949,7 +966,7 @@ mapped_c(int remap, int raw)
 
 	c = mapgetc();
 #if OPT_MULTIBYTE
-	if (vl_encoding >= enc_UTF8 && b_is_utfXX(curbp)) {
+	if (remap && !full_c && (vl_encoding >= enc_UTF8 && b_is_utfXX(curbp))) {
 	    char save[MAX_UTF8];
 	    int have = 0;
 	    int need = 9;
@@ -960,6 +977,7 @@ mapped_c(int remap, int raw)
 		if (need <= have)
 		    break;
 		c = mapgetc();
+		TRACE(("...re-getting %d\n", c));
 	    } while (c > 127);
 	    if ((have > 1) &&
 		vl_conv_to_utf32(&utf8, save, (B_COUNT) have) == have) {
