@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Id: fences.c,v 1.97 2019/12/19 09:32:47 bod Exp $
+ * $Id: fences.c,v 1.98 2023/01/15 13:26:03 tom Exp $
  */
 
 #include	"estruct.h"
@@ -337,6 +337,8 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 		    continue;
 		}
 		*newkey = that;
+#else
+		(void) result;
 #endif
 		TRACE(("...before %s, count=%d, done=%d\n",
 		       typeof_complex(that),

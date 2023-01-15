@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Id: makefile.in,v 1.297 2022/08/20 18:59:42 tom Exp $
+# $Id: makefile.in,v 1.298 2023/01/14 00:18:45 tom Exp $
 
 SHELL		= @SHELL@
 
@@ -853,7 +853,7 @@ release_warnings:
 	@echo 'or maybe date the CHANGES file?  it says:'
 	@sed -n -e '/Changes/s/^/	/p' -e '2q' CHANGES
 	@echo 'or maybe update the version info in patchlev.h?  it contains:'
-	@fgrep '#define' patchlev.h | sed -e 's/^/	/'
+	@@FGREP@ '#define' patchlev.h | sed -e 's/^/	/'
 	@echo 'how about the README?  it contains:'
 	@sed -n -e '/version/s/^/	/p' -e '3q' README
 	@echo 'or in vile.hlp?  it has:'

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Id: statevar.c,v 1.169 2022/12/01 22:43:12 tom Exp $
+ * $Id: statevar.c,v 1.170 2023/01/15 13:30:17 tom Exp $
  */
 
 #include	<estruct.h>
@@ -46,6 +46,7 @@ DftEnv(const char *name, const char *dft)
     name = safe_getenv(name);
     result = isEmpty(name) ? dft : name;
 #else
+    (void) name;
     result = dft;
 #endif
     return result;
@@ -275,17 +276,18 @@ any_HOOK(TBUFF **rp, const char *vp, HOOK * hook)
 #endif
 
 const char *
-safe_getenv(const char *s)
+safe_getenv(const char *name)
 {
     const char *result;
 #if OPT_EVAL && OPT_SHELL
-    char *v = getenv(s);
+    char *v = getenv(name);
 #if defined(_WIN32)
     if (v == 0)
-	v = vile_getenv(s);
+	v = vile_getenv(name);
 #endif
     result = NONNULL(v);
 #else
+    (void) name;
     result = "";
 #endif
     return result;

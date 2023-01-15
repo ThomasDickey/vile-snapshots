@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Id: modetbl,v 1.330 2022/12/23 00:25:25 tom Exp $
+# $Id: modetbl,v 1.331 2023/01/15 13:31:19 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -247,8 +247,8 @@ bool
 	"get-it-all"	GET_IT_ALL	1		"true if full-token when getting $identifier, etc., from screen"
 	"modified"	MODIFIED	1		"is current buffer modified?"
 	"pending"	PENDING		1		"type ahead pending flag"
-	"look-in-cwd"	LOOK_IN_CWD	1		"true if $cwd should be examined for startup-files"
-	"look-in-home"	LOOK_IN_HOME	1		"true if $HOME should be examined for startup-files"
+	"look-in-cwd"	LOOK_IN_CWD	OPT_SHELL	"true if $cwd should be examined for startup-files"
+	"look-in-home"	LOOK_IN_HOME	OPT_SHELL	"true if $HOME should be examined for startup-files"
 	"system-crlf"	SYSTEM_CRLF	1		"system uses CRLF by default"
 	"term-resizes"	TERM_RESIZES	1		"true if terminal can be resized"
 enum

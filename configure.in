@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.350 $)
+AC_REVISION($Revision: 1.352 $)
 AC_PREREQ(2.52.20210105)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Id: configure.in,v 1.350 2023/01/08 12:00:00 tom Exp $
+dnl $Id: configure.in,v 1.352 2023/01/15 14:40:03 tom Exp $
 
 define(MAKELIST, sh "$srcdir/filters/makelist.sh" "$srcdir/filters/genmake.mak")
 
@@ -115,7 +115,10 @@ elif test -z "$CFLAGS" ; then
 fi
 AC_MSG_RESULT($cflags)
 
-CF_WITH_PERL
+if test "$DISABLE_EXTS" != yes
+then
+	CF_WITH_PERL
+fi
 
 ###############################################################################
 CF_HELP_MESSAGE(Options for syntax filters)
@@ -1151,7 +1154,7 @@ else
 	cf_srcdir=.
 fi
 cf_genmake=$cf_srcdir/filters/genmake.mak
-$SHELL $cf_srcdir/filters/genmake.sh $cf_genmake $cf_srcdir/filters
+FGREP="$FGREP" $SHELL $cf_srcdir/filters/genmake.sh $cf_genmake $cf_srcdir/filters
 
 echo "Checking for built-in filters: $VILE_BUILT_IN_FILTERS"
 $AWK -f $cf_srcdir/filters/mk-1st.awk <$cf_genmake mode=built-in list="$VILE_BUILT_IN_FILTERS" flex=$LEX_IS_FLEX >>filters/makefile

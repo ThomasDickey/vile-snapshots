@@ -1,5 +1,5 @@
 /*
- * $Id: filters.h,v 1.145 2020/01/18 01:54:32 tom Exp $
+ * $Id: filters.h,v 1.146 2023/01/13 09:23:02 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -368,6 +368,9 @@ extern void flt_finish(void);
 extern void flt_message(const char *fmt, ...) VILE_PRINTF(1,2);
 extern void flt_putc(int ch);
 extern void flt_puts(const char *string, int length, const char *attribute);
+
+/* potential symbol conflict with ncurses */
+#define define_key vl_define_key
 
 /*
  * declared in main.c or filters.c

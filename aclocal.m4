@@ -1,4 +1,4 @@
-dnl $Id: aclocal.m4,v 1.361 2023/01/09 15:45:52 tom Exp $
+dnl $Id: aclocal.m4,v 1.366 2023/01/15 13:35:47 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2022,2023 by Thomas E. Dickey
@@ -109,7 +109,7 @@ size_t iconv();
   AC_SUBST(LIBICONV)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl AM_LANGINFO_CODESET version: 6 updated: 2021/01/01 16:53:59
+dnl AM_LANGINFO_CODESET version: 7 updated: 2023/01/11 04:05:23
 dnl -------------------
 dnl Inserted as requested by gettext 0.10.40
 dnl File from /usr/share/aclocal
@@ -121,7 +121,9 @@ dnl From Bruno Haible.
 AC_DEFUN([AM_LANGINFO_CODESET],
 [
 AC_CACHE_CHECK([for nl_langinfo and CODESET], am_cv_langinfo_codeset,
-	[AC_TRY_LINK([#include <langinfo.h>],
+	[AC_TRY_LINK([
+$ac_includes_default
+#include <langinfo.h>],
 	[char* cs = nl_langinfo(CODESET); (void)cs],
 	am_cv_langinfo_codeset=yes,
 	am_cv_langinfo_codeset=no)
@@ -935,7 +937,7 @@ AC_TRY_LINK([#include <stdio.h>],[printf("Hello world");],,
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CHECK_ENVIRON version: 3 updated: 2010/05/26 16:44:57
+dnl CF_CHECK_ENVIRON version: 4 updated: 2023/01/14 07:48:15
 dnl ----------------
 dnl Check for data that is usually declared in <unistd.h>, e.g., the 'environ'
 dnl variable.  Define a DECL_xxx symbol if we must declare it ourselves.
@@ -950,7 +952,7 @@ AC_CACHE_CHECK(if external $1 is declared, cf_cv_dcl_$1,[
 #include <stdlib.h>
 #endif
 #include <unistd.h> ],
-    ifelse([$2],,int,[$2]) x = (ifelse([$2],,int,[$2])) $1,
+    ifelse([$2],,void*,[$2]) x = (ifelse([$2],,void*,[$2])) $1; (void)x,
     [cf_cv_dcl_$1=yes],
     [cf_cv_dcl_$1=no])
 ])
@@ -1210,7 +1212,7 @@ esac
 ])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CRYPT_FUNC version: 9 updated: 2023/01/09 10:45:04
+dnl CF_CRYPT_FUNC version: 10 updated: 2023/01/14 07:48:15
 dnl -------------
 dnl Check if we have a working crypt() function
 AC_DEFUN([CF_CRYPT_FUNC],
@@ -1221,11 +1223,11 @@ cf_crypt_headers="\
 $ac_includes_default
 extern char *crypt(const char *, const char *);
 "
-AC_TRY_LINK([$cf_crypt_headers],[crypt(NULL,NULL)],[
+AC_TRY_LINK([$cf_crypt_headers],[crypt("","")],[
 	cf_cv_crypt_func=yes],[
 	cf_save_LIBS="$LIBS"
 	LIBS="-lcrypt $LIBS"
-	AC_TRY_LINK([$cf_crypt_headers],[crypt(NULL,NULL)],[
+	AC_TRY_LINK([$cf_crypt_headers],[crypt("","")],[
 		cf_cv_crypt_func="-lcrypt"],[
 		cf_cv_crypt_func=no])
 	LIBS="$cf_save_LIBS"
@@ -1488,7 +1490,7 @@ fi
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_TERMCAP version: 13 updated: 2022/12/21 19:46:38
+dnl CF_CURSES_TERMCAP version: 14 updated: 2023/01/09 20:20:18
 dnl -----------------
 dnl Check if we should include <curses.h> to pick up prototypes for termcap
 dnl functions.  On terminfo systems, these are normally declared in <curses.h>,
@@ -1513,10 +1515,13 @@ do
     CPPFLAGS="$cf_save_CPPFLAGS $CHECK_DECL_FLAG"
     test -n "$cf_c_opts" && CPPFLAGS="$CPPFLAGS -D$cf_c_opts"
     test -n "$cf_t_opts" && CPPFLAGS="$CPPFLAGS -D$cf_t_opts"
+	cf_tgoto_decl="
+	extern char *tgoto(char*,int,int);"
+	test -n "${cf_c_opts}${cf_t_opts}" && cf_tgoto_decl=
 
     AC_TRY_LINK([/* $cf_c_opts $cf_t_opts */
-$CHECK_DECL_HDRS],
-	[char *x = (char *)tgoto(""); (void)x],
+$CHECK_DECL_HDRS $cf_tgoto_decl],
+	[char *x = tgoto(""); (void)x],
 	[test "$cf_cv_need_curses_h" = no && {
 	     cf_cv_need_curses_h=maybe
 	     cf_ok_c_opts=$cf_c_opts
@@ -1524,8 +1529,8 @@ $CHECK_DECL_HDRS],
 	}],
 	[echo "Recompiling with corrected call (C:$cf_c_opts, T:$cf_t_opts)" >&AC_FD_CC
 	AC_TRY_LINK([
-$CHECK_DECL_HDRS],
-	[char *x = (char *)tgoto("",0,0); (void)x],
+$CHECK_DECL_HDRS $cf_tgoto_decl],
+	[char *x = tgoto("",0,0); (void)x],
 	[cf_cv_need_curses_h=yes
 	 cf_ok_c_opts=$cf_c_opts
 	 cf_ok_t_opts=$cf_t_opts])])
@@ -2047,7 +2052,7 @@ fi
 AC_SUBST(EXTRA_CFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_FP_ISREADY version: 4 updated: 2020/12/31 20:19:42
+dnl CF_FP_ISREADY version: 5 updated: 2023/01/14 07:48:15
 dnl -------------
 dnl Test for the common variations of stdio structures that we can use to
 dnl test if a character is available for reading.
@@ -2065,7 +2070,7 @@ do
 	AC_TRY_COMPILE([
 #include <stdio.h>
 #define isready_c(p) $definition
-],[int x = isready_c(stdin)],
+],[int x = isready_c(stdin); (void)x],
 	[echo "$definition" >conftest.env
 	 break])
 
@@ -2921,7 +2926,7 @@ cf_save_CFLAGS="$cf_save_CFLAGS -we147"
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_KILLPG version: 8 updated: 2023/01/05 18:53:19
+dnl CF_KILLPG version: 9 updated: 2023/01/14 07:48:15
 dnl ---------
 dnl Note: relies upon AC_FUNC_SETPGRP, but cannot use AC_REQUIRE, since that
 dnl messes up the messages...
@@ -2964,8 +2969,7 @@ $ac_includes_default
 #include <signal.h>
 
 RETSIGTYPE
-handler(s)
-    int s;
+handler(int s)
 {
     exit(0);
 }
@@ -3317,7 +3321,7 @@ fi
 AC_SUBST(LINK_PREFIX)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LOCALE version: 6 updated: 2021/01/02 09:31:20
+dnl CF_LOCALE version: 7 updated: 2023/01/11 04:05:23
 dnl ---------
 dnl Check if we have setlocale() and its header, <locale.h>
 dnl The optional parameter $1 tells what to do if we do have locale support.
@@ -3325,7 +3329,9 @@ AC_DEFUN([CF_LOCALE],
 [
 AC_MSG_CHECKING(for setlocale())
 AC_CACHE_VAL(cf_cv_locale,[
-AC_TRY_LINK([#include <locale.h>],
+AC_TRY_LINK([
+$ac_includes_default
+#include <locale.h>],
 	[setlocale(LC_ALL, "")],
 	[cf_cv_locale=yes],
 	[cf_cv_locale=no])
@@ -3510,7 +3516,7 @@ then
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_MISSING_CHECK version: 7 updated: 2020/12/31 20:19:42
+dnl CF_MISSING_CHECK version: 9 updated: 2023/01/15 05:38:19
 dnl ----------------
 dnl
 AC_DEFUN([CF_MISSING_CHECK],
@@ -3524,11 +3530,11 @@ $CHECK_DECL_HDRS
 
 #undef $1
 struct zowie { int a; double b; struct zowie *c; char d; };
-extern struct zowie *$1();
+extern struct zowie *$1(struct zowie *);
 ],
 [
 #ifdef HAVE_LIBXT		/* needed for SunOS 4.0.3 or 4.1 */
-XtToolkitInitialize();
+extern void XtToolkitInitialize(void);
 #endif
 ],
 [eval 'cf_cv_func_'"$1"'=yes'],
@@ -4908,7 +4914,7 @@ AC_DEFUN([CF_SYS_ERRLIST],
     CF_CHECK_ERRNO(sys_errlist)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_TERMCAP_LIBS version: 17 updated: 2022/12/21 19:42:05
+dnl CF_TERMCAP_LIBS version: 18 updated: 2023/01/14 07:19:05
 dnl ---------------
 dnl Look for termcap libraries, or the equivalent in terminfo.
 dnl
@@ -4947,7 +4953,7 @@ if test "$cf_cv_termlib" = none; then
 			AC_MSG_CHECKING(for $cf_func in -l$cf_lib)
 			AC_TRY_LINK(
 				[extern char *$cf_func(const char *);],
-				[int x=$cf_func(""); (void)x],
+				[char *x = $cf_func(""); (void)x],
 				[cf_result=yes],
 				[cf_result=no])
 			AC_MSG_RESULT($cf_result)
@@ -5263,7 +5269,7 @@ AC_DEFUN([CF_UPPER],
 $1=`echo "$2" | sed y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%`
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_UTF8_LIB version: 9 updated: 2021/05/19 19:35:25
+dnl CF_UTF8_LIB version: 10 updated: 2023/01/11 04:05:23
 dnl -----------
 dnl Check for multibyte support, and if not found, utf8 compatibility library
 AC_DEFUN([CF_UTF8_LIB],
@@ -5272,8 +5278,7 @@ AC_HAVE_HEADERS(wchar.h)
 AC_CACHE_CHECK(for multibyte character support,cf_cv_utf8_lib,[
 	cf_save_LIBS="$LIBS"
 	AC_TRY_LINK([
-#include <stdlib.h>
-#include <stdio.h>
+$ac_includes_default
 #ifdef HAVE_WCHAR_H
 #include <wchar.h>
 #endif
@@ -5388,7 +5393,7 @@ AC_DEFUN([CF_VERBOSE],
 CF_MSG_LOG([$1])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WCTYPE version: 6 updated: 2012/10/06 11:17:15
+dnl CF_WCTYPE version: 7 updated: 2023/01/14 07:48:15
 dnl ---------
 dnl Look for <wctype.h> and related functions.  This is needed with glibc to
 dnl see the codes above 127.
@@ -5410,7 +5415,7 @@ AC_TRY_COMPILE([
 		|| iswpunct(temp)
 		|| iswspace(temp)
 		|| iswupper(temp)
-		|| iswxdigit(temp);],
+		|| iswxdigit(temp); (void)test],
 	[cf_cv_have_wctype=yes],
 	[cf_cv_have_wctype=no])
 ])
@@ -6156,7 +6161,7 @@ AC_SUBST($3)dnl
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_PERL version: 9 updated: 2020/12/31 20:19:42
+dnl CF_WITH_PERL version: 11 updated: 2023/01/15 08:35:14
 dnl ------------
 dnl Check if perl-extension (using embedded perl interpreter) is wanted, and
 dnl update symbols if we are able to use the extension.
@@ -6195,8 +6200,8 @@ if test "$with_perl" = yes ; then
 #undef main],[
 		PerlInterpreter* interp = perl_alloc();
 		perl_construct(interp);
-		perl_parse(interp, 0, 0, (char **)0, (char **)0);
-		Perl_croak("Why:%s\\n", "Bye!");
+		perl_parse(interp, NULL, 0, NULL, NULL);
+		Perl_croak((void*)"Why:%s\\n", "Bye!");
 ],[
 		eval `$PERL -le 'for $f (qw/xsubpp typemap/) {
 				   @p = grep -f, map "$_/ExtUtils/$f", @INC;
@@ -6383,7 +6388,7 @@ AC_DEFUN([CF_WITH_X_DESKTOP_UTILS],
 	AC_SUBST(DESKTOP_FLAGS)
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_CURSES version: 17 updated: 2021/07/10 12:22:27
+dnl CF_XOPEN_CURSES version: 18 updated: 2023/01/11 04:05:23
 dnl ---------------
 dnl Test if we should define X/Open source for curses, needed on Digital Unix
 dnl 4.x, to see the extended functions, but breaks on IRIX 6.x.
@@ -6396,7 +6401,7 @@ AC_REQUIRE([CF_CURSES_CPPFLAGS])dnl
 AC_CACHE_CHECK(definition to turn on extended curses functions,cf_cv_need_xopen_extension,[
 cf_cv_need_xopen_extension=unknown
 AC_TRY_LINK([
-#include <stdlib.h>
+$ac_includes_default
 #include <${cf_cv_ncurses_header:-curses.h}>],[
 #if defined(NCURSES_VERSION_PATCH)
 #if (NCURSES_VERSION_PATCH < 20100501) && (NCURSES_VERSION_PATCH >= 20100403)
@@ -6422,7 +6427,7 @@ make an error	/* prefer to fall-through on the second checks */
 	do
 		AC_TRY_LINK([
 #define $cf_try_xopen_extension 1
-#include <stdlib.h>
+$ac_includes_default
 #include <${cf_cv_ncurses_header:-curses.h}>],[
 		cchar_t check;
 		int check2 = curs_set((int)sizeof(check));
@@ -6594,7 +6599,7 @@ fi
 fi # cf_cv_posix_visible
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_X_ATHENA version: 24 updated: 2020/03/10 18:53:47
+dnl CF_X_ATHENA version: 25 updated: 2023/01/11 04:05:23
 dnl -----------
 dnl Check for Xaw (Athena) libraries
 dnl
@@ -6668,6 +6673,7 @@ if test "$PKG_CONFIG" != none ; then
 
 AC_CACHE_CHECK(for usable $cf_x_athena/Xmu package,cf_cv_xaw_compat,[
 AC_TRY_LINK([
+$ac_includes_default
 #include <X11/Xmu/CharSet.h>
 ],[
 int check = XmuCompareISOLatin1("big", "small");
@@ -6754,7 +6760,7 @@ elif test "$cf_x_athena_inc" != default ; then
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_X_ATHENA_LIBS version: 13 updated: 2020/01/11 18:16:10
+dnl CF_X_ATHENA_LIBS version: 14 updated: 2023/01/11 04:05:23
 dnl ----------------
 dnl Normally invoked by CF_X_ATHENA, with $1 set to the appropriate flavor of
 dnl the Athena widgets, e.g., Xaw, Xaw3d, neXtaw.
@@ -6787,6 +6793,7 @@ do
 		CF_ADD_LIBS($cf_libs)
 		AC_MSG_CHECKING(for $cf_test in $cf_libs)
 		AC_TRY_LINK([
+$ac_includes_default
 #include <X11/Intrinsic.h>
 #include <X11/$cf_x_athena_root/SimpleMenu.h>
 ],[
@@ -7034,7 +7041,7 @@ AC_CHECK_LIB(Xm, XmProcessTraversal, [LIBS="-lXm $LIBS"],
 	[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS]) dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_X_TOOLKIT version: 26 updated: 2021/01/02 09:31:20
+dnl CF_X_TOOLKIT version: 27 updated: 2023/01/11 04:05:23
 dnl ------------
 dnl Check for X Toolkit libraries
 AC_DEFUN([CF_X_TOOLKIT],
@@ -7069,6 +7076,7 @@ CF_TRY_PKG_CONFIG(xt,[
 # we have an "xt" package, but it may omit Xt's dependency on X11
 AC_CACHE_CHECK(for usable X dependency,cf_cv_xt_x11_compat,[
 AC_TRY_LINK([
+$ac_includes_default
 #include <X11/Xlib.h>
 ],[
 	int rc1 = XDrawLine((Display*) 0, (Drawable) 0, (GC) 0, 0, 0, 0, 0);
@@ -7087,6 +7095,7 @@ AC_TRY_LINK([
 
 AC_CACHE_CHECK(for usable X Toolkit package,cf_cv_xt_ice_compat,[
 AC_TRY_LINK([
+$ac_includes_default
 #include <X11/Shell.h>
 ],[int num = IceConnectionNumber(0); (void) num
 ],[cf_cv_xt_ice_compat=yes],[cf_cv_xt_ice_compat=no])])

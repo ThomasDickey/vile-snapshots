@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11.c,v 1.433 2021/11/30 23:48:34 tom Exp $
+ * $Id: x11.c,v 1.434 2023/01/15 14:37:33 tom Exp $
  */
 
 /*
@@ -93,9 +93,14 @@ static void x_key_press(Widget w, XtPointer unused, XEvent *ev,
 			Boolean *continue_to_dispatch);
 static void x_wm_delwin(Widget w, XtPointer unused, XEvent *ev,
 			Boolean *continue_to_dispatch);
+#if OPT_COLOR&&!SMALLER
 static void x_start_autocolor_timer(void);
 static void x_autocolor_timeout(XtPointer flagp, XtIntervalId * id);
 static void x_stop_autocolor_timer(void);
+#else
+#define x_start_autocolor_timer()	/* nothing */
+#define x_stop_autocolor_timer()	/* nothing */
+#endif
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 static Boolean too_light_or_too_dark(Pixel pixel);
 #endif
@@ -2552,7 +2557,7 @@ x_preparse_args(int *pargc, char ***pargv)
 				Nval(XtNfromVert, cur_win->menu_widget),
 				Nval(XtNvertDistance, 0),
 				NULL);
-#else
+#else /* !(ATHENA_WIDGETS && OPT_MENUS) */
 #if ATHENA_WIDGETS
     cur_win->form_widget =
 	XtVaCreateManagedWidget("form",
@@ -2567,9 +2572,6 @@ x_preparse_args(int *pargc, char ***pargv)
 					   + 2),
 				XtNheight, x_height(cur_win),
 				XtNbackground, cur_win->bg,
-				XtNbottom, XtChainBottom,
-				XtNleft, XtChainLeft,
-				XtNright, XtChainRight,
 				NULL);
 #else
 #if NO_WIDGETS
@@ -6003,12 +6005,12 @@ x_unwatchfd(int fd GCC_UNUSED, long id)
  * file if desired.
  */
 
+#if OPT_COLOR&&!SMALLER
 static XtIntervalId x_autocolor_timeout_id;
 
 static void
 x_start_autocolor_timer()
 {
-#if OPT_COLOR&&!SMALLER
     int millisecs = global_b_val(VAL_AUTOCOLOR);
     x_stop_autocolor_timer();
     if (millisecs > 0)
@@ -6016,7 +6018,6 @@ x_start_autocolor_timer()
 						 (ULONG) millisecs,
 						 x_autocolor_timeout,
 						 (XtPointer) 0);
-#endif
 }
 
 static void
@@ -6048,6 +6049,7 @@ x_autocolor_timeout(XtPointer data GCC_UNUSED, XtIntervalId * id GCC_UNUSED)
 	XSendEvent(dpy, cur_win->win, False, (long) 0, (XEvent *) &ev);
     }
 }
+#endif /* OPT_COLOR&&!SMALLER */
 
 /*
  * Return true if the given character would be printable.  Not all characters

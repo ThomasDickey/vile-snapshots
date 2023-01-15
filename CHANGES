@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20230113 (y)
+ 20230115 (y)
 	> Tom Dickey:
+	+ build-fixes for --disable-extensions and --disable-shell configure
+	  options.
 	+ amend fix for 9.8w change to map.c, so that both UTF-8 in scripts as
 	  well as interactive insertions of UTF-8 are handled (report by Chris
 	  Green).

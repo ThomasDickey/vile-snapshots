@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Id: bind.c,v 1.380 2022/12/18 23:29:38 tom Exp $
+ * $Id: bind.c,v 1.381 2023/01/15 13:28:40 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1817,6 +1817,7 @@ cfg_locate(char *fname, UINT which)
     else if (isShellOrPipe(fname))
 	returnString(fname);
 
+#if OPT_SHELL
     /* look in the current directory */
     if (look_in_cwd && (which & FL_CDIR)) {
 	if (check_file_access(fname, FL_CDIR | mode) == TRUE) {
@@ -1827,6 +1828,7 @@ cfg_locate(char *fname, UINT which)
     if (look_in_home && (which & FL_HOME)	/* look in the home directory */
 	&&((sp = locate_fname(home_dir(), fname, FL_HOME | mode)) != 0))
 	returnString(sp);
+#endif
 
     if ((which & FL_EXECDIR)	/* look in vile's bin directory */
 	&&((sp = locate_fname(exec_pathname, fname, FL_EXECDIR | mode)) != 0))
@@ -1949,6 +1951,7 @@ list_which(LIST_ARGS)
 	    (mode & FL_EXECABLE) ? "executable" : "source",
 	    fname);
 
+#if OPT_SHELL
     /* look in the current directory */
     if (look_in_cwd && (uflag & FL_CDIR)) {
 	bprintf("\n$cwd");
@@ -1959,6 +1962,7 @@ list_which(LIST_ARGS)
 	bprintf("\n$HOME");
 	list_which_fname(home_dir(), fname, FL_HOME | mode);
     }
+#endif
 
     if (uflag & FL_EXECDIR) {	/* look in vile's bin directory */
 	bprintf("\n$exec-path");

@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Id: glob.c,v 1.104 2016/07/16 14:08:37 tom Exp $
+ * $Id: glob.c,v 1.105 2023/01/15 13:29:33 tom Exp $
  *
  */
 
@@ -829,6 +829,8 @@ expand_pattern(char *item)
 	(void) closedir(dp);
     }
 #else /* UNIX or MSDOS, etc. */
+
+    (void) item;
 
 #if OPT_GLOB_PIPE
 # ifdef GVAL_GLOB

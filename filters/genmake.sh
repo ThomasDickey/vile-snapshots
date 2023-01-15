@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: genmake.sh,v 1.12 2019/09/14 16:04:50 tom Exp $
+# $Id: genmake.sh,v 1.13 2023/01/14 00:16:36 tom Exp $
 # Scan the source-files in the "filters" directory to obtain the names which
 # are used for the default symbol table for each filter.  Update genmake.mak
 # if the lists differ.
@@ -13,6 +13,8 @@ LC_ALL=C;     export LC_ALL
 LC_CTYPE=C;   export LC_CTYPE
 LANGUAGE=C;   export LANGUAGE
 LC_COLLATE=C; export LC_COLLATE
+
+: "${FGREP:=grep -F}"
 
 TARGET=genmake.mak
 SOURCE=.
@@ -35,12 +37,12 @@ DATA=${TMPDIR-.}/data$PID.gen
 TEMP=${TMPDIR-.}/temp$PID.gen
 SORT=${TMPDIR-.}/sort$PID.gen
 DIFF=${TMPDIR-.}/diff$PID.gen
-fgrep 'DefineOptFilter(' $SOURCE/*.[cl] | \
+$FGREP 'DefineOptFilter(' $SOURCE/*.[cl] | \
 	sed	-e 's,^.*/,,' \
 		-e 's/,.*//' \
 		-e 's/:.*(/ /' \
 		-e 's/\./ /' >$TEMP
-fgrep 'DefineFilter(' $SOURCE/*.[cl] | \
+$FGREP 'DefineFilter(' $SOURCE/*.[cl] | \
 	sed	-e 's,^.*/,,' \
 		-e 's/).*//' \
 		-e 's/:.*(/ /' \
@@ -59,7 +61,7 @@ sed -e 's/@/$/g' >$DATA <<EOF
 
 EOF
 
-fgrep ' c ' $TEMP | \
+$FGREP ' c ' $TEMP | \
 while true
 do
 	read filter suffix filename
@@ -81,7 +83,7 @@ done
 
 echo >>$DATA
 
-fgrep ' l ' $TEMP | \
+$FGREP ' l ' $TEMP | \
 while true
 do
 	read filter suffix filename

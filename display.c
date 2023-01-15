@@ -4,7 +4,7 @@
  * physical display screen the same as the virtual display screen. These
  * functions use hints that are left in the windows by the commands.
  *
- * $Id: display.c,v 1.581 2022/08/21 16:24:00 tom Exp $
+ * $Id: display.c,v 1.582 2023/01/15 13:25:28 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1208,6 +1208,8 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
 		prev_col = column;
 	    }
 	}
+#else
+	(void) c0;
 #endif
 	if (isTab(ch) && !expanded) {
 	    column += t - (column % t);
@@ -1872,6 +1874,8 @@ offs2col0(WINDOW *wp,
 			column = need - nums;
 		    }
 		}
+#else
+		(void) c0;
 #endif
 		column++;
 	    } else if (ch == last) {
@@ -3917,6 +3921,7 @@ upmode(void)
  * Check to see if the cursor is on in the window and re-frame it if needed or
  * wanted.
  */
+#if OPT_UPBUFF
 static void
 reframe_cursor_position(WINDOW *wp)
 {
@@ -4104,6 +4109,7 @@ reframe_cursor_position(WINDOW *wp)
     }
 #endif
 }
+#endif /* OPT_UPBUFF */
 
 /*
  * De-extend any line that deserves it.
