@@ -13,12 +13,15 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Id: perl.xs,v 1.144 2022/07/03 18:02:36 tom Exp $
+ * $Id: perl.xs,v 1.147 2023/01/16 01:21:02 tom Exp $
  */
 
 /*
  * Perl's header (and macro expansions) produce too many warnings to be useful.
  */
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wcompound-token-split-by-macro"
+#endif
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wcast-qual"
 #pragma GCC diagnostic ignored "-Wconversion"
