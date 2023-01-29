@@ -1,4 +1,4 @@
-dnl $Id: aclocal.m4,v 1.366 2023/01/15 13:35:47 tom Exp $
+dnl $Id: aclocal.m4,v 1.367 2023/01/29 21:09:42 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2022,2023 by Thomas E. Dickey
@@ -2926,7 +2926,7 @@ cf_save_CFLAGS="$cf_save_CFLAGS -we147"
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_KILLPG version: 9 updated: 2023/01/14 07:48:15
+dnl CF_KILLPG version: 10 updated: 2023/01/29 16:09:01
 dnl ---------
 dnl Note: relies upon AC_FUNC_SETPGRP, but cannot use AC_REQUIRE, since that
 dnl messes up the messages...
@@ -2951,7 +2951,7 @@ fi
 if test "$cross_compiling" = yes ; then
 	AC_CHECK_FUNC(getpgrp,[
 	AC_TRY_COMPILE([
-#ac_includes_default
+$ac_includes_default
 
 #include <signal.h>
 ],[

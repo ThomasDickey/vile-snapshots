@@ -1,8 +1,8 @@
 Summary: VI Like Emacs editor
-# $Id: vile.spec,v 1.68 2023/01/01 17:09:44 tom Exp $
+# $Id: vile.spec,v 1.69 2023/01/29 21:12:18 tom Exp $
 Name: vile
 %define AppVersion 9.8
-Version: %{AppVersion}y
+Version: %{AppVersion}z
 # each patch should update the version
 Release: dev
 License: GPLv2
@@ -34,6 +34,7 @@ Patch22: vile-9.8v.patch.gz
 Patch23: vile-9.8w.patch.gz
 Patch24: vile-9.8x.patch.gz
 Patch25: vile-9.8y.patch.gz
+Patch26: vile-9.8z.patch.gz
 # each patch should add itself to this list
 Vendor: Thomas E. Dickey <dickey@invisible-island.net>
 Packager: Thomas E. Dickey <dickey@invisible-island.net>
@@ -101,6 +102,7 @@ Requires:	%{name}-common = %{version}-%{release}
 %patch23 -p1
 %patch24 -p1
 %patch25 -p1
+%patch26 -p1
 # each patch should add itself to this list
 
 rpm --version
@@ -267,6 +269,9 @@ rm -rf %{buildroot}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Sun Jan 29 2023 Thomas E. Dickey
+- added patch for 9.8z
 
 * Sun Jan  1 2023 Thomas E. Dickey
 - added patch for 9.8y

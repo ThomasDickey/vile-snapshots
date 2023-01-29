@@ -9800,7 +9800,7 @@ if test "$ac_cv_func_getpgrp" = yes; then
 #line 9800 "configure"
 #include "confdefs.h"
 
-#ac_includes_default
+$ac_includes_default
 
 #include <signal.h>
 

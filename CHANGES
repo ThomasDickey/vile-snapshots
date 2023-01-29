@@ -1,5 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20230129 (z)
+	> Tom Dickey:
+	+ fix typo in cross-compile check in CF_KILLPG macro (Debian #1029956)
+
  20230115 (y)
 	> Tom Dickey:
 	+ build-fixes for --disable-extensions and --disable-shell configure
