@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20230129 (z)
+ 20230212 (z)
 	> Tom Dickey:
+	+ modify curses configuration to handle ncurses KEY_RESIZE (prompted by
+	  discussion with Sebastian Neuper).
 	+ fix typo in cross-compile check in CF_KILLPG macro (Debian #1029956)
 
  20230115 (y)

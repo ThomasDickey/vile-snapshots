@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Id: curses.c,v 1.53 2022/08/25 22:47:39 tom Exp $
+ * $Id: curses.c,v 1.55 2023/02/12 15:19:46 tom Exp $
  */
 
 #include "estruct.h"
@@ -196,6 +196,7 @@ curs_initialize(void)
 	setlocale(LC_CTYPE, vl_real_enc.locale);
     }
 #endif
+    curses_trace(0x224);
     initscr();
     raw();
     noecho();
@@ -322,26 +323,39 @@ curs_getc(void)
 	fflush(stdout);
 	result = getchar();
     } else if (result == -1) {
+#ifdef KEY_RESIZE
+      resized:
+	{
+#endif
 #ifdef VAL_AUTOCOLOR
-	int acmilli = global_b_val(VAL_AUTOCOLOR);
+	    int acmilli = global_b_val(VAL_AUTOCOLOR);
 
-	if (acmilli != 0) {
-	    timeout(acmilli);
-	    for_ever {
-		result = getch();
-		if (result < 0) {
-		    autocolor();
-		} else {
-		    break;
+	    if (acmilli != 0) {
+		timeout(acmilli);
+		for_ever {
+		    result = getch();
+		    if (result < 0) {
+			autocolor();
+		    } else {
+			break;
+		    }
 		}
+	    } else {
+		nodelay(stdscr, FALSE);
+		result = getch();
 	    }
-	} else {
+#else
 	    nodelay(stdscr, FALSE);
 	    result = getch();
+#endif
+#ifdef KEY_RESIZE
 	}
-#else
-	nodelay(stdscr, FALSE);
-	result = getch();
+	if (result == KEY_RESIZE) {
+	    if ((LINES > 1 && LINES != term.rows)
+		|| (COLS > 1 && COLS != term.cols))
+		newscreensize(LINES, COLS);
+	    goto resized;
+	}
 #endif
     }
     last_key = -1;
