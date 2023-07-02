@@ -1,10 +1,10 @@
 .\" obligatory man page for vile
-.\" $Id: vile.1,v 1.48 2022/12/22 20:51:16 tom Exp $
+.\" $Id: vile.1,v 1.49 2023/07/02 23:38:47 tom Exp $
 .ie \n(.g .ds `` \(lq
 .el       .ds `` ``
 .ie \n(.g .ds '' \(rq
 .el       .ds '' ''
-.TH VILE 1
+.TH VILE 1 2023-07-02 VI-Like-Emacs "User commands"
 .SH NAME
 vile, xvile, uxvile, lxvile \- \fBVI L\fRike \fBE\fRmacs
 .SH SYNOPSIS
@@ -194,7 +194,6 @@ prints a short usage message.
 Normally that is sent to the standard output.
 The GUI \fIwinvile\fP displays this information in a window.
 .SS SCREENSIZE OPTIONS
-.PP
 Screensize can be set from the command line for certain configurations:
 .IP "\-25 \-43 \-50 \-60"
 On PC systems you may be able to set the initial screen resolution from the
@@ -206,7 +205,6 @@ See
 .I vile.hlp
 for details.
 .SS X11 OPTIONS
-.PP
 .IR xvile -specific
 command-line options are detailed in the help file (see \*(``Standard X command
 line arguments\*(''.
@@ -278,7 +276,6 @@ support, etc.
 The help file has more information on this in the section
 \fIX Window System specifics\fP.
 .SS vile-manfilt
-.PP
 There is a program distributed with the vile source which
 is usually installed as
 .IR vile\-manfilt .
@@ -296,7 +293,6 @@ page text in bold or italics as appropriate.
 .PP
 See the help file section on \fIFiltering \*(``man\*('' pages\fP for details.
 .SS Syntax filters
-.PP
 Likewise, there are several language filters, e.g.,
 .I vile\-c\-filt
 for C,
@@ -305,19 +301,16 @@ source code.
 .PP
 Again, see the help file section on \fISyntax Coloring\fP for more information.
 .SH "UTILITY SCRIPTS"
-.PP
 Vile is not simply an interactive program.
 Its macro language and use of environment variables lets it
 be useful in scripting.
 .SS vile-libdir-path
-.PP
 The syntax filters and \fIvile-manfilt\fP may not be installed where
 you would execute them in your \fBPATH\fP.
 The \fIvile-libdir-path\fP script looks in the usual places and
 prints an updated \fBPATH\fP variable which other scripts
 can use when executing these programs.
 .SS vile-pager
-.PP
 Vile can be used as a \fIpager\fP
 (typical examples include \fImore\fP and \fIless\fP).
 This script uses \fIvile-manfilt\fP to preprocess
@@ -329,7 +322,6 @@ sequences, and multiple levels of overstrikes.
 But unlike a typical pager, \fIvile-pager\fP expects the pipe to be
 closed before it starts displaying.
 .SS vile-to-html
-.PP
 Vile's \*(``\-F\*('' option makes it act like a smart interface to the
 collection of syntax filters.
 But its output uses vile's internal markup rather than standard escape

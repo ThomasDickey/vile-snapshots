@@ -12,7 +12,7 @@
 */
 
 /*
- * $Id: estruct.h,v 1.760 2022/08/04 21:16:07 tom Exp $
+ * $Id: estruct.h,v 1.761 2023/03/27 23:36:28 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2674,8 +2674,8 @@ typedef struct	{
 #endif
 
 #if OPT_MULTIBYTE && (DISP_TERMCAP || WIDE_CURSES || DISP_X11 || ((DISP_NTCONS || DISP_NTWIN) && defined(UNICODE)))
-typedef USHORT VIDEO_TEXT;
-typedef USHORT VIDEO_CHAR;
+typedef unsigned VIDEO_TEXT;
+typedef unsigned VIDEO_CHAR;
 #else
 typedef UCHAR VIDEO_TEXT;
 typedef char  VIDEO_CHAR;

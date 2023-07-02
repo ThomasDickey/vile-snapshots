@@ -1,7 +1,12 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20230212 (z)
+ 20230702 (z)
 	> Tom Dickey:
+	+ fix mandoc warnings in vile.1
+	+ fix a use-after-free in parse_nondirective() due to free() in the
+	  actual_color() function of key-filt.c
+	+ change VIDEO_TEXT type to "unsigned", allowing display of Unicode
+	  values past BMP for drivers which support this.
 	+ modify curses configuration to handle ncurses KEY_RESIZE (prompted by
 	  discussion with Sebastian Neuper).
 	+ fix typo in cross-compile check in CF_KILLPG macro (Debian #1029956)

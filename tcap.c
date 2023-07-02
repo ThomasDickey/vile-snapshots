@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Id: tcap.c,v 1.192 2022/08/25 20:34:41 tom Exp $
+ * $Id: tcap.c,v 1.193 2023/07/02 23:30:34 tom Exp $
  *
  */
 
@@ -15,10 +15,17 @@
 #undef WINDOW
 #define WINDOW vile_WINDOW
 
+#if USE_TERMINFO
+#define VALID_TERM (cur_term != NULL)
+#endif
+
 #if USE_TERMCAP
+#define VALID_TERM already_open
 #  define TCAPSLEN 1024
 static char tc_parsed[TCAPSLEN];
 #endif
+
+static int already_open = FALSE;
 
 static char *tc_CM, *tc_CE, *tc_CL, *tc_ME, *tc_MR, *tc_SO, *tc_SE;
 static char *tc_TI, *tc_TE, *tc_KS, *tc_KE;
@@ -157,7 +164,6 @@ tcap_open(void)
     char *tv_stype;
     size_t i;
     int j;
-    static int already_open = 0;
     /* *INDENT-OFF* */
     static const struct {
 	    const char *name;
@@ -476,7 +482,8 @@ tcap_kclose(void)
 static void
 tcap_move(register int row, register int col)
 {
-    putpad(tgoto(tc_CM, col, row));
+    if (VALID_TERM)
+	putpad(tgoto(tc_CM, col, row));
 }
 
 static void
@@ -583,8 +590,12 @@ static void
 tcapscroll_reg(int from, int to, int n)
 {
     int i;
+
+    if (!VALID_TERM)
+	return;
     if (to == from)
 	return;
+
     if (to < from) {
 	tcapscrollregion(to, from + n - 1);
 	tcap_move(from + n - 1, 0);
@@ -613,8 +624,12 @@ static void
 tcapscroll_delins(int from, int to, int n)
 {
     int i;
+
+    if (!VALID_TERM)
+	return;
     if (to == from)
 	return;
+
     if (tc_DL && tc_AL) {
 	if (to < from) {
 	    tcap_move(to, 0);
@@ -665,7 +680,8 @@ tcapscroll_delins(int from, int to, int n)
 static void
 tcapscrollregion(int top, int bot)
 {
-    putpad(tgoto(tc_CS, bot, top));
+    if (VALID_TERM)
+	putpad(tgoto(tc_CS, bot, top));
 }
 
 #if OPT_COLOR
@@ -700,7 +716,7 @@ show_ansi_colors(void)
 {
     char *t;
 
-    if (Sf != 0 && Sb != 0) {
+    if (VALID_TERM && Sf != 0 && Sb != 0) {
 	if (shown_fcolor == NO_COLOR
 	    || shown_bcolor == NO_COLOR) {
 	    if (OrigColors)
@@ -955,7 +971,8 @@ static void
 tcap_cursor(int flag)
 {
     static int level;
-    if (tc_VI != 0
+    if (VALID_TERM
+	&& tc_VI != 0
 	&& tc_VE != 0) {
 	if (flag) {
 	    if (!++level) {
@@ -1012,7 +1029,8 @@ tcap_beep(void)
 static void
 putpad(const char *str)
 {
-    tputs(str, 1, ttputc);
+    if (VALID_TERM)
+	tputs(str, 1, ttputc);
 }
 
 TERM term =
