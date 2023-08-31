@@ -1,5 +1,5 @@
 /*
- * $Id: builtflt.c,v 1.101 2018/11/12 18:30:34 tom Exp $
+ * $Id: builtflt.c,v 1.102 2023/08/31 08:07:12 tom Exp $
  *
  * Main program and I/O for builtin vile syntax/highlighter programs
  */
@@ -214,7 +214,14 @@ load_filter(const char *name)
 
     if (strlen(name) < NSTRING - 30) {
 	int first = TRUE;
-	sprintf(defining, "define_%s", name);
+
+	/* potential symbol conflict with ncurses */
+	if (!strcmp(name, "key")) {
+	    sprintf(defining, "vl_define_%s", name);
+	} else {
+	    sprintf(defining, "define_%s", name);
+	}
+
 	sprintf(leafname, "vile-%s-filt.so", name);
 	while ((cp = parse_pathlist(cp, filename, &first)) != 0) {
 	    if (strlen(filename) + strlen(leafname) + 3 >= sizeof(filename))
@@ -429,7 +436,7 @@ init_flt_error(void)
  * Log an error detected by the syntax filter.
  */
 void
-flt_error(const char *fmt,...)
+flt_error(const char *fmt, ...)
 {
 #ifdef MDFILTERMSGS
     if (b_val(curbp, MDFILTERMSGS)) {
@@ -461,7 +468,7 @@ flt_error(const char *fmt,...)
  * Log an message from the syntax filter.
  */
 void
-flt_message(const char *fmt,...)
+flt_message(const char *fmt, ...)
 {
 #ifdef MDFILTERMSGS
     if (b_val(curbp, MDFILTERMSGS)) {
