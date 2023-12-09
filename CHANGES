@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20230831 (z)
+ 20231209 (z)
 	> Tom Dickey:
+	+ modify spec-file to work around a bug in make 4.4.1
+	+ reduce compiler-warnings in configure script checks.
+	+ disallow newline in quoted string in ini filter.
 	+ adjust dlsym lookup to account for special case of define_key, to
 	  avoid conflict with ncurses.
 	+ fix mandoc warnings in vile.1

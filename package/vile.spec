@@ -1,5 +1,5 @@
 Summary: VI Like Emacs editor
-# $Id: vile.spec,v 1.69 2023/01/29 21:12:18 tom Exp $
+# $Id: vile.spec,v 1.70 2023/12/09 21:24:34 tom Exp $
 Name: vile
 %define AppVersion 9.8
 Version: %{AppVersion}z
@@ -150,6 +150,7 @@ rebinding, and real X window system support.
 	--with-loadable-filters \
 	--disable-rpath-hack %{perl_opt}
 make vile
+mv -v vile pass-1
 
 %configure --verbose \
 	--with-loadable-filters \
@@ -164,12 +165,16 @@ make vile
 %endif
 	--with-xpm %{perl_opt}
 make xvile
-touch vile
 
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot} INSTALL='install -p' TARGET='xvile'
+
 make install DESTDIR=%{buildroot} INSTALL='install -p' TARGET='vile'
+install -s -p -v pass-1 %{buildroot}/%{_bindir}/vile
+rm -f pass-1
+
+find %{buildroot} -name '*vile' -ls
 
 # There is no possible cross-version check possible for rpm to filter this,
 # and it would make the dependencies hard to satisfy - remove it.
@@ -269,6 +274,9 @@ rm -rf %{buildroot}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Sat Dec  9 2023 Thomas E. Dickey
+- workaround make 4.4.1 bug, seen in OpenSUSE.
 
 * Sun Jan 29 2023 Thomas E. Dickey
 - added patch for 9.8z

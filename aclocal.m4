@@ -1,4 +1,4 @@
-dnl $Id: aclocal.m4,v 1.368 2023/07/02 23:41:55 tom Exp $
+dnl $Id: aclocal.m4,v 1.370 2023/12/09 15:57:19 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2022,2023 by Thomas E. Dickey
@@ -1144,7 +1144,7 @@ if test "x$ifelse([$2],,CLANG_COMPILER,[$2])" = "xyes" ; then
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_CONST_X_STRING version: 7 updated: 2021/06/07 17:39:17
+dnl CF_CONST_X_STRING version: 8 updated: 2023/12/01 17:22:50
 dnl -----------------
 dnl The X11R4-X11R6 Xt specification uses an ambiguous String type for most
 dnl character-strings.
@@ -1179,6 +1179,7 @@ AC_TRY_COMPILE(
 AC_CACHE_CHECK(for X11/Xt const-feature,cf_cv_const_x_string,[
 	AC_TRY_COMPILE(
 		[
+#undef  _CONST_X_STRING
 #define _CONST_X_STRING	/* X11R7.8 (perhaps) */
 #undef  XTSTRINGDEFINES	/* X11R5 and later */
 #include <stdlib.h>
@@ -1482,7 +1483,7 @@ fi
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_TERMCAP version: 14 updated: 2023/01/09 20:20:18
+dnl CF_CURSES_TERMCAP version: 15 updated: 2023/12/09 10:53:57
 dnl -----------------
 dnl Check if we should include <curses.h> to pick up prototypes for termcap
 dnl functions.  On terminfo systems, these are normally declared in <curses.h>,
@@ -1513,7 +1514,7 @@ do
 
     AC_TRY_LINK([/* $cf_c_opts $cf_t_opts */
 $CHECK_DECL_HDRS $cf_tgoto_decl],
-	[char *x = tgoto(""); (void)x],
+	[static char fmt[] = ""; char *x = tgoto(fmt); (void)x],
 	[test "$cf_cv_need_curses_h" = no && {
 	     cf_cv_need_curses_h=maybe
 	     cf_ok_c_opts=$cf_c_opts
@@ -1522,7 +1523,7 @@ $CHECK_DECL_HDRS $cf_tgoto_decl],
 	[echo "Recompiling with corrected call (C:$cf_c_opts, T:$cf_t_opts)" >&AC_FD_CC
 	AC_TRY_LINK([
 $CHECK_DECL_HDRS $cf_tgoto_decl],
-	[char *x = tgoto("",0,0); (void)x],
+	[static char fmt[] = ""; char *x = tgoto(fmt,0,0); (void)x],
 	[cf_cv_need_curses_h=yes
 	 cf_ok_c_opts=$cf_c_opts
 	 cf_ok_t_opts=$cf_t_opts])])
@@ -2566,7 +2567,7 @@ test -d "$oldincludedir" && {
 $1="[$]$1 $cf_header_path_list"
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_HEADER_RESOURCE version: 5 updated: 2012/10/06 11:17:15
+dnl CF_HEADER_RESOURCE version: 6 updated: 2023/12/09 10:54:48
 dnl ------------------
 dnl On SunOS, struct rusage is referred to in <sys/wait.h>.  struct rusage is
 dnl defined in <sys/resource.h>.  On SCO v4, resource.h needs time.h, which we
@@ -2576,7 +2577,7 @@ AC_REQUIRE([CF_HEADER_SELECT])
 AC_CACHE_CHECK(if we may include sys/resource.h with sys/wait.h,
 cf_cv_resource_with_wait,[
 AC_TRY_COMPILE([
-#if defined(HAVE_SYS_TIME_H) && (defined(SELECT_WITH_TIME) || !(defined(HAVE_SELECT_H || defined(HAVE_SYS_SELECT_H))))
+#if defined(HAVE_SYS_TIME_H) && (defined(SELECT_WITH_TIME) || !(defined(HAVE_SELECT_H) || defined(HAVE_SYS_SELECT_H)))
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 # include <time.h>
@@ -2985,7 +2986,7 @@ cf_save_CFLAGS="$cf_save_CFLAGS -we147"
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_KILLPG version: 10 updated: 2023/01/29 16:09:01
+dnl CF_KILLPG version: 11 updated: 2023/12/09 10:53:57
 dnl ---------
 dnl Note: relies upon AC_FUNC_SETPGRP, but cannot use AC_REQUIRE, since that
 dnl messes up the messages...
@@ -3027,9 +3028,10 @@ $ac_includes_default
 
 #include <signal.h>
 
-RETSIGTYPE
+static RETSIGTYPE
 handler(int s)
 {
+	(void) s;
     exit(0);
 }
 
@@ -3052,7 +3054,7 @@ int main(void)
 test $cf_cv_need_killpg = yes && AC_DEFINE(HAVE_KILLPG)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LARGEFILE version: 12 updated: 2020/03/19 20:23:48
+dnl CF_LARGEFILE version: 13 updated: 2023/12/03 19:09:59
 dnl ------------
 dnl Add checks for large file support.
 AC_DEFUN([CF_LARGEFILE],[
@@ -3086,11 +3088,15 @@ ifdef([AC_FUNC_FSEEKO],[
 #pragma GCC diagnostic error "-Wincompatible-pointer-types"
 #include <sys/types.h>
 #include <dirent.h>
+
+#ifndef __REDIRECT
+/* if transitional largefile support is setup, this is true */
+extern struct dirent64 * readdir(DIR *);
+#endif
 		],[
-		/* if transitional largefile support is setup, this is true */
-		extern struct dirent64 * readdir(DIR *);
-		struct dirent64 *x = readdir((DIR *)0);
-		struct dirent *y = readdir((DIR *)0);
+		DIR *dp = opendir(".");
+		struct dirent64 *x = readdir(dp);
+		struct dirent *y = readdir(dp);
 		int z = x - y;
 		(void)z;
 		],
@@ -3646,7 +3652,7 @@ fi
 test "$cf_cv_mixedcase" = yes && AC_DEFINE(MIXEDCASE_FILENAMES,1,[Define to 1 if filesystem supports mixed-case filenames.])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MKSTEMP version: 12 updated: 2023/01/05 17:53:11
+dnl CF_MKSTEMP version: 13 updated: 2023/12/01 17:22:50
 dnl ----------
 dnl Check for a working mkstemp.  This creates two files, checks that they are
 dnl successfully created and distinct (AmigaOS apparently fails on the last).
@@ -3661,7 +3667,7 @@ $ac_includes_default
 
 int main(void)
 {
-	char *tmpl = "conftestXXXXXX";
+	static char tmpl[] = "conftestXXXXXX";
 	char name[2][80];
 	int n;
 	int result = 0;
@@ -4210,7 +4216,7 @@ case ".[$]$1" in
 esac
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PKG_CONFIG version: 12 updated: 2021/10/10 20:18:09
+dnl CF_PKG_CONFIG version: 13 updated: 2023/10/28 11:59:01
 dnl -------------
 dnl Check for the package-config program, unless disabled by command-line.
 dnl
@@ -4219,7 +4225,7 @@ AC_DEFUN([CF_PKG_CONFIG],
 [
 AC_MSG_CHECKING(if you want to use pkg-config)
 AC_ARG_WITH(pkg-config,
-	[  --with-pkg-config{=path} enable/disable use of pkg-config],
+	[[  --with-pkg-config[=CMD] enable/disable use of pkg-config and its name CMD]],
 	[cf_pkg_config=$withval],
 	[cf_pkg_config=yes])
 AC_MSG_RESULT($cf_pkg_config)
@@ -4507,7 +4513,7 @@ $1=`echo "$2" | \
 		-e 's/-[[UD]]'"$3"'\(=[[^ 	]]*\)\?[$]//g'`
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_RESTARTABLE_PIPEREAD version: 11 updated: 2023/01/05 17:55:18
+dnl CF_RESTARTABLE_PIPEREAD version: 12 updated: 2023/12/09 10:53:57
 dnl -----------------------
 dnl CF_RESTARTABLE_PIPEREAD is a modified version of AC_RESTARTABLE_SYSCALLS
 dnl from acspecific.m4, which uses a read on a pipe (surprise!) rather than a
@@ -4546,23 +4552,23 @@ static void sigwrapper(int sig, RETSIGTYPE (*disp)(int))
 #else
 # define sigwrapper signal
 #endif
-RETSIGTYPE ucatch (int isig) { }
+static RETSIGTYPE ucatch (int isig) { (void) isig; }
 int main (void) {
   int i, status;
   int fd[2];
   char buff[2];
-  pipe(fd);
+  if (pipe(fd) == -1) ${cf_cv_main_return:-return} (1);
   i = fork();
   if (i == 0) {
       sleep (2);
       kill (getppid (), SIGINT);
       sleep (2);
-      write(fd[1],"done",4);
+      if (write(fd[1],"done",4) == -1) ${cf_cv_main_return:-return} (1);
       close(fd[1]);
       ${cf_cv_main_return:-return} (0);
   }
   sigwrapper (SIGINT, ucatch);
-  status = read(fd[0], buff, sizeof(buff));
+  status = (int) read(fd[0], buff, sizeof(buff));
   wait (&i);
   ${cf_cv_main_return:-return} (status == -1);
 }
@@ -4901,7 +4907,7 @@ if test "$cf_stdio_unlocked" != no ; then
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_STRUCT_TERMIOS version: 11 updated: 2020/03/19 20:46:13
+dnl CF_STRUCT_TERMIOS version: 13 updated: 2023/12/03 19:38:54
 dnl -----------------
 dnl Some machines require _POSIX_SOURCE to completely define struct termios.
 AC_DEFUN([CF_STRUCT_TERMIOS],[
@@ -4924,12 +4930,12 @@ if test "$ac_cv_header_termios_h" = yes ; then
 	if test "$termios_bad" = maybe ; then
 	AC_MSG_CHECKING(whether termios.h needs _POSIX_SOURCE)
 	AC_TRY_COMPILE([#include <termios.h>],
-		[struct termios foo; int x = foo.c_iflag = 1; (void)x],
+		[struct termios foo; int x = (int)(foo.c_iflag = 1); (void)x],
 		termios_bad=no, [
 		AC_TRY_COMPILE([
 #define _POSIX_SOURCE
 #include <termios.h>],
-			[struct termios foo; int x = foo.c_iflag = 2; (void)x],
+			[struct termios foo; int x = (int)(foo.c_iflag = 2); (void)x],
 			termios_bad=unknown,
 			termios_bad=yes AC_DEFINE(_POSIX_SOURCE,1,[Define to 1 if we must define _POSIX_SOURCE]))
 			])
@@ -5242,7 +5248,7 @@ if test $cf_cv_type_fd_set = sys/select.h ; then
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_TYPE_OUTCHAR version: 15 updated: 2015/05/15 19:42:24
+dnl CF_TYPE_OUTCHAR version: 16 updated: 2023/12/09 10:53:57
 dnl ---------------
 dnl Check for return and param type of 3rd -- OutChar() -- param of tputs().
 dnl
@@ -5289,10 +5295,11 @@ for Q in int void; do
 for R in int char; do
 for S in "" const; do
 	CF_MSG_LOG(loop variables [P:[$]P, Q:[$]Q, R:[$]R, S:[$]S])
-	AC_TRY_COMPILE([$CHECK_DECL_HDRS],
-	[extern $Q OutChar($R);
+	AC_TRY_COMPILE([$CHECK_DECL_HDRS
+	extern $Q OutChar($R);
 	extern $P tputs ($S char *string, int nlines, $Q (*_f)($R));
-	tputs("", 1, OutChar)],
+	static char fmt[] = "";],
+	[tputs(fmt, 1, OutChar)],
 	[cf_cv_type_outchar="$Q OutChar($R)"
 	 cf_cv_found=yes
 	 break])
@@ -5697,7 +5704,7 @@ fi
 AC_SUBST(no_icondir)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_ICON_THEME version: 13 updated: 2020/12/31 10:54:15
+dnl CF_WITH_ICON_THEME version: 14 updated: 2023/11/23 06:40:35
 dnl ------------------
 dnl If asked, check for prerequisites and setup symbols to permit installing
 dnl one or more application icons in the Red Hat icon-theme directory
@@ -5729,7 +5736,7 @@ CF_WITH_ICONDIR
 
 AC_MSG_CHECKING(if icon theme should be used)
 AC_ARG_WITH(icon-theme,
-	[  --with-icon-theme=XXX   install icons into desktop theme (hicolor)],
+	[[  --with-icon-theme[=XXX] install icons into desktop theme (hicolor)]],
 	[ICON_THEME=$withval],
 	[ICON_THEME=no])
 
@@ -5948,7 +5955,7 @@ else
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_MAN2HTML version: 12 updated: 2021/01/03 18:30:50
+dnl CF_WITH_MAN2HTML version: 13 updated: 2023/11/23 06:40:35
 dnl ----------------
 dnl Check for man2html and groff.  Prefer man2html over groff, but use groff
 dnl as a fallback.  See
@@ -5990,7 +5997,7 @@ esac
 
 AC_MSG_CHECKING(for program to convert manpage to html)
 AC_ARG_WITH(man2html,
-	[  --with-man2html=XXX     use XXX rather than groff],
+	[[  --with-man2html[=XXX]   use XXX rather than groff]],
 	[cf_man2html=$withval],
 	[cf_man2html=$cf_man2html])
 
@@ -6348,7 +6355,7 @@ CF_NO_LEAKS_OPTION(purify,
 AC_SUBST(LINK_PREFIX)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_SYMLINK version: 6 updated: 2020/12/31 20:19:42
+dnl CF_WITH_SYMLINK version: 7 updated: 2023/11/22 19:51:11
 dnl ---------------
 dnl If any of --program-prefix, --program-suffix or --program-transform-name is
 dnl given, accept an option tell the makefile to create a symbolic link, e.g.,
@@ -6365,7 +6372,7 @@ cf_name=`echo "$program_transform_name" | sed -e '[s,\\$\\$,$,g]'`
 cf_name=`echo "$2" |sed -e "$cf_name"`
 AC_MSG_CHECKING(for symbolic link to create to $cf_name)
 AC_ARG_WITH(symlink,
-	[  --with-symlink=XXX      make symbolic link to installed application],
+	[[  --with-symlink[=XXX]      make symbolic link to installed application]],
 	[with_symlink=$withval],
 	[with_symlink=$3])
 AC_MSG_RESULT($with_symlink)
@@ -6387,7 +6394,7 @@ CF_NO_LEAKS_OPTION(valgrind,
 	[USE_VALGRIND])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_XPM version: 3 updated: 2012/10/04 06:57:36
+dnl CF_WITH_XPM version: 4 updated: 2023/11/23 06:40:35
 dnl -----------
 dnl Test for Xpm library, update compiler/loader flags if it is wanted and
 dnl found.
@@ -6402,7 +6409,7 @@ cf_save_ldflags="${LDFLAGS}"
 
 AC_MSG_CHECKING(if you want to use the Xpm library for colored icon)
 AC_ARG_WITH(xpm,
-[  --with-xpm=DIR          use Xpm library for colored icon, may specify path],
+[[  --with-xpm[=DIR]        use Xpm library for colored icon, may specify path]],
 	[cf_Xpm_library="$withval"],
 	[cf_Xpm_library=yes])
 AC_MSG_RESULT($cf_Xpm_library)
@@ -6511,7 +6518,7 @@ esac
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_SOURCE version: 66 updated: 2023/04/03 04:19:37
+dnl CF_XOPEN_SOURCE version: 67 updated: 2023/09/06 18:55:27
 dnl ---------------
 dnl Try to get _XOPEN_SOURCE defined properly that we can use POSIX functions,
 dnl or adapt to the vendor's definitions to get equivalent functionality,
@@ -6571,7 +6578,7 @@ case "$host_os" in
 	cf_xopen_source="-D_SGI_SOURCE"
 	cf_XOPEN_SOURCE=
 	;;
-(linux*gnu|linux*gnuabi64|linux*gnuabin32|linux*gnueabi|linux*gnueabihf|linux*gnux32|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin|msys|mingw*)
+(linux*gnu|linux*gnuabi64|linux*gnuabin32|linux*gnueabi|linux*gnueabihf|linux*gnux32|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin|msys|mingw*|linux*uclibc)
 	CF_GNU_SOURCE($cf_XOPEN_SOURCE)
 	;;
 (minix*)

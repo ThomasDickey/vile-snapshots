@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.352 $)
+AC_REVISION($Revision: 1.353 $)
 AC_PREREQ(2.52.20210105)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Id: configure.in,v 1.352 2023/01/15 14:40:03 tom Exp $
+dnl $Id: configure.in,v 1.353 2023/12/09 15:51:58 tom Exp $
 
 define(MAKELIST, sh "$srcdir/filters/makelist.sh" "$srcdir/filters/genmake.mak")
 
@@ -895,7 +895,15 @@ CF_CURSES_TERM_H
 if test ".$cf_cv_termlib" != ".none"
 then
 CHECK_DECL_HDRS="$VILE_CHECK_HDRS
+
 #include <tcap.h>
+
+int dummy_tcap(void);
+int dummy_tcap(void)
+{
+	return vl_tgetflag(\"?\") + vl_tgetnum(\"?\") + vl_tgetstr(\"?\");
+}
+/* done with tcap-fixes */
 "
 	CF_TYPE_OUTCHAR
 fi
