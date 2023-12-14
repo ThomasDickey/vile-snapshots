@@ -1,7 +1,7 @@
 /*
  * Configurable headers used by termcap/terminfo driver for vile.
  *
- * $Id: tcap.h,v 1.20 2018/01/13 02:50:29 tom Exp $
+ * $Id: tcap.h,v 1.21 2023/12/13 23:52:09 tom Exp $
  */
 
 #ifndef VILE_TCAP_H
@@ -119,6 +119,11 @@ extern char PC;			/* used in 'tputs()' */
 	i_am_xterm = FALSE; \
     }
 
+/* suppress external when using this in configure script */
+#if defined(CHECK_PROTOTYPES) && CHECK_PROTOTYPES
+#define vl_strncpy(d,s,l) strncpy(d,s,l)
+#endif
+
 #if DISP_TERMCAP
 
 #ifdef MISSING_EXTERN_TGOTO
@@ -135,11 +140,6 @@ extern	int	tputs (char *string, int nlines, OUTC_DCL (*_f)(OUTC_ARGS) );
 #endif
 
 /*****************************************************************************/
-
-/* suppress external when using this in configure script */
-#if defined(CHECK_PROTOTYPES) && CHECK_PROTOTYPES
-#define vl_strncpy(d,s,l) strncpy(d,s,l)
-#endif
 
 #if USE_TERMCAP
 

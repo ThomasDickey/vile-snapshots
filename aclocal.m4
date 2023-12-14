@@ -1,4 +1,4 @@
-dnl $Id: aclocal.m4,v 1.370 2023/12/09 15:57:19 tom Exp $
+dnl $Id: aclocal.m4,v 1.371 2023/12/13 23:36:23 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2022,2023 by Thomas E. Dickey
@@ -846,14 +846,14 @@ case "$CC" in
 esac
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CC_INIT_UNIONS version: 3 updated: 2012/10/06 11:17:15
+dnl CF_CC_INIT_UNIONS version: 4 updated: 2023/12/13 18:02:34
 dnl -----------------
 dnl Check if the C compiler supports initialization of unions.
 AC_DEFUN([CF_CC_INIT_UNIONS],[
 AC_CACHE_CHECK(if we can initialize unions,
 cf_cv_init_unions,[
 	AC_TRY_COMPILE([],
-	[static struct foo {int x; union {double a; int b; } bar; } c = {0,{1.0}}],
+	[static struct foo {int x; union {double a; int b; } bar; } c = {0,{1.0}}; (void)c],
 	[cf_cv_init_unions=yes],
 	[cf_cv_init_unions=no])
 	])
@@ -4874,7 +4874,7 @@ if test "$cf_cv_sizechange" != no ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_STDIO_UNLOCKED version: 6 updated: 2020/12/31 20:19:42
+dnl CF_STDIO_UNLOCKED version: 7 updated: 2023/12/13 18:02:34
 dnl -----------------
 dnl The four functions getc_unlocked(), getchar_unlocked(), putc_unlocked(),
 dnl putchar_unlocked() are in POSIX.1-2001.
@@ -4896,7 +4896,7 @@ if test "$cf_stdio_unlocked" != no ; then
 	AC_CACHE_CHECK(if we should define _REENTRANT,cf_cv_stdio_unlocked,[
 	AC_TRY_COMPILE([#include <stdio.h>],[
 		extern void *$cf_stdio_unlocked(void *);
-		void *dummy = $cf_stdio_unlocked(0)],
+		void *dummy = $cf_stdio_unlocked(0); (void)dummy],
 			[cf_cv_stdio_unlocked=yes],
 			[cf_cv_stdio_unlocked=no])])
 		if test "$cf_cv_stdio_unlocked" = yes ; then
@@ -6454,7 +6454,7 @@ AC_DEFUN([CF_WITH_X_DESKTOP_UTILS],
 	AC_SUBST(DESKTOP_FLAGS)
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_CURSES version: 18 updated: 2023/01/11 04:05:23
+dnl CF_XOPEN_CURSES version: 19 updated: 2023/12/13 18:02:34
 dnl ---------------
 dnl Test if we should define X/Open source for curses, needed on Digital Unix
 dnl 4.x, to see the extended functions, but breaks on IRIX 6.x.
@@ -6477,9 +6477,10 @@ $ac_includes_default
 #ifdef NCURSES_WIDECHAR
 make an error	/* prefer to fall-through on the second checks */
 #endif
+	static char dummy[10];
 	cchar_t check;
 	int check2 = curs_set((int)sizeof(check));
-	long x = winnstr(stdscr, "", 0);
+	long x = winnstr(stdscr, dummy, 5);
 	int x1, y1;
 	(void)check2;
 	getbegyx(stdscr, y1, x1);
@@ -6495,9 +6496,10 @@ make an error	/* prefer to fall-through on the second checks */
 #define $cf_try_xopen_extension 1
 $ac_includes_default
 #include <${cf_cv_ncurses_header:-curses.h}>],[
+		static char dummy[10];
 		cchar_t check;
 		int check2 = curs_set((int)sizeof(check));
-		long x = winnstr(stdscr, "", 0);
+		long x = winnstr(stdscr, dummy, 5);
 		int x1, y1;
 		getbegyx(stdscr, y1, x1);
 		(void)check2;

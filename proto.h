@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Id: proto.h,v 1.757 2022/12/20 01:19:34 tom Exp $
+ * $Id: proto.h,v 1.758 2023/12/13 23:56:01 tom Exp $
  */
 
 #ifndef VILE_PROTO_H
@@ -14,6 +14,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#undef vl_strncat
+#undef vl_strncpy
 
 extern SIGT catchintr (int ACTUAL_SIG_ARGS);
 extern char *init_state_value (int n);

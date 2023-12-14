@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20231209 (z)
+ 20231213 (z)
 	> Tom Dickey:
 	+ modify spec-file to work around a bug in make 4.4.1
 	+ reduce compiler-warnings in configure script checks.
