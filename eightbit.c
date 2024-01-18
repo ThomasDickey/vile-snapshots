@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.110 2021/12/06 08:47:18 tom Exp $
+ * $Id: eightbit.c,v 1.112 2024/01/18 23:44:41 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -559,6 +559,7 @@ vl_get_encoding(char **target, const char *locale)
 {
     static char iso_latin1[] = "ISO-8859-1";
     static char utf_eight[] = "UTF-8";
+    static char us_ascii[] = "ASCII";
 
 #ifdef WIN32
     static char cp_value[80];
@@ -616,28 +617,31 @@ vl_get_encoding(char **target, const char *locale)
     } else {
 #ifdef HAVE_LANGINFO_CODESET
 	result = nl_langinfo(CODESET);
-#else
-	if (vl_is_utf8_encoding(locale)) {
-	    result = utf_eight;
-	} else if (isEmpty(locale)
-		   || !vl_stricmp(locale, "C")
-		   || !vl_stricmp(locale, "POSIX")) {
-	    result = "ASCII";
-	} else {
-#ifdef WIN32
-	    char *suffix = strrchr(locale, '.');
-	    char *next = 0;
-
-	    if (suffix != 0
-		&& strtol(++suffix, &next, 10) != 0
-		&& (next == 0 || *next == 0)) {
-		result = cp_value;
-		sprintf(result, "CP%s", suffix);
-	    } else
 #endif
+	if (isEmpty(result)) {
+	    if (vl_is_utf8_encoding(locale)) {
+		result = utf_eight;
+	    } else if (isEmpty(locale)
+		       || !vl_stricmp(locale, "C")
+		       || !vl_stricmp(locale, "POSIX")) {
+		result = us_ascii;
+	    } else if (!vl_stricmp(locale, "en_US")) {
 		result = iso_latin1;
-	}
+	    } else {
+#ifdef WIN32
+		char *suffix = strrchr(locale, '.');
+		char *next = 0;
+
+		if (suffix != 0
+		    && strtol(++suffix, &next, 10) != 0
+		    && (next == 0 || *next == 0)) {
+		    result = cp_value;
+		    sprintf(result, "CP%s", suffix);
+		} else
 #endif
+		    result = iso_latin1;
+	    }
+	}
     }
     if (target != 0) {
 	FreeIfNeeded(*target);

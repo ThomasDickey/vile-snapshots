@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20240117 (z)
+ 20240118 (z)
 	> Tom Dickey:
+	+ modify vl_get_encoding() to allow for nl_langinfo(CODESET) returning
+	  an empty string, recover from this error using checks on the locale
+	  variable (report by David Snyder).
 	+ updated wcwidth.c, from xterm #389
 	+ modify spec-file to work around a bug in make 4.4.1
 	+ reduce compiler-warnings in configure script checks.
