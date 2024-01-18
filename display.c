@@ -4,7 +4,7 @@
  * physical display screen the same as the virtual display screen. These
  * functions use hints that are left in the windows by the commands.
  *
- * $Id: display.c,v 1.582 2023/01/15 13:25:28 tom Exp $
+ * $Id: display.c,v 1.583 2024/01/17 23:43:45 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1659,7 +1659,7 @@ update_line(int row, int colfrom, int colto)
 	    j++;
 	set_term_attrs(attr);
 	for (; xl < j; xl++) {
-	    term.putch(cp1[xl]);
+	    term.putch((int) cp1[xl]);
 	    ++ttcol;
 	    cp2[xl] = cp1[xl];
 	    ap2[xl] = ap1[xl];
@@ -4591,7 +4591,7 @@ mlmsg(const char *fmt, va_list app2)
  */
 /* VARARGS1 */
 void
-mlwrite(const char *fmt,...)
+mlwrite(const char *fmt, ...)
 {
     if (fmt != 0) {
 	va_list ap;
@@ -4611,7 +4611,7 @@ mlwrite(const char *fmt,...)
  */
 /* VARARGS1 */
 void
-mlforce(const char *fmt,...)
+mlforce(const char *fmt, ...)
 {
     if (fmt != 0) {
 	va_list ap;
@@ -4623,7 +4623,7 @@ mlforce(const char *fmt,...)
 
 /* VARARGS1 */
 void
-mlprompt(const char *fmt,...)
+mlprompt(const char *fmt, ...)
 {
     if (fmt != 0) {
 	va_list ap;
@@ -4642,7 +4642,7 @@ mlprompt(const char *fmt,...)
 
 /* VARARGS */
 void
-dbgwrite(const char *fmt,...)
+dbgwrite(const char *fmt, ...)
 {
     if (fmt != 0) {
 	char temp[80];
@@ -4699,7 +4699,7 @@ mlerror(const char *str)
  */
 /* VARARGS1 */
 void
-mlwarn(const char *fmt,...)
+mlwarn(const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
@@ -4727,7 +4727,7 @@ lspputc(int c)
 
 /* VARARGS1 */
 char *
-lsprintf(char *buf, const char *fmt,...)
+lsprintf(char *buf, const char *fmt, ...)
 {
     if ((lsp = buf) != 0) {
 	va_list ap;
@@ -4869,7 +4869,7 @@ bpadc(int c, int count)
 /* printf into curbp, at DOT */
 /* VARARGS */
 void
-bprintf(const char *fmt,...)
+bprintf(const char *fmt, ...)
 {
     va_list ap;
 
@@ -4925,7 +4925,7 @@ b2vprintf(BUFFER *bp, const char *fmt, va_list app2)
  * Write text (not necessarily a whole line) to the given buffer.
  */
 LINE *
-b2printf(BUFFER *bp, const char *fmt,...)
+b2printf(BUFFER *bp, const char *fmt, ...)
 {
     LINE *result;
     va_list ap;
@@ -4939,7 +4939,7 @@ b2printf(BUFFER *bp, const char *fmt,...)
 #if OPT_EVAL || OPT_DEBUGMACROS
 /* printf into [Trace] */
 void
-tprintf(const char *fmt,...)
+tprintf(const char *fmt, ...)
 {
     static int nested;
 

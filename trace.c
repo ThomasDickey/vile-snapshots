@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Id: trace.c,v 1.122 2022/12/18 23:24:42 tom Exp $
+ * $Id: trace.c,v 1.124 2024/01/17 23:56:35 tom Exp $
  */
 
 #include <estruct.h>
@@ -70,7 +70,7 @@ extern int fflush(FILE *fp);
 #define check_opt_working()	/* nothing */
 #endif
 
-static const char *bad_form;	/* magic address for fail_alloc() */
+static const char bad_form[] = "?";	/* magic address for fail_alloc() */
 
 static char *visible_result;
 static char *visible_indent;
@@ -85,10 +85,10 @@ static char empty_string[] = "";
 #if OPT_ELAPSED && !defined(show_elapsed)
 
 #if 0
-static void ETrace(const char *fmt,...) GCC_PRINTFLIKE(1,2);
+static void ETrace(const char *fmt, ...) GCC_PRINTFLIKE(1,2);
 
 static void
-ETrace(const char *fmt,...)
+ETrace(const char *fmt, ...)
 {
     static const char *mode = "w";
 
@@ -239,7 +239,7 @@ show_elapsed(void)
 /******************************************************************************/
 
 void
-Trace(const char *fmt,...)
+Trace(const char *fmt, ...)
 {
     static int nested;
 
@@ -470,22 +470,26 @@ visible_buff(const char *buffer, int length, int eos)
 char *
 visible_video_text(const VIDEO_TEXT * buffer, int length)
 {
+    static VIDEO_TEXT mask;
+
     int j;
     unsigned k = 0;
     unsigned need = (unsigned) (((length > 0) ? (length * 6) : 0) + 1);
     char *result;
 
+    if (mask == 0)
+	mask = ~mask;
+
     beginDisplay();
     if (buffer == 0) {
-	static const VIDEO_TEXT dummy[] =
-	{0};
+	static const VIDEO_TEXT dummy[1];
 	buffer = dummy;
 	length = 0;
     }
 
     if ((result = alloc_visible(need)) != 0) {
 	for (j = 0; j < length; j++) {
-	    int c = buffer[j] & ((1 << (8 * sizeof(VIDEO_TEXT))) - 1);
+	    int c = buffer[j] & mask;
 	    char *dst = result + k;
 	    my_vischr(dst, c);
 	    k += (unsigned) strlen(dst);
@@ -614,7 +618,7 @@ fail_alloc(char *msg, char *ptr)
 #if NO_LEAKS
     show_alloc();
 #endif
-    Trace("%s", bad_form);
+    Trace(bad_form);
     abort();
 }
 
@@ -1165,7 +1169,7 @@ close_me(void)
 #if OPT_ELAPSED
     btree_freeup(&elapsed_tree);
 #endif
-    Trace("%s", bad_form);
+    Trace(bad_form);
 
     FreeAndNull(visible_result);
     FreeAndNull(visible_indent);

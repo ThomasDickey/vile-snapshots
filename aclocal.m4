@@ -1,7 +1,7 @@
-dnl $Id: aclocal.m4,v 1.371 2023/12/13 23:36:23 tom Exp $
+dnl $Id: aclocal.m4,v 1.372 2024/01/07 11:34:16 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
-dnl Copyright 1996-2022,2023 by Thomas E. Dickey
+dnl Copyright 1996-2023,2024 by Thomas E. Dickey
 dnl
 dnl                         All Rights Reserved
 dnl
@@ -1570,7 +1570,7 @@ esac
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_TERM_H version: 15 updated: 2021/01/02 09:31:20
+dnl CF_CURSES_TERM_H version: 16 updated: 2024/01/07 06:34:16
 dnl ----------------
 dnl SVr4 curses should have term.h as well (where it puts the definitions of
 dnl the low-level interface).  This may not be true in old/broken implementations,
@@ -1616,7 +1616,7 @@ case "$cf_cv_term_header" in
 #ifdef NCURSES_VERSION
 #include <${cf_header}>
 #else
-make an error
+#error expected NCURSES_VERSION to be defined
 #endif],
 			[WINDOW *x; (void)x],
 			[cf_cv_term_header=$cf_header
@@ -4060,7 +4060,7 @@ CF_UPPER(cf_nculib_ROOT,HAVE_LIB$cf_nculib_root)
 AC_DEFINE_UNQUOTED($cf_nculib_ROOT)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NCURSES_VERSION version: 17 updated: 2023/01/05 18:54:02
+dnl CF_NCURSES_VERSION version: 18 updated: 2024/01/07 06:34:16
 dnl ------------------
 dnl Check for the version of ncurses, to aid in reporting bugs, etc.
 dnl Call CF_CURSES_CPPFLAGS first, or CF_NCURSES_CPPFLAGS.  We don't use
@@ -4090,7 +4090,7 @@ int main(void)
 # ifdef __NCURSES_H
 	fprintf(fp, "old\\n");
 # else
-	make an error
+	#error expected ncurses header to define __NCURSES_H
 # endif
 #endif
 	${cf_cv_main_return:-return}(0);
@@ -6454,7 +6454,7 @@ AC_DEFUN([CF_WITH_X_DESKTOP_UTILS],
 	AC_SUBST(DESKTOP_FLAGS)
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_CURSES version: 19 updated: 2023/12/13 18:02:34
+dnl CF_XOPEN_CURSES version: 20 updated: 2024/01/07 06:54:12
 dnl ---------------
 dnl Test if we should define X/Open source for curses, needed on Digital Unix
 dnl 4.x, to see the extended functions, but breaks on IRIX 6.x.
@@ -6471,11 +6471,11 @@ $ac_includes_default
 #include <${cf_cv_ncurses_header:-curses.h}>],[
 #if defined(NCURSES_VERSION_PATCH)
 #if (NCURSES_VERSION_PATCH < 20100501) && (NCURSES_VERSION_PATCH >= 20100403)
-	make an error
+	#error disallow ncurses versions between 2020/04/03 and 2010/05/01
 #endif
 #endif
 #ifdef NCURSES_WIDECHAR
-make an error	/* prefer to fall-through on the second checks */
+#error prefer to fall-through on the second checks
 #endif
 	static char dummy[10];
 	cchar_t check;

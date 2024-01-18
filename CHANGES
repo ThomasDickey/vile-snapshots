@@ -1,7 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20231213 (z)
+ 20240117 (z)
 	> Tom Dickey:
+	+ updated wcwidth.c, from xterm #389
 	+ modify spec-file to work around a bug in make 4.4.1
 	+ reduce compiler-warnings in configure script checks.
 	+ disallow newline in quoted string in ini filter.

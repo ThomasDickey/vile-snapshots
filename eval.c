@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Id: eval.c,v 1.470 2022/08/04 21:19:48 tom Exp $
+ * $Id: eval.c,v 1.471 2024/01/17 23:21:05 tom Exp $
  */
 
 #include	<estruct.h>
@@ -1710,7 +1710,7 @@ run_func(int fnum)
 	    tb_enquote(&result);
     }
 
-    TRACE2(("actual:%d:%s\n", tb_length(result), tb_visible(result)));
+    TRACE2(("actual:%lu:%s\n", tb_length(result), tb_visible(result)));
     TPRINTF(("-> %s%s\n",
 	     is_error ? "*" : "",
 	     NONNULL(tb_values(result))));

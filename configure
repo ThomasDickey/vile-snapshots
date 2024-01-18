@@ -18516,7 +18516,7 @@ int main(void)
 # ifdef __NCURSES_H
 	fprintf(fp, "old\\n");
 # else
-	make an error
+	#error expected ncurses header to define __NCURSES_H
 # endif
 #endif
 	${cf_cv_main_return:-return}(0);
@@ -21569,7 +21569,7 @@ int main(void)
 # ifdef __NCURSES_H
 	fprintf(fp, "old\\n");
 # else
-	make an error
+	#error expected ncurses header to define __NCURSES_H
 # endif
 #endif
 	${cf_cv_main_return:-return}(0);
@@ -23662,7 +23662,7 @@ int main(void)
 # ifdef __NCURSES_H
 	fprintf(fp, "old\\n");
 # else
-	make an error
+	#error expected ncurses header to define __NCURSES_H
 # endif
 #endif
 	${cf_cv_main_return:-return}(0);
@@ -25857,7 +25857,7 @@ int main(void)
 # ifdef __NCURSES_H
 	fprintf(fp, "old\\n");
 # else
-	make an error
+	#error expected ncurses header to define __NCURSES_H
 # endif
 #endif
 	${cf_cv_main_return:-return}(0);
@@ -26911,11 +26911,11 @@ main (void)
 
 #if defined(NCURSES_VERSION_PATCH)
 #if (NCURSES_VERSION_PATCH < 20100501) && (NCURSES_VERSION_PATCH >= 20100403)
-	make an error
+	#error disallow ncurses versions between 2020/04/03 and 2010/05/01
 #endif
 #endif
 #ifdef NCURSES_WIDECHAR
-make an error	/* prefer to fall-through on the second checks */
+#error prefer to fall-through on the second checks
 #endif
 	static char dummy[10];
 	cchar_t check;
@@ -27083,7 +27083,7 @@ case "$cf_cv_term_header" in
 #ifdef NCURSES_VERSION
 #include <${cf_header}>
 #else
-make an error
+#error expected NCURSES_VERSION to be defined
 #endif
 int
 main (void)
@@ -32592,7 +32592,7 @@ case "$cf_cv_term_header" in
 #ifdef NCURSES_VERSION
 #include <${cf_header}>
 #else
-make an error
+#error expected NCURSES_VERSION to be defined
 #endif
 int
 main (void)
