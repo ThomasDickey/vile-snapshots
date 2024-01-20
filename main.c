@@ -17,11 +17,11 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2020,2022 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2022,2024 by Paul Fox and Thomas Dickey
  */
 
 /*
- * $Id: main.c,v 1.751 2022/12/01 22:25:29 tom Exp $
+ * $Id: main.c,v 1.754 2024/01/20 01:35:45 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -80,7 +80,7 @@ static void get_executable_dir(void);
 static void global_val_init(void);
 static void main_loop(void);
 static void make_startup_file(const char *name);
-static void siginit(int enabled);
+static void setup_sighandlers(int enabled);
 
 #if OPT_MULTIBYTE
 static void pre_init_ctype(void);
@@ -536,7 +536,7 @@ MainProgram(int argc, char *argv[])
      * FIXME: we only know how to do this for displays that open the
      * terminal in the same way for command-line and screen.
      */
-    siginit(TRUE);
+    setup_sighandlers(TRUE);
 #if OPT_DUMBTERM
     /* try to avoid staircasing if -F option goes directly to terminal */
     for (carg = 1; carg < argc; ++carg) {
@@ -880,7 +880,7 @@ MainProgram(int argc, char *argv[])
 #endif
     } else {
 	if (!tt_opened)
-	    siginit(TRUE);
+	    setup_sighandlers(TRUE);
 	(void) open_terminal((TERM *) 0);
 	term.kopen();		/* open the keyboard */
 	term.rev(FALSE);
@@ -2279,68 +2279,80 @@ dos_crit_handler(void)
 #  endif
 #endif
 
+#define DATA(sig, func) { sig, func, SIG_DFL }
+
+static struct {
+    int signo;
+    SIGNAL_HANDLER handler;
+    SIGNAL_HANDLER original;
+} my_sighandlers[] = {
+
+    DATA(0, 0),			/* just for VMS */
+#if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
+#if defined(SIGINT)
+	DATA(SIGINT, catchintr),
+#endif
+#endif
+#if SYS_UNIX
+#if defined(SIGHUP)
+	DATA(SIGHUP, imdying),
+#endif
+#if defined(SIGBUS)
+	DATA(SIGBUS, imdying),
+#endif
+#if defined(SIGILL)
+	DATA(SIGILL, imdying),
+#endif
+#if defined(SIGFPE)
+	DATA(SIGFPE, imdying),
+#endif
+#if defined(SIGSYS)
+	DATA(SIGSYS, imdying),
+#endif
+	DATA(SIGSEGV, imdying),
+	DATA(SIGTERM, imdying),
+#ifdef SIGQUIT
+#ifdef VILE_DEBUG
+	DATA(SIGQUIT, imdying),
+#else
+	DATA(SIGQUIT, SIG_IGN),
+#endif
+#endif
+#ifdef SIGPIPE
+	DATA(SIGPIPE, SIG_IGN),
+#endif
+#if defined(SIGWINCH) && ! DISP_X11
+	DATA(SIGWINCH, sizesignal),
+#endif
+#endif /* SYS_UNIX */
+};
+
+#undef DATA
+
 /*
  * Setup signal handlers, if 'enabled'.  Otherwise reset to default all of the
  * ones that pointed to imdying().  The latter is used only in ExitProgram() to
  * ensure that abort() can really generate a core dump.
  */
 static void
-siginit(int enabled)
+setup_sighandlers(int enabled)
 {
-    /* *INDENT-OFF* */
-    static const struct {
-	int signo;
-	void (*handler) (int ACTUAL_SIG_ARGS);
-    } table[] = {
-	{ 0, 0 },		/* just for VMS */
-#if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
-#if defined(SIGINT)
-	{ SIGINT, catchintr },
-#endif
-#endif
-#if SYS_UNIX
-#if defined(SIGHUP)
-	{ SIGHUP, imdying },
-#endif
-#if defined(SIGBUS)
-	{ SIGBUS, imdying },
-#endif
-#if defined(SIGILL)
-	{ SIGILL, imdying },
-#endif
-#if defined(SIGFPE)
-	{ SIGFPE, imdying },
-#endif
-#if defined(SIGSYS)
-	{ SIGSYS, imdying },
-#endif
-	{ SIGSEGV, imdying },
-	{ SIGTERM, imdying },
-#ifdef SIGQUIT
-#ifdef VILE_DEBUG
-	{ SIGQUIT, imdying },
-#else
-	{ SIGQUIT, SIG_IGN },
-#endif
-#endif
-#ifdef SIGPIPE
-	{ SIGPIPE, SIG_IGN },
-#endif
-#if defined(SIGWINCH) && ! DISP_X11
-	{ SIGWINCH, sizesignal },
-#endif
-#endif /* SYS_UNIX */
-    };
-    /* *INDENT-ON* */
-
+    static int save_original = TRUE;
     unsigned n;
 
-    for (n = 1; n < TABLESIZE(table); ++n) {
-	if (enabled)
-	    setup_handler(table[n].signo, table[n].handler);
-	else if (table[n].handler == imdying)
-	    setup_handler(table[n].signo, SIG_DFL);
+    for (n = 1; n < TABLESIZE(my_sighandlers); ++n) {
+	if (enabled) {
+	    SIGNAL_HANDLER old = setup_handler(my_sighandlers[n].signo,
+					       my_sighandlers[n].handler);
+	    if (save_original)
+		my_sighandlers[n].original = old;
+	} else if (my_sighandlers[n].handler == imdying) {
+	    setup_handler(my_sighandlers[n].signo, SIG_DFL);
+	}
     }
+
+    if (enabled)
+	save_original = FALSE;
 
 #if SYS_MSDOS
 # if CC_DJGPP
@@ -2360,6 +2372,21 @@ siginit(int enabled)
 #  endif
 # endif
 #endif
+}
+
+SIGNAL_HANDLER
+original_sighandler(int sig)
+{
+    SIGNAL_HANDLER result = SIG_DFL;
+    unsigned n;
+
+    for (n = 1; n < TABLESIZE(my_sighandlers); ++n) {
+	if (sig == my_sighandlers[n].signo) {
+	    result = my_sighandlers[n].original;
+	    break;
+	}
+    }
+    return result;
 }
 
 static void
@@ -2961,20 +2988,20 @@ sys_getenv(const char *name)
     return result;
 }
 
-#if defined(SA_RESTART)
-/* several systems (SCO, SunOS) have sigaction without SA_RESTART */
-/*
- * Redefine signal in terms of sigaction for systems which have the
- * SA_RESTART flag defined through <signal.h>
- *
- * This definition of signal will cause system calls to get restarted for a
- * more BSD-ish behavior.  This will allow us to use the OPT_WORKING feature
- * for such systems.
- */
-
-void
-setup_handler(int sig, void (*disp) (int ACTUAL_SIG_ARGS))
+SIGNAL_HANDLER
+setup_handler(int sig, SIGNAL_HANDLER disp)
 {
+    SIGNAL_HANDLER result;
+#if defined(SA_RESTART)
+    /* several systems (SCO, SunOS) have sigaction without SA_RESTART */
+    /*
+     * Redefine signal in terms of sigaction for systems which have the
+     * SA_RESTART flag defined through <signal.h>
+     *
+     * This definition of signal will cause system calls to get restarted for a
+     * more BSD-ish behavior.  This will allow us to use the OPT_WORKING
+     * feature for such systems.
+     */
     struct sigaction act, oact;
 
     act.sa_handler = disp;
@@ -2986,17 +3013,15 @@ setup_handler(int sig, void (*disp) (int ACTUAL_SIG_ARGS))
     act.sa_flags = SA_RESTART;
 #endif
 
-    (void) sigaction(sig, &act, &oact);
-
-}
-
-#else
-void
-setup_handler(int sig, void (*disp) (int ACTUAL_SIG_ARGS))
-{
-    (void) signal(sig, disp);
-}
+    if (sigaction(sig, &act, &oact) == 0)
+	result = oact.sa_handler;
+    else
+	result = SIG_ERR;
+#else /* !SA_RESTART */
+    result = signal(sig, disp);
 #endif
+    return result;
+}
 
 /* put us in a new process group, on command.  we don't do this all the
 * time since it interferes with suspending xvile on some systems with some
@@ -3178,7 +3203,7 @@ ExitProgram(int code)
     if (code != GOODEXIT
 	&& (env = vile_getenv("VILE_ERROR_ABORT")) != 0
 	&& *env != '\0') {
-	siginit(FALSE);
+	setup_sighandlers(FALSE);
 	abort();
     }
     exit_program(code);

@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Id: curses.c,v 1.55 2023/02/12 15:19:46 tom Exp $
+ * $Id: curses.c,v 1.59 2024/01/20 12:24:09 tom Exp $
  */
 
 #include "estruct.h"
@@ -24,6 +24,12 @@
 #endif
 
 #define is_default(color) (color < 0 || color == 255)
+
+#if defined(SIGWINCH) && defined(HAVE_RESIZETERM)
+#define USE_WINCH_CODE 1
+#else
+#define USE_WINCH_CODE 0
+#endif
 
 #if USE_TERMCAP
 #  define TCAPSLEN 1024
@@ -128,6 +134,30 @@ reinitialize_colors(void)
 }
 #endif /* OPT_COLOR */
 
+#if USE_WINCH_CODE
+static int catching_sigwinch;
+static SIG_ATOMIC_T caught_sigwinch;
+
+static SIGT
+begin_sigwinch(int ACTUAL_SIG_ARGS GCC_UNUSED)
+{
+    caught_sigwinch = 1;
+    SIGRET;
+}
+
+static void
+finish_sigwinch(void)
+{
+    if (caught_sigwinch) {
+	int w, h;
+	caught_sigwinch = 0;
+	getscreensize(&w, &h);
+	resizeterm(h, w);
+	newscreensize(h, w);
+    }
+}
+#endif /* USE_WINCH_CODE */
+
 static void
 curs_set_encoding(ENC_CHOICES code)
 {
@@ -167,7 +197,7 @@ curs_initialize(void)
 #endif
     unsigned i;
 
-    TRACE((T_CALLED "curs_open()\n"));
+    TRACE((T_CALLED "curs_initialize()\n"));
 
     if (already_open) {
 	if (i_was_closed) {
@@ -186,7 +216,7 @@ curs_initialize(void)
 	returnVoid();
     }
 
-    TRACE((T_CALLED "curs_initialize\n"));
+    TRACE((T_CALLED "curs_initialize - not opened\n"));
 #if OPT_LOCALE
     if (okCTYPE2(vl_wide_enc)) {
 	TRACE(("setting locale to %s\n", vl_wide_enc.locale));
@@ -196,13 +226,29 @@ curs_initialize(void)
 	setlocale(LC_CTYPE, vl_real_enc.locale);
     }
 #endif
-    curses_trace(0x224);
     initscr();
     raw();
     noecho();
     nonl();
     nodelay(stdscr, TRUE);
     idlok(stdscr, TRUE);
+
+#if USE_WINCH_CODE
+    /*
+     * ncurses should set up a handler for SIGWINCH, but some developers chose
+     * to differ.  Check for that problem, and work around by starting out
+     */
+    {
+	SIGNAL_HANDLER old_handler = original_sighandler(SIGWINCH);
+
+	if (old_handler == SIG_ERR
+	    || old_handler == SIG_DFL
+	    || old_handler == SIG_IGN) {
+	    catching_sigwinch = TRUE;
+	    old_handler = setup_handler(SIGWINCH, begin_sigwinch);
+	}
+    }
+#endif /* USE_WINCH_CODE */
 
     /*
      * Note: we do not set the locale to vl_real_enc since that would confuse
@@ -323,10 +369,8 @@ curs_getc(void)
 	fflush(stdout);
 	result = getchar();
     } else if (result == -1) {
-#ifdef KEY_RESIZE
       resized:
 	{
-#endif
 #ifdef VAL_AUTOCOLOR
 	    int acmilli = global_b_val(VAL_AUTOCOLOR);
 
@@ -335,21 +379,38 @@ curs_getc(void)
 		for_ever {
 		    result = getch();
 		    if (result < 0) {
+			finish_sigwinch();
 			autocolor();
 		    } else {
 			break;
 		    }
 		}
-	    } else {
+	    } else
+#endif
+#if USE_WINCH_CODE
+	    if (catching_sigwinch) {
+		timeout(100);
+		for_ever {
+		    result = getch();
+		    if (result < 0) {
+			finish_sigwinch();
+		    } else {
+			break;
+		    }
+		}
+	    } else
+#endif /* USE_WINCH_CODE */
+	    {
 		nodelay(stdscr, FALSE);
 		result = getch();
 	    }
-#else
-	    nodelay(stdscr, FALSE);
-	    result = getch();
-#endif
-#ifdef KEY_RESIZE
 	}
+#ifdef KEY_RESIZE
+	/*
+	 * If ncurses returns KEY_RESIZE, it has updated the LINES/COLS
+	 * values and we need only update our copy of those and repaint
+	 * the screen.
+	 */
 	if (result == KEY_RESIZE) {
 	    if ((LINES > 1 && LINES != term.rows)
 		|| (COLS > 1 && COLS != term.cols))

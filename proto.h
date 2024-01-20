@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Id: proto.h,v 1.758 2023/12/13 23:56:01 tom Exp $
+ * $Id: proto.h,v 1.760 2024/01/20 01:18:28 tom Exp $
  */
 
 #ifndef VILE_PROTO_H
@@ -18,6 +18,12 @@ extern "C" {
 #undef vl_strncat
 #undef vl_strncpy
 
+#ifndef SIG_ATOMIC_T
+#define SIG_ATOMIC_T char
+#endif
+
+typedef void (*SIGNAL_HANDLER) (int ACTUAL_SIG_ARGS);
+
 extern SIGT catchintr (int ACTUAL_SIG_ARGS);
 extern char *init_state_value (int n);
 extern char *strncpy0 (char *t, const char *f, size_t l);
@@ -26,6 +32,7 @@ extern char *vile_getenv (const char *name);
 extern char *vl_strncat (char *dest, const char *src, size_t destlen);
 extern char *vl_strncpy (char *dest, const char *src, size_t destlen);
 extern int call_cmdfunc (const CMDFUNC *p, int f, int n);
+extern SIGNAL_HANDLER original_sighandler(int sig);
 extern int no_memory (const char *s);
 extern int rdonly (void);
 extern int writeall (int f, int n, int promptuser, int leaving, int autowriting, int all);
@@ -33,7 +40,7 @@ extern void do_repeats (int *cp, int *fp, int *np);
 extern GCC_NORETURN void exit_program (int code);
 extern void init_mode_value (struct VAL *, MODECLASS c, int n);
 extern void not_interrupted (void);
-extern void setup_handler (int sig, void (*disp) (int ACTUAL_SIG_ARGS));
+extern SIGNAL_HANDLER setup_handler (int sig, SIGNAL_HANDLER disp);
 extern void tcap_init_fkeys (void);
 extern void tcap_setup_locale (char *real_locale, char *fake_locale);
 extern GCC_NORETURN void tidy_exit (int code);

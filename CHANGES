@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20240118 (z)
+ 20240120 (z)
 	> Tom Dickey:
+	+ modify curses driver to work around configurations of ncurses where
+	  the SIGWINCH handler has been disabled.
 	+ modify vl_get_encoding() to allow for nl_langinfo(CODESET) returning
 	  an empty string, recover from this error using checks on the locale
 	  variable (report by David Snyder).
