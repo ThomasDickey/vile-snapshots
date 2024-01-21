@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Id: manfilt.c,v 1.76 2022/08/05 07:37:23 tom Exp $
+ * $Id: manfilt.c,v 1.77 2024/01/21 11:01:18 tom Exp $
  *
  */
 
@@ -137,7 +137,7 @@ typedef struct LineData {
 
 static void flush_line(void);
 
-static char *program = "vile-manfilt";
+static const char *program = "vile-manfilt";
 static LINEDATA *all_lines;
 static LINEDATA *cur_line;
 static long total_lines;

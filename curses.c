@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Id: curses.c,v 1.59 2024/01/20 12:24:09 tom Exp $
+ * $Id: curses.c,v 1.60 2024/01/21 17:53:39 tom Exp $
  */
 
 #include "estruct.h"
@@ -156,6 +156,9 @@ finish_sigwinch(void)
 	newscreensize(h, w);
     }
 }
+
+#else
+#define finish_sigwinch()	/* nothing */
 #endif /* USE_WINCH_CODE */
 
 static void

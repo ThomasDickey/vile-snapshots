@@ -1,7 +1,7 @@
 /*
  * Xft text-output, Thomas Dickey 2020
  *
- * $Id: xftplain.c,v 1.57 2021/12/07 00:50:12 tom Exp $
+ * $Id: xftplain.c,v 1.58 2024/01/21 10:41:27 tom Exp $
  *
  * Some of this was adapted from xterm, of course.
  */
@@ -506,7 +506,7 @@ xvileQueryFont(Display *dpy, TextWindow tw, const char *fname)
      * a comma and the font size.  Either font family or font size may be
      * missing, defaulting to the previous value used (or initially mono,12).
      */
-    while (isspace(*fname))
+    while (isSpace(*fname))
 	++fname;
     copy_name = strdup(fname);
     comma = strchr(copy_name, ',');

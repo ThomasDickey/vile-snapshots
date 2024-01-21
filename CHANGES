@@ -1,7 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20240120 (z)
+ 20240121 (z)
 	> Tom Dickey:
+	+ modify configure script to check validity of $IMAKE_LOADFLAGS
 	+ modify curses driver to work around configurations of ncurses where
 	  the SIGWINCH handler has been disabled.
 	+ modify vl_get_encoding() to allow for nl_langinfo(CODESET) returning

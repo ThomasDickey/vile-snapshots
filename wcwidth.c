@@ -1,8 +1,8 @@
-/* $Id: wcwidth.c,v 1.31 2024/01/18 00:12:15 tom Exp $ */
+/* $Id: wcwidth.c,v 1.32 2024/01/21 11:09:18 tom Exp $ */
 /* @XTermId: wcwidth.c,v 1.21 2007/06/13 00:14:29 tom Exp @ */
 
 /*
- * Copyright 2002-2022,2023 by Thomas E. Dickey
+ * Copyright 2002-2023,2024 by Thomas E. Dickey
  *
  *                         All Rights Reserved
  *

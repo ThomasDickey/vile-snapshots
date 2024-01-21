@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.356 $)
+AC_REVISION($Revision: 1.357 $)
 AC_PREREQ(2.52.20231210)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Id: configure.in,v 1.356 2024/01/20 12:24:56 tom Exp $
+dnl $Id: configure.in,v 1.357 2024/01/21 19:20:37 tom Exp $
 
 define(MAKELIST, sh "$srcdir/filters/makelist.sh" "$srcdir/filters/genmake.mak")
 
@@ -480,6 +480,7 @@ case "$screen" in
 		EXTRA_INSTALL_FILES="$EXTRA_INSTALL_FILES \$(INSTALL_X_FILES)"
 		CF_X_TOOLKIT
 		CF_WITH_IMAKE_CFLAGS
+		CF_ADD_LDFLAGS($IMAKE_LOADFLAGS)
 		X_CFLAGS="$X_CFLAGS $IMAKE_CFLAGS"
 		LDFLAGS="$LDFLAGS $X_LIBS"
 		CF_CHECK_CFLAGS($X_CFLAGS)

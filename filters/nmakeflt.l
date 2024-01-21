@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: nmakeflt.l,v 1.12 2020/05/10 20:24:37 tom Exp $
+ * $Id: nmakeflt.l,v 1.14 2024/01/21 15:02:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of nmake files.
  *
@@ -101,7 +101,7 @@ OPER		[+:?]?=
 <NORMAL>^{SPACE}([@!-]{SPACE}*)+ { int skip = 0;
 				   for (skip = 0;
 				        skip < yyleng &&
-					isspace(yytext[skip]);
+					isspace((unsigned char)yytext[skip]);
 					++skip) {
 				   }
 				   if (skip)

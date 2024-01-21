@@ -2,12 +2,15 @@
 %s sTEXT sCODE FENCE QUOTES HTML NOTE
 
 %a 10000
+%e 10000
+%k 10000
 %o 10000
+%p 10000
 
 %{
 
 /*
- * $Id: md-filt.l,v 1.71 2022/08/20 18:24:06 tom Exp $
+ * $Id: md-filt.l,v 1.74 2024/01/21 16:21:45 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a markdown file.
  *
@@ -277,7 +280,7 @@ atx_header(const char *value, int length)
 	if (value[level] != '#' || (level == 6))
 	    break;
     }
-    if (level == length || !isspace(value[level])) {
+    if (level == length || !isspace((unsigned char)value[level])) {
 	flt_bfr_embed(value, length, Error_attr);
     } else {
 	flt_bfr_embed(value, level, Action_attr);

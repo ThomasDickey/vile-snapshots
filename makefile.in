@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Id: makefile.in,v 1.298 2023/01/14 00:18:45 tom Exp $
+# $Id: makefile.in,v 1.299 2024/01/21 19:05:22 tom Exp $
 
 SHELL		= @SHELL@
 
@@ -112,7 +112,7 @@ X_QUOTDEFS	= \
 CPPFLAGS	= -I. -I$(srcdir) \
 		-DHAVE_CONFIG_H @CPPFLAGS@
 
-LDFLAGS		= @IMAKE_LOADFLAGS@ @LDFLAGS@ @EXTRA_LDFLAGS@
+LDFLAGS		= @LDFLAGS@ @EXTRA_LDFLAGS@
 
 BINDIR		= $(DESTDIR)$(bindir)
 DATADIR		= $(DESTDIR)$(datadir)

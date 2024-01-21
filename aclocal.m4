@@ -1,4 +1,4 @@
-dnl $Id: aclocal.m4,v 1.373 2024/01/20 01:14:08 tom Exp $
+dnl $Id: aclocal.m4,v 1.374 2024/01/21 19:24:12 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2023,2024 by Thomas E. Dickey
@@ -306,6 +306,48 @@ if test -n "$1" ; then
 	done
   done
 fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_ADD_LDFLAGS version: 1 updated: 2024/01/21 14:23:33
+dnl --------------
+dnl Copy non-library flags to $EXTRA_LDFLAGS, library flags to $LIBS
+dnl $1 = flags to add
+AC_DEFUN([CF_ADD_LDFLAGS],
+[
+AC_REQUIRE([CF_ADD_LIBS])
+if test -n "$1"
+then
+	AC_MSG_CHECKING(for valid linker options in $1)
+	cf_new_extra_ldflags=
+	for cf_add_ldflags in $1
+	do
+		case "$cf_add_ldflags" in
+		(-l*)
+			CF_VERBOSE(adding $cf_add_ldflags)
+			CF_ADD_LIBS($cf_add_ldflags)
+			;;
+		(*)
+			cf_save_ldflags="$LDFLAGS"
+			LDFLAGS="$EXTRA_LDFLAGS $cf_add_ldflags"
+			AC_TRY_LINK(
+				[#include <stdio.h>],
+				[printf("Hello?\n")],
+				[CF_VERBOSE(retain $cf_add_ldflags)
+				 CF_APPEND_TEXT(cf_new_extra_ldflags,$cf_add_ldflag)],
+				[CF_VERBOSE(ignore $cf_add_ldflags)])
+			LDFLAGS="$cf_save_ldflags"
+			;;
+		esac
+	done
+	AC_MSG_RESULT($cf_new_extra_ldflags)
+
+	if test -n "$cf_new_extra_ldflags" ; then
+		CF_APPEND_TEXT(EXTRA_LDFLAGS,$cf_new_extra_ldflags)
+	fi
+fi
+
+AC_SUBST(EXTRA_LDFLAGS)
+
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_ADD_LIB version: 2 updated: 2010/06/02 05:03:05

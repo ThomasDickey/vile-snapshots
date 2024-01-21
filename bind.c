@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Id: bind.c,v 1.381 2023/01/15 13:28:40 tom Exp $
+ * $Id: bind.c,v 1.382 2024/01/21 11:03:29 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1082,7 +1082,7 @@ prompt_describe_key(BINDINGS * bs)
 
     /* describe it */
     described_cmd[0] = '^';
-    (void) vl_strncpy(described_cmd + 1, temp.n_name, sizeof(described_cmd));
+    (void) vl_strncpy(described_cmd + 1, temp.n_name, sizeof(described_cmd) - 1);
     append_to_binding_list = TRUE;
     s = describe_any_bindings(described_cmd, (CMDFLAGS) 0);
     append_to_binding_list = FALSE;
