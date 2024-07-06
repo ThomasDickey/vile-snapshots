@@ -1,7 +1,7 @@
 /*
- * $Id: vl_alloc.h,v 1.9 2018/10/25 00:49:15 tom Exp $
+ * $Id: vl_alloc.h,v 1.11 2024/03/23 20:25:29 tom Exp $
  *
- * Copyright 2005-2010,2018 Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005-2018,2024 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -34,8 +34,8 @@
 /* structure-allocate, for appeasing strict compilers */
 #define	castalloc(type,nbytes)		(type *)malloc((size_t) nbytes)
 #define	castrealloc(type,ptr,nbytes)	(type *)realloc((ptr), (size_t)(nbytes))
-#define	typecalloc(type)		(type *)calloc(sizeof(type), (size_t) 1)
-#define	typecallocn(type,ntypes)	(type *)calloc(sizeof(type), (size_t) ntypes)
+#define	typecalloc(type)		(type *)calloc((size_t) 1, sizeof(type))
+#define	typecallocn(type,ntypes)	(type *)calloc((size_t) ntypes, sizeof(type))
 #define	typealloc(type)			(type *)malloc(sizeof(type))
 #define	typeallocn(type,ntypes)		(type *)malloc((ntypes)*sizeof(type))
 #define	typereallocn(type,ptr,ntypes)	(type *)realloc((ptr),\

@@ -1,8 +1,8 @@
 Summary: VI Like Emacs editor
-# $Id: vile.spec,v 1.70 2023/12/09 21:24:34 tom Exp $
+# $Id: vile.spec,v 1.71 2024/03/23 20:26:16 tom Exp $
 Name: vile
 %define AppVersion 9.8
-Version: %{AppVersion}z
+Version: %{AppVersion}za
 # each patch should update the version
 Release: dev
 License: GPLv2
@@ -35,6 +35,7 @@ Patch23: vile-9.8w.patch.gz
 Patch24: vile-9.8x.patch.gz
 Patch25: vile-9.8y.patch.gz
 Patch26: vile-9.8z.patch.gz
+Patch27: vile-9.8za.patch.gz
 # each patch should add itself to this list
 Vendor: Thomas E. Dickey <dickey@invisible-island.net>
 Packager: Thomas E. Dickey <dickey@invisible-island.net>
@@ -103,6 +104,7 @@ Requires:	%{name}-common = %{version}-%{release}
 %patch24 -p1
 %patch25 -p1
 %patch26 -p1
+%patch27 -p1
 # each patch should add itself to this list
 
 rpm --version
@@ -274,6 +276,9 @@ rm -rf %{buildroot}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Sat Mar 23 2024 Thomas E. Dickey
+- added patch for 9.8za
 
 * Sat Dec  9 2023 Thomas E. Dickey
 - workaround make 4.4.1 bug, seen in OpenSUSE.

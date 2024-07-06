@@ -1,4 +1,4 @@
 #define VILE_RELEASE "9"
 #define VILE_VERSION "8"
-#define VILE_PATCHLEVEL "z"
-#define VILE_PATCHVALUE 26
+#define VILE_PATCHLEVEL "za"
+#define VILE_PATCHVALUE 27

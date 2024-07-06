@@ -60,7 +60,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Id: w32pipe.c,v 1.41 2018/11/05 00:50:01 tom Exp $
+ * $Id: w32pipe.c,v 1.42 2024/07/06 22:32:20 tom Exp $
  */
 
 #define HAVE_FCNTL_H 1
@@ -406,12 +406,10 @@ native_inout_popen(FILE **fr, FILE **fw, char *cmd)
 static void
 native_npclose(FILE *fp)
 {
-    int term_status;
-
     (void) fflush(fp);
     (void) fclose(fp);
     if (proc_handle != BAD_PROC_HANDLE) {
-	(void) cwait(&term_status, (CWAIT_PARAM_TYPE) proc_handle, 0);
+	(void) w32_wait_handle(proc_handle);
 	TRACE(("...CreateProcess finished waiting in native_npclose\n"));
 	close_proc_handle();
     }
@@ -455,7 +453,7 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
     char buf[NFILEN + 128];
     DWORD dummy, len;
-    int rc, term_status, tmpin_fd;
+    int rc, tmpin_fd;
 
     TRACE(("tmp_inout_popen cmd=%s\n", cmd));
 
@@ -548,7 +546,7 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
 	} else {
 	    /* wait for exec'd process to exit */
 
-	    (void) cwait(&term_status, (CWAIT_PARAM_TYPE) proc_handle, 0);
+	    (void) w32_wait_handle(proc_handle);
 	    TRACE(("...CreateProcess finished waiting in tmp_inout_popen\n"));
 	    close_proc_handle();
 	}
@@ -591,7 +589,7 @@ void
 npflush(void)
 {
     char buf[NFILEN + 128];
-    int rc, term_status;
+    int rc;
 
     /*
      * caller has filled and closed the write pipe data stream.  time to
@@ -621,7 +619,7 @@ npflush(void)
 	} else {
 	    /* now wait for app to exit */
 
-	    (void) cwait(&term_status, (CWAIT_PARAM_TYPE) proc_handle, 0);
+	    (void) w32_wait_handle(proc_handle);
 	    TRACE(("...CreateProcess finished waiting in npflush\n"));
 	    close_proc_handle();
 	}
@@ -640,7 +638,7 @@ static void
 tmp_npclose(FILE *fp)
 {
     char buf[NFILEN + 128];
-    int rc, term_status;
+    int rc;
 
     (void) fflush(fp);
     (void) fclose(fp);
@@ -682,7 +680,7 @@ tmp_npclose(FILE *fp)
 	    } else {
 		/* now wait for app to exit */
 
-		(void) cwait(&term_status, (CWAIT_PARAM_TYPE) proc_handle, 0);
+		(void) w32_wait_handle(proc_handle);
 		TRACE(("...CreateProcess finished waiting in tmp_npclose\n"));
 		close_proc_handle();
 	    }

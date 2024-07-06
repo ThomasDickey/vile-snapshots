@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Id: w32cmd.c,v 1.62 2022/12/01 23:50:00 tom Exp $
+ * $Id: w32cmd.c,v 1.63 2024/07/06 22:11:01 tom Exp $
  */
 
 #include "estruct.h"
@@ -663,7 +663,7 @@ display_spooler_error(HWND hwnd)
 	"out of memory",
     };
     char buf[256], *cp;
-    long errcode, max_err = (sizeof(spooler_errs) / sizeof(spooler_errs));
+    long errcode, max_err = (sizeof(spooler_errs) / sizeof(spooler_errs[0]));
 
     /* *INDENT-EQLS* */
     errcode         = GetLastError();

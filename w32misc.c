@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Id: w32misc.c,v 1.65 2020/01/17 23:33:14 tom Exp $
+ * $Id: w32misc.c,v 1.66 2024/07/06 22:32:20 tom Exp $
  */
 
 #include "estruct.h"
@@ -330,8 +330,7 @@ w32_CreateProcess(char *cmd, int no_wait)
 	    /* Success */
 	    if (!no_wait) {
 		/* wait for shell process to exit */
-
-		(void) cwait(&rc, (CWAIT_PARAM_TYPE) pi.hProcess, 0);
+		rc = w32_wait_handle(pi.hProcess);
 	    }
 	    (void) CloseHandle(pi.hProcess);
 	    (void) CloseHandle(pi.hThread);
@@ -663,7 +662,7 @@ w32_system_winvile(const char *cmd, int *pressret)
 	    }
 	}
 	if (!no_shell) {
-	    (void) cwait(&rc, (CWAIT_PARAM_TYPE) pi.hProcess, 0);
+	    rc = w32_wait_handle(pi.hProcess);
 	    restore_signals();
 	    if (*pressret) {
 		if (!WriteFile(si.hStdOutput,
@@ -1483,4 +1482,17 @@ binmalloc(void *source, int length)
     if (target != 0)
 	memcpy(target, source, length);
     return target;
+}
+
+/* replaces
+ * (void) cwait(&rc, (CWAIT_PARAM_TYPE) handle, 0);
+ */
+int
+w32_wait_handle(HANDLE handle)
+{
+    DWORD exitcode = (DWORD) (-1);	/* if GetExitCodeProcess() fails */
+
+    (void) WaitForSingleObject(handle, INFINITE);
+    (void) GetExitCodeProcess(handle, &exitcode);
+    return (int) exitcode;
 }

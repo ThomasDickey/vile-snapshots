@@ -1,4 +1,4 @@
-dnl $Id: aclocal.m4,v 1.374 2024/01/21 19:24:12 tom Exp $
+dnl $Id: aclocal.m4,v 1.376 2024/07/06 20:14:16 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2023,2024 by Thomas E. Dickey
@@ -433,7 +433,7 @@ LIBS=`echo "$LIBS" | sed -e "s/[[ 	]][[ 	]]*/ /g" -e "s%$1 %$1 $2 %" -e 's%  % %
 CF_VERBOSE(...after  $LIBS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ADD_OPTIONAL_PATH version: 3 updated: 2015/05/10 19:52:14
+dnl CF_ADD_OPTIONAL_PATH version: 5 updated: 2024/04/09 18:37:41
 dnl --------------------
 dnl Add an optional search-path to the compile/link variables.
 dnl See CF_WITH_PATH
@@ -442,12 +442,11 @@ dnl $1 = shell variable containing the result of --with-XXX=[DIR]
 dnl $2 = module to look for.
 AC_DEFUN([CF_ADD_OPTIONAL_PATH],[
 case "$1" in
-(no)
-	;;
-(yes)
+(no|yes)
 	;;
 (*)
 	CF_ADD_SEARCHPATH([$1], [AC_MSG_ERROR(cannot find $2 under $1)])
+	CF_VERBOSE(setting path value for ifelse([$2],,variable,[$2]) to $1)
 	;;
 esac
 ])dnl
@@ -669,7 +668,7 @@ if test "x$with_symlink" != xno ; then
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_BUILD_CC version: 11 updated: 2022/12/04 15:40:08
+dnl CF_BUILD_CC version: 13 updated: 2024/06/22 13:42:22
 dnl -----------
 dnl If we're cross-compiling, allow the user to override the tools and their
 dnl options.  The configure script is oriented toward identifying the host
@@ -1286,7 +1285,7 @@ int main(void) {
 	if test "$cf_cv_crypt_works" = no ; then
 		cf_cv_crypt_func=no
 	else
-		AC_DEFINE(HAVE_CRYPT)
+		AC_DEFINE(HAVE_CRYPT,1,[Define if you have a working crypt function])
 		if test "$cf_cv_crypt_func" != yes ; then
 			LIBS="$cf_cv_crypt_func $LIBS"
 		fi
@@ -1328,15 +1327,22 @@ CF_CURSES_HEADER
 CF_TERM_HEADER
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_FUNCS version: 20 updated: 2020/12/31 20:19:42
+dnl CF_CURSES_FUNCS version: 21 updated: 2024/06/11 20:24:35
 dnl ---------------
 dnl Curses-functions are a little complicated, since a lot of them are macros.
+dnl
+dnl $1 is a list of functions to test
 AC_DEFUN([CF_CURSES_FUNCS],
 [
 AC_REQUIRE([CF_CURSES_CPPFLAGS])dnl
 AC_REQUIRE([CF_XOPEN_CURSES])
 AC_REQUIRE([CF_CURSES_TERM_H])
 AC_REQUIRE([CF_CURSES_UNCTRL_H])
+
+AC_FOREACH([AC_Func], [$1],
+  [AH_TEMPLATE(AS_TR_CPP(HAVE_[]AC_Func),
+               [Define if you have the `]AC_Func[' function.])])dnl
+
 for cf_func in $1
 do
 	CF_UPPER(cf_tr_func,$cf_func)
@@ -5940,7 +5946,7 @@ AC_SUBST(ICON_LIST)
 AC_SUBST(ICON_NAME)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_IMAKE_CFLAGS version: 12 updated: 2022/02/24 17:10:03
+dnl CF_WITH_IMAKE_CFLAGS version: 13 updated: 2024/07/05 19:34:53
 dnl --------------------
 dnl xterm and similar programs build more readily when propped up with imake's
 dnl hand-tuned definitions.  If we do not use imake, provide fallbacks for the
@@ -5949,10 +5955,10 @@ AC_DEFUN([CF_WITH_IMAKE_CFLAGS],[
 AC_REQUIRE([CF_ENABLE_NARROWPROTO])
 
 AC_MSG_CHECKING(if we should use imake to help)
-CF_ARG_DISABLE(imake,
-	[  --disable-imake         disable use of imake for definitions],
-	[enable_imake=no],
-	[enable_imake=yes])
+CF_ARG_ENABLE(imake,
+	[  --enable-imake          enable use of imake for definitions],
+	[enable_imake=yes],
+	[enable_imake=no])
 AC_MSG_RESULT($enable_imake)
 
 if test "$enable_imake" = yes ; then

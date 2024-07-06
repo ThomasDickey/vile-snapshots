@@ -1,5 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20240706 (za)
+	> Tom Dickey:
+	+ replace cwait calls with win32 WaitForSingleObject (Savannah #65938)
+	+ change default in configure script for --enable-imake option to off
+	+ fix some gcc 14 warnings.
+
  20240121 (z)
 	> Tom Dickey:
 	+ modify configure script to check validity of $IMAKE_LOADFLAGS

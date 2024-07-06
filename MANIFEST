@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8z
+MANIFEST for vile, version v9_8z2
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -472,17 +472,18 @@ macros/which.rc                 script to show which keyword file is found by fi
 macros/xvile.desktop            desktop-file for xvile
 package                         subdirectory
 package/convile.nsi             NSIS package for convile
+package/minvile.nsi             NSIS package for minvile
+package/vile.spec               sample RPM spec file for vile
+package/winvile-wide.iss        Inno Setup script for winvile-wide
+package/winvile.iss             Inno Setup script for winvile
+package/winvile.nsi             NSIS package for winvile
+package/winvile64-wide.iss      build-script
+package/winvile64.iss           build-script
 package/debian                  subdirectory
 package/debian/changelog        debian build script
 package/debian/control          debian build script
 package/debian/copyright        debian build script
-package/debian/overrides        subdirectory
-package/debian/overrides/vile   debian build script
-package/debian                  subdirectory
 package/debian/rules            debian build script
-package/debian/source           subdirectory
-package/debian/source/format    build-script
-package/debian                            subdirectory
 package/debian/vile-common.README.Debian  Debian build-script
 package/debian/vile-common.docs debian build script
 package/debian/vile-common.examples  debian build script
@@ -498,6 +499,10 @@ package/debian/vile.prerm       debian build script
 package/debian/xvile.files      debian build script
 package/debian/xvile.links      debian build script
 package/debian/xvile.menu       debian build script
+package/debian/overrides        subdirectory
+package/debian/overrides/vile   debian build script
+package/debian/source           subdirectory
+package/debian/source/format    build-script
 package/freebsd/vile            subdirectory
 package/freebsd/vile/Makefile   build-script
 package/freebsd/vile/distinfo   build-script
@@ -508,8 +513,6 @@ package/freebsd/xvile/Makefile  build-script
 package/freebsd/xvile/distinfo  build-script
 package/freebsd/xvile/pkg-descr build-script
 package/freebsd/xvile/pkg-plist build-script
-package                         subdirectory
-package/minvile.nsi             NSIS package for minvile
 package/openbsd                 subdirectory
 package/openbsd/Makefile        build-script
 package/openbsd/distinfo        build-script
@@ -529,23 +532,12 @@ package/pkgsrc/xvile            subdirectory
 package/pkgsrc/xvile/DESCR      build-script
 package/pkgsrc/xvile/Makefile   build-script
 package/pkgsrc/xvile/PLIST      build-script
-package                         subdirectory
-package/vile.spec               sample RPM spec file for vile
-package/winvile-wide.iss        Inno Setup script for winvile-wide
-package/winvile.iss             Inno Setup script for winvile
-package/winvile.nsi             NSIS package for winvile
-package/winvile64-wide.iss      build-script
-package/winvile64.iss           build-script
 perl                            subdirectory
 perl/Breadcrumbs.pm             manages bookmarks for a set of files
 perl/CaptHook.pm                manage various types of hooks from perl
 perl/Glob2re.pm                 perl: convert wildcard (glob) to regular expression
 perl/Help.pm                    a help-script.
 perl/Vile.pm                    utility functions for perl scripts
-perl/Vile                       subdirectory
-perl/Vile/Exporter.pm           provides an import method for vile's Perl5 extensions
-perl/Vile/Manual.pm             display perl (pod) documentation like a manual-page
-perl                            subdirectory
 perl/Vileserv.pm                provides file-load server capability for xvile
 perl/Visit.pm                   perl: utility for visiting files
 perl/capture.pm                 Perl script that improves on vile's capture-command
@@ -563,6 +555,9 @@ perl/shell.pm                   Perl: spawn a shell via a pty
 perl/spell.pm                   Perl: interactive spelling checker/corrector
 perl/vileget                    pass file-edit request to xvile session running Vileserv
 perl/winops.pm                  window-operations for testing the Perl5 interface
+perl/Vile                       subdirectory
+perl/Vile/Exporter.pm           provides an import method for vile's Perl5 extensions
+perl/Vile/Manual.pm             display perl (pod) documentation like a manual-page
 plugins                         subdirectory
 plugins/Makefile                makefile for plugin samples
 plugins/test.c                  example of a plugin

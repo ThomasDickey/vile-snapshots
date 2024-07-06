@@ -1,4 +1,4 @@
-; $Id: minvile.nsi,v 1.43 2024/01/17 01:09:01 tom Exp $
+; $Id: minvile.nsi,v 1.44 2024/03/23 20:26:16 tom Exp $
 ; vile:fk=8bit
 ; Script originally generated with the Venis Install Wizard, but customized.
 ; The Inno Setup script is preferred; but this can be built via cross-compiling.
@@ -9,8 +9,8 @@
 
 !define VERSION_MAJOR "9"
 !define VERSION_MINOR "8"
-!define VERSION_LEVEL "26"
-!define VERSION_PATCH "z"
+!define VERSION_LEVEL "27"
+!define VERSION_PATCH "za"
 !define VERSION_BUILT "0"
 
 !define SUBKEY "VI like Emacs"

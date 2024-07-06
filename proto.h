@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Id: proto.h,v 1.760 2024/01/20 01:18:28 tom Exp $
+ * $Id: proto.h,v 1.761 2024/07/06 21:53:16 tom Exp $
  */
 
 #ifndef VILE_PROTO_H
@@ -1549,6 +1549,7 @@ extern void winvile_start(void);
  */
 #ifdef DECLARE_HANDLE
 extern void w32_close_handle(HANDLE handle);
+extern int  w32_wait_handle(HANDLE handle);
 #endif
 
 /*
