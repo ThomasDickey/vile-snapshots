@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Id: eval.c,v 1.471 2024/01/17 23:21:05 tom Exp $
+ * $Id: eval.c,v 1.472 2024/07/08 08:11:03 tom Exp $
  */
 
 #include	<estruct.h>
@@ -2282,6 +2282,12 @@ set_ctrans(const char *thePalette)
 #endif
     }
     return changed;
+}
+#else
+int
+set_ctrans(const char *thePalette)
+{
+    return 0;
 }
 #endif
 

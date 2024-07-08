@@ -12,7 +12,7 @@
 */
 
 /*
- * $Id: estruct.h,v 1.762 2024/01/21 18:36:14 tom Exp $
+ * $Id: estruct.h,v 1.763 2024/07/08 08:08:20 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -278,7 +278,7 @@
 # endif
 #endif
 
-#if SYS_MSDOS || SYS_OS2 || SYS_VMS || SYS_WINNT
+#if SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #ifdef OPT_PERL
 typedef unsigned short	mode_t;
 /* perl's win32.h typedef's mode_t */

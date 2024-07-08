@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20240706 (za)
+ 20240708 (za)
 	> Tom Dickey:
+	+ build-fixes for VMS, from vile-9_8_vmspatch.zip on Hunter Goatley's
+	  website.
+	+ modify test/vile.spec to work around new regression in rpmbuild.
 	+ replace cwait calls with win32 WaitForSingleObject (Savannah #65938)
 	+ change default in configure script for --enable-imake option to off
 	+ fix some gcc 14 warnings.

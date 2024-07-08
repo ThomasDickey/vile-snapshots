@@ -1,4 +1,4 @@
-$! $Id: vmsbuild.com,v 1.52 2010/08/08 17:57:02 tom Exp $
+$! $Id: vmsbuild.com,v 1.53 2024/07/08 08:10:22 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Screen Configurations
@@ -103,6 +103,7 @@ $ write optf "tbuff.obj"
 $ write optf "termio.obj"
 $ write optf "ucrypt.obj"
 $ write optf "undo.obj"
+$ write optf "vl_ctype.obj"
 $ write optf "version.obj"
 $ write optf "vms2unix.obj"
 $ write optf "vmspipe.obj"

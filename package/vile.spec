@@ -1,5 +1,5 @@
 Summary: VI Like Emacs editor
-# $Id: vile.spec,v 1.71 2024/03/23 20:26:16 tom Exp $
+# $Id: vile.spec,v 1.72 2024/07/07 09:05:20 tom Exp $
 Name: vile
 %define AppVersion 9.8
 Version: %{AppVersion}za
@@ -78,33 +78,33 @@ Requires:	%{name}-common = %{version}-%{release}
 %endif
 
 %setup -q -n %{name}-%{AppVersion}
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch14 -p1
-%patch15 -p1
-%patch16 -p1
-%patch17 -p1
-%patch18 -p1
-%patch19 -p1
-%patch20 -p1
-%patch21 -p1
-%patch22 -p1
-%patch23 -p1
-%patch24 -p1
-%patch25 -p1
-%patch26 -p1
-%patch27 -p1
+%patch 1 -p1
+%patch 2 -p1
+%patch 3 -p1
+%patch 4 -p1
+%patch 5 -p1
+%patch 6 -p1
+%patch 7 -p1
+%patch 8 -p1
+%patch 9 -p1
+%patch 10 -p1
+%patch 11 -p1
+%patch 12 -p1
+%patch 13 -p1
+%patch 14 -p1
+%patch 15 -p1
+%patch 16 -p1
+%patch 17 -p1
+%patch 18 -p1
+%patch 19 -p1
+%patch 20 -p1
+%patch 21 -p1
+%patch 22 -p1
+%patch 23 -p1
+%patch 24 -p1
+%patch 25 -p1
+%patch 26 -p1
+%patch 27 -p1
 # each patch should add itself to this list
 
 rpm --version
@@ -276,6 +276,9 @@ rm -rf %{buildroot}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Sun Jul 07 2024 Thomas E. Dickey
+- modify patch syntax to work around regression in RPM version 4.19.91
 
 * Sat Mar 23 2024 Thomas E. Dickey
 - added patch for 9.8za

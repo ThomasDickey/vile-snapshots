@@ -5,7 +5,7 @@
 # estruct.h to make sure the correct one is #defined as "1", and the others
 # all as "0".
 #
-# $Id: descrip.mms,v 1.51 2009/02/06 00:50:28 tom Exp $
+# $Id: descrip.mms,v 1.52 2024/07/08 08:10:05 tom Exp $
 
 # Editor Configuration Note
 # -------------------------
@@ -335,3 +335,60 @@ xvile.com :
 	@ close test_script
 	@ write sys$output "** made $@"
 
+menu.obj : menu.c
+x11menu.obj : x11menu.c
+main.obj : main.c
+x11.obj : x11.c
+vmsvt.obj : vmsvt.c
+basic.obj : basic.c
+bind.obj : bind.c
+blist.obj : blist.c
+btree.obj : btree.c
+buffer.obj : buffer.c
+csrch.obj : csrch.c
+display.obj : display.c
+dumbterm.obj : dumbterm.c
+eval.obj : eval.c
+exec.obj : exec.c
+externs.obj : externs.c
+fences.obj : fences.c
+file.obj : file.c
+filec.obj : filec.c
+fileio.obj : fileio.c
+finderr.obj : finderr.c
+glob.obj : glob.c
+globals.obj : globals.c
+history.obj : history.c
+input.obj : input.c
+insert.obj : insert.c
+isearch.obj : isearch.c
+itbuff.obj : itbuff.c
+line.obj : line.c
+map.obj : map.c
+modes.obj : modes.c
+msgs.obj : msgs.c
+npopen.obj : npopen.c
+nullterm.obj : nullterm.c
+oneliner.obj : oneliner.c
+opers.obj : opers.c
+path.obj : path.c
+random.obj : random.c
+regexp.obj : regexp.c
+region.obj : region.c
+search.obj : search.c
+select.obj : select.c
+spawn.obj : spawn.c
+statevar.obj : statevar.c
+tags.obj : tags.c
+tbuff.obj : tbuff.c
+termio.obj : termio.c
+ucrypt.obj : ucrypt.c
+undo.obj : undo.c
+version.obj : version.c
+vl_ctype.obj : vl_ctype.c
+vms2unix.obj : vms2unix.c
+vmspipe.obj : vmspipe.c
+watch.obj : watch.c
+window.obj : window.c
+word.obj : word.c
+wordmov.obj : wordmov.c

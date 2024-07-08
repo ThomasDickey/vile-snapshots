@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Id: region.c,v 1.171 2022/08/04 21:17:54 tom Exp $
+ * $Id: region.c,v 1.172 2024/07/08 08:10:58 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1226,8 +1226,10 @@ encode_one_attribute(TBUFF **result, long count, char *hypercmd, unsigned attr)
 
     if (attr & VACOLOR) {
 	int color = VCOLORNUM(attr);
+#if OPT_COLOR
 	if (filter_only)
 	    color = ctrans[color % NCOLORS];
+#endif
 	sprintf(temp, "C%X", color);
 	tb_sappend(result, temp);
     }
