@@ -4,12 +4,12 @@
 %{
 
 /*
- * $Id: ps1-filt.l,v 1.14 2018/10/27 11:15:57 tom Exp $
+ * $Id: ps1-filt.l,v 1.15 2025/01/26 11:35:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to PowerShell scripts.
  * - T.Dickey
  *
- * see 
+ * see
  *	http://technet.microsoft.com/en-us/magazine/hh551144.aspx
  *	http://technet.microsoft.com/en-us/magazine/dd347662.aspx
  *	https://svn.fperrin.net/powershell-mode/powershell-mode.el

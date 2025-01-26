@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Id: vms2unix.c,v 1.43 2005/06/03 00:03:29 tom Exp $
+ * $Id: vms2unix.c,v 1.44 2025/01/26 11:43:27 tom Exp $
  *
  */
 #include "estruct.h"
@@ -172,7 +172,7 @@ vms_creat(char *filename)
  * they return incorrect results for DECNET-based files.
  *
  * Note 1:  This routine will handle wildcarded filenames, but that's not it's
- *          purpose.  Think of this routine as a replacement for 
+ *          purpose.  Think of this routine as a replacement for
  *          "access(file, F_OK)".
  *
  * Note 2:  This routine returns TRUE for "some.dir" (assuming it exists),

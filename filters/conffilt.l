@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: conffilt.l,v 1.19 2016/12/16 12:00:39 tom Exp $
+ * $Id: conffilt.l,v 1.20 2025/01/26 11:08:08 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of config-file.
  */
@@ -83,7 +83,7 @@ BLANK		[ \t]
 <NORMAL>{IDENT2}	|
 <NORMAL>{IDENTX}	{ WriteToken(Ident_attr); }
 
-<NORMAL>\\[n]		{ WriteToken3(Action_attr, 1); WriteToken2("", 1); } 
+<NORMAL>\\[n]		{ WriteToken3(Action_attr, 1); WriteToken2("", 1); }
 <NORMAL>\\.		|
 <NORMAL>{SSTRING}	{ WriteToken(String_attr); }
 <NORMAL>\"		{ PushQuote(QUOTED, String_attr); }

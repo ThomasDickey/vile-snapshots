@@ -4,20 +4,20 @@
 %{
 
 /*
- * $Id: xq-filt.l,v 1.20 2016/12/15 22:10:47 tom Exp $
+ * $Id: xq-filt.l,v 1.22 2025/01/26 17:07:24 tom Exp $
  *
  * XQuery is case-sensitive
  * XQuery elements, attributes, and variables must be valid XML names
  * An XQuery string value can be in single or double quotes
  * An XQuery variable is defined with a $ followed by a name, e.g. $bookstore
  * XQuery comments are delimited by (: and :), e.g. (: XQuery Comment :)
- * 
+ *
  * The URI of the XQuery function namespace is:
  *    http://www.w3.org/2005/02/xpath-functions
  *
  *  The default prefix for the function namespace is fn:.
  *
- *  Tip:  Functions are often called with the fn:  prefix, such as fn:string(). 
+ *  Tip:  Functions are often called with the fn:  prefix, such as fn:string().
  *  However, since fn:  is the default prefix of the namespace, the function
  *  names do not need to be prefixed when called.
  */
@@ -118,7 +118,7 @@ VALUE		#{IDENT}
 <XMLCDATA>[\n]		|
 <XMLCDATA>.		{ flt_bfr_append(yytext, yyleng); }
 
-<INITIAL,INLINE>{XMLTAG}	{ 
+<INITIAL,INLINE>{XMLTAG}	{
 			  char *text = yytext;
 			  const char *attr = "";
 			  if (Num_tags <= 0 || curly_braces > Num_tags) {
@@ -240,7 +240,7 @@ prefixed_attr(const char *name, char **text, int ending)
     const char *attr = "";
     char *marker = strchr(name, ':');
 
-    if (marker != 0 && marker[1] != '\0') {
+    if (marker != NULL && marker[1] != '\0') {
 	const char *old_table = get_symbol_table();
 	char new_table[LEN_TABLENAME];
 
@@ -393,14 +393,14 @@ do_filter(FILE *inputs)
     RunLEX();
     flt_bfr_error();
 
-    if (Tags != 0) {
+    if (Tags != NULL) {
 	if (Num_tags > 1)
 	    flt_error("expected tag:%s", Tags[Num_tags - 1].name);
 	while (Num_tags > 0)
 	    free(Tags[--Num_tags].name);
 #if NO_LEAKS
 	free(Tags);
-	Tags = 0;
+	Tags = NULL;
 #endif
     }
     end_state();

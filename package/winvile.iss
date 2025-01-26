@@ -1,4 +1,4 @@
-; $Id: winvile.iss,v 1.35 2024/01/17 01:09:01 tom Exp $
+; $Id: winvile.iss,v 1.36 2025/01/26 10:11:48 tom Exp $
 ; vile:ts=2 sw=2 fk=8bit
 ;
 ; This installs winvile as "winvile-ole.exe", since that is the name I use when building the OLE flavor
@@ -60,7 +60,7 @@
 #emit 'AppVersion=' + myVer
 #emit 'AppVerName=' + myAppVer
 AppPublisher=Thomas E. Dickey
-AppCopyright=© 1997-2023,2024, Thomas E. Dickey
+AppCopyright=© 1997-2024,2025, Thomas E. Dickey
 AppPublisherURL=https://invisible-island.net/vile/
 AppSupportURL=https://invisible-island.net/vile/
 AppUpdatesURL=https://invisible-island.net/vile/

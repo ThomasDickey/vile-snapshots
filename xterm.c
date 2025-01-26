@@ -1,5 +1,5 @@
 /*
- * $Id: xterm.c,v 1.11 2022/08/04 21:24:31 tom Exp $
+ * $Id: xterm.c,v 1.13 2025/01/26 20:54:00 tom Exp $
  *
  * xterm-specific code for vi-like-emacs.
  */
@@ -36,7 +36,7 @@ xterm_open(TERM * tp)
     /* use xterm #251 feature to save title */
     putpad("\033[22t");
 
-    if (tp != 0) {
+    if (tp != NULL) {
 	tp->set_title = xterm_settitle;
 	tp->mopen = xterm_mopen;
 	tp->mclose = xterm_mclose;
@@ -52,7 +52,7 @@ xterm_open(TERM * tp)
 }
 
 void
-xterm_close()
+xterm_close(void)
 {
     /* use xterm #251 feature to restore title */
     putpad("\033[23t");
@@ -289,7 +289,7 @@ xterm_button(int c)
 void
 xterm_settitle(const char *string)
 {
-    if (global_g_val(GMDXTERM_TITLE) && string != 0) {
+    if (global_g_val(GMDXTERM_TITLE) && string != NULL) {
 #if OPT_MULTIBYTE
 	int check;
 	UINT ch;
@@ -306,7 +306,7 @@ xterm_settitle(const char *string)
 		want_encoding = enc_8BIT;
 	    }
 	}
-	if (curbp == 0) {
+	if (curbp == NULL) {
 	} else if (want_encoding == enc_UTF8 && !b_is_utfXX(curbp)) {
 	    TRACE(("...converting to UTF-8\n"));
 	    while (*string != EOS) {

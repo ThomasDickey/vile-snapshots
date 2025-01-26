@@ -1,5 +1,5 @@
 /*
- * $Id: fltstack.h,v 1.19 2018/10/27 11:16:47 tom Exp $
+ * $Id: fltstack.h,v 1.22 2025/01/26 17:02:51 tom Exp $
  * A simple stack for lex states
  */
 
@@ -24,10 +24,10 @@
 typedef struct {
     int state;
 #ifdef FLTSTACK_EXTRA
-    FLTSTACK_EXTRA
+      FLTSTACK_EXTRA
 #endif
 } STACK;
-static STACK *stk_state = 0;
+static STACK *stk_state = NULL;
 static int cur_state;
 
 static int stk_limit = 0;
@@ -55,7 +55,7 @@ static void
 new_state(int code)
 {
     FLEX_PRINTF((stderr, "new_state(%d)\n", code));
-    if (FLTSTACK_OK && stk_state != 0)
+    if (FLTSTACK_OK && stk_state != NULL)
 	FLT_STATE = code;
     BEGIN(code);
     cur_state = code;		/* antique lex's have no valid YYSTATE */
@@ -68,7 +68,7 @@ pop_state(void)
 #ifdef INITIAL
     int state = INITIAL;
 #else
-    int state = 0;	/* cater to broken "new" flex */
+    int state = 0;		/* cater to broken "new" flex */
 #endif
     FLEX_PRINTF((stderr, "pop_state() level %d\n", stk_level));
     --stk_level;
@@ -83,7 +83,7 @@ push_state(int state)
 {
     ++stk_level;
     FLEX_PRINTF((stderr, "push_state(%d) level %d\n", state, stk_level));
-    if ((stk_level >= stk_limit) || (stk_state == 0)) {
+    if ((stk_level >= stk_limit) || (stk_state == NULL)) {
 	size_t have = sizeof(STACK) * (unsigned) stk_limit;
 	size_t want = sizeof(STACK) * (unsigned) (stk_limit += (20 + stk_level));
 	stk_state = type_alloc(STACK, (void *) stk_state, want, &have);
@@ -115,9 +115,9 @@ static void
 end_state(void)
 {
 #if NO_LEAKS
-    if (stk_state != 0) {
+    if (stk_state != NULL) {
 	free(stk_state);
-	stk_state = 0;
+	stk_state = NULL;
     }
 #endif
 }

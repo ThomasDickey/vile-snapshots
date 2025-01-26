@@ -6,7 +6,7 @@
  */
 
 /*
- * $Id: edef.h,v 1.378 2022/12/01 22:43:12 tom Exp $
+ * $Id: edef.h,v 1.379 2025/01/26 13:37:47 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -52,7 +52,7 @@ decl_init( char *exec_pathname, "." );	/* replaced at runtime with path-head of 
 
 decl_init_const ( char prognam[], PROGRAM_NAME );
 decl_init_const ( char version[], "version " VILE_RELEASE "." VILE_VERSION );
-decl_init (TBUFF *system_name, 0 );
+decl_init (TBUFF *system_name, NULL );
 decl_init (int system_crlf, CRLF_LINES );
 
 #ifdef SYSTEM_NAME
@@ -103,8 +103,8 @@ decl_uninit( int insertmode );		/* are we inserting or overwriting? */
 decl_uninit( int lastkey );		/* last keystoke (tgetc)	*/
 decl_uninit( int lastcmd );		/* last command	(kbd_seq)	*/
 decl_uninit( REGIONSHAPE regionshape );	/* shape of region		*/
-decl_init( REGION *haveregion, 0 );
-decl_init( REGION *wantregion, 0 );
+decl_init( REGION *haveregion, NULL );
+decl_init( REGION *wantregion, NULL );
 #if OPT_VIDEO_ATTRS
 decl_uninit( VIDEO_ATTR videoattribute );
 					/* attribute to set in call to
@@ -138,7 +138,7 @@ decl_uninit( WINDOW *wnullp );		/* window for nullterm          */
 decl_uninit( BUFFER *bminip );		/* buffer for command-line      */
 #if OPT_MULTIBYTE
 decl_uninit( BUFFER *btempp );		/* buffer for ffgetline()       */
-decl_init( TBUFF *latin1_expr, 0 );	/* fallback for narrow/wide	*/
+decl_init( TBUFF *latin1_expr, NULL );	/* fallback for narrow/wide	*/
 decl_init( int latin1_codes, 0 );	/* range where narrow/wide equal*/
 decl_init( ENC_CHOICES cmd_encoding, enc_AUTO );
 decl_init( ENC_CHOICES kbd_encoding, enc_LOCALE );
@@ -151,13 +151,13 @@ decl_uninit( char screen_desc[NBUFN] );	/* rough description of screen  */
 
 decl_init( USHORT vl_glob_opts, vl_GLOB_ALL);
 
-decl_init( TBUFF *mlsave, 0 );		/* last message, if postponed	*/
-decl_init( TBUFF *searchpat, 0 );	/* Search pattern		*/
-decl_init( TBUFF *replacepat, 0 );	/* replacement pattern		*/
+decl_init( TBUFF *mlsave, NULL );	/* last message, if postponed	*/
+decl_init( TBUFF *searchpat, NULL );	/* Search pattern		*/
+decl_init( TBUFF *replacepat, NULL );	/* replacement pattern		*/
 decl_init( int last_srch_direc, FORWARD ); /* Direction of last search */
 decl_uninit( regexp *gregexp );		/* compiled version of searchpat */
-decl_init( TBUFF *tb_matched_pat, 0 );	/* text that scan found */
-decl_init( TBUFF *lastfileedited, 0 );
+decl_init( TBUFF *tb_matched_pat, NULL );	/* text that scan found */
+decl_init( TBUFF *lastfileedited, NULL );
 
 #if OPT_HOOKS
 decl_uninit( HOOK cdhook );		/* proc to run when change dir */
@@ -237,9 +237,9 @@ decl_init( int rgb_bright, 255 );
 
 #if OPT_TITLE
 decl_init( int auto_set_title, TRUE );	/* automatically set title	*/
-decl_init( TBUFF * title_format, 0 );	/* format, if any		*/
-decl_init( TBUFF * current_title, 0 );
-decl_init( TBUFF * request_title, 0 );
+decl_init( TBUFF * title_format, NULL );	/* format, if any		*/
+decl_init( TBUFF * current_title, NULL );
+decl_init( TBUFF * request_title, NULL );
 #endif
 
 /* Special characters, used in keyboard control (some values are set on
@@ -279,12 +279,12 @@ decl_uninit( int regs_kbd_default );	/* used in name-completion	*/
 #if !SMALLER
 decl_uninit( TBUFF *prompt_string );	/* command-line prompt-string	*/
 decl_uninit( WINDOW *swindow );		/* saved window pointer		*/
-decl_init( TBUFF *with_prefix, 0 );	/* prefix set by "~with"	*/
+decl_init( TBUFF *with_prefix, NULL );	/* prefix set by "~with"	*/
 decl_uninit ( int var_empty_lines );
 #endif
 
 #if OPT_ENCRYPT
-decl_init( char * cryptkey, 0 );	/* top-level crypt-key, if any	*/
+decl_init( char * cryptkey, NULL );	/* top-level crypt-key, if any	*/
 #endif
 
 decl_uninit( int dotcmdactive );	/* current dot command mode	*/
@@ -300,16 +300,16 @@ decl_init( int vl_seed, 123 );		/* random number seed		*/
 #endif
 
 decl_init( int cmd_count, 0 );		/* 1..n for procedure execution	*/
-decl_init( const CMDFUNC *cmd_motion, 0 ); /* current operator's motion	*/
+decl_init( const CMDFUNC *cmd_motion, NULL ); /* current operator's motion	*/
 
 #if OPT_EVAL || OPT_DEBUGMACROS
 decl_init( int tracemacros, FALSE );	/* macro tracing flag		*/
 #endif
 
 #if OPT_FINDERR
-decl_init( TBUFF *filename_expr, 0 );
-decl_init( TBUFF *error_expr, 0 );
-decl_init( TBUFF *error_match, 0 );
+decl_init( TBUFF *filename_expr, NULL );
+decl_init( TBUFF *error_expr, NULL );
+decl_init( TBUFF *error_match, NULL );
 decl_init( int error_tabstop, 8 );
 #endif
 
@@ -373,7 +373,7 @@ decl_uninit( int kbd_expand );		/* -1 kbd_putc shows tab as space */
 /*--------------------------------------------------------------------------*/
 
 decl_init( FFType ffstatus, file_is_closed );
-decl_init( FILE *ffp, 0 );		/* File pointer, all functions. */
+decl_init( FILE *ffp, NULL );		/* File pointer, all functions. */
 decl_init( int ffd, -1 );		/* file descriptor if unbuffered */
 decl_uninit( BUFFER *ffbuffer );	/* buffer to read from */
 decl_uninit( LINE *ffcursor );		/* ...and current line read */
@@ -386,9 +386,9 @@ decl_uninit( size_t fflinelen );	/* fflinebuf length */
 
 #if OPT_LOCALE
 decl_init (ENC_CHOICES vl_encoding, enc_DEFAULT );
-decl_init2( VL_CTYPE2 vl_real_enc, 0, 0 );
-decl_init2( VL_CTYPE2 vl_wide_enc, 0, 0 );
-decl_init2( VL_CTYPE2 vl_narrow_enc, 0, 0 );
+decl_init2( VL_CTYPE2 vl_real_enc, NULL, NULL );
+decl_init2( VL_CTYPE2 vl_wide_enc, NULL, NULL );
+decl_init2( VL_CTYPE2 vl_narrow_enc, NULL, NULL );
 #else
 decl_init2( VL_CTYPE2 vl_real_enc, "built-in", VL_ENC_LATIN1 );
 #endif

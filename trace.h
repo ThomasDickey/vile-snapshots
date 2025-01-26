@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Id: trace.h,v 1.39 2018/10/24 00:15:17 tom Exp $
+ * $Id: trace.h,v 1.40 2025/01/26 17:03:16 tom Exp $
  */
 #ifndef	_trace_h
 #define	_trace_h
@@ -107,7 +107,7 @@ extern void trace_all_windows(const char *fn, int ln);
 #define T_RETURN "return }} "
 #define T_LENGTH 10
 
-#define TRACE_NULL(s) ((s) != 0 ? (s) : "<null>")
+#define TRACE_NULL(s) ((s) != NULL ? (s) : "<null>")
 
 #define TRACE_CMDFUNC(p) \
 	   ((p)->c_flags & CMD_PERL \

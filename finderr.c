@@ -3,9 +3,9 @@
  * written for vile by paul fox.
  * rewritten to use regular expressions by T.Dickey
  *
- * Copyright (c) 1990-2016,2019 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1990-2019,2025 by Paul Fox and Thomas Dickey
  *
- * $Id: finderr.c,v 1.153 2019/12/19 09:37:07 tom Exp $
+ * $Id: finderr.c,v 1.154 2025/01/26 14:47:08 tom Exp $
  *
  */
 
@@ -163,7 +163,7 @@ char *const predefined[] =
     "^\\[%[^:]:%L\\]\\( -> \\[[^]]\\+\\]\\)\\?: %T",	/* cppcheck */
 };
 
-static ERR_PATTERN *exp_table = 0;
+static ERR_PATTERN *exp_table = NULL;
 static size_t exp_count = 0;
 
 void
@@ -248,8 +248,8 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
     static const char normal[] = "\\([^ \t]\\+\\)";
     static const char remain[] = "\\(.\\+\\)";
 
-    char *temp = 0, *src, *dst = 0;
-    regexp *exp = 0;
+    char *temp = NULL, *src, *dst = NULL;
+    regexp *exp = NULL;
     int pass;
     int word;
     int mark;
@@ -281,7 +281,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 		    mark = W_VERB;
 		    break;
 		case 'F':
-		    if (tb_values(filename_expr) != 0) {
+		    if (tb_values(filename_expr) != NULL) {
 			APP_S(before);
 			APP_T(tb_values(filename_expr));
 			APP_S(after);
@@ -361,7 +361,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 	    beginDisplay();
 	    dst = temp = typeallocn(char, want + 1);
 	    endofDisplay();
-	    if (dst == 0) {
+	    if (dst == NULL) {
 		status = no_memory("convert_pattern");
 		break;
 	    }
@@ -369,7 +369,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 	    *dst = EOS;
 	}
     }
-    if (temp != 0) {
+    if (temp != NULL) {
 #if OPT_TRACE
 	TRACE(("COMPILE %s\n", temp));
 	for (word = 0; word < W_LAST; word++)
@@ -394,14 +394,14 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 static void
 free_patterns(void)
 {
-    if (exp_table != 0) {
+    if (exp_table != NULL) {
 	beginDisplay();
 	while (exp_count-- != 0) {
 	    free(exp_table[exp_count].exp_text);
 	    free((char *) (exp_table[exp_count].exp_comp));
 	}
 	free((char *) exp_table);
-	exp_table = 0;
+	exp_table = NULL;
 	exp_count = 0;
 	endofDisplay();
     }
@@ -431,7 +431,7 @@ load_patterns(void)
     int status = TRUE;
 
     /* find the error-expressions buffer */
-    if ((bp = find_b_name(ERRORS_BufName)) == 0) {
+    if ((bp = find_b_name(ERRORS_BufName)) == NULL) {
 	if ((bp = bfind(ERRORS_BufName, BFINVS)) == NULL)
 	    return FALSE;
 
@@ -458,7 +458,7 @@ load_patterns(void)
 	exp_table = typeallocn(ERR_PATTERN, exp_count);
 	endofDisplay();
 
-	if (exp_table != 0) {
+	if (exp_table != NULL) {
 	    for (n = 0; n < W_LAST; n++)
 		exp_table->words[n] = -1;
 	    n = 0;
@@ -483,7 +483,7 @@ load_patterns(void)
 static ERR_PATTERN *
 next_pattern(size_t count)
 {
-    ERR_PATTERN *result = 0;
+    ERR_PATTERN *result = NULL;
 
     if (count < exp_count)
 	result = &exp_table[count];
@@ -502,11 +502,11 @@ decode_exp(ERR_PATTERN * exp)
 	TBUFF **buffer;
 	long *number;
     } lookup[] = {
-	{ W_VERB, &fe_verb, 0 },
-	{ W_FILE, &fe_file, 0 },
-	{ W_LINE, 0, &fe_line },
-	{ W_COLM, 0, &fe_colm },
-	{ W_TEXT, &fe_text, 0 },
+	{ W_VERB, &fe_verb, NULL },
+	{ W_FILE, &fe_file, NULL },
+	{ W_LINE, NULL, &fe_line },
+	{ W_COLM, NULL, &fe_colm },
+	{ W_TEXT, &fe_text, NULL },
     };
     /* *INDENT-ON* */
 
@@ -518,7 +518,7 @@ decode_exp(ERR_PATTERN * exp)
     TRACE(("decode_exp{%s}\n", exp->exp_text));
 
     for (j = 0; j < W_LAST; j++) {
-	if (lookup[j].buffer != 0) {
+	if (lookup[j].buffer != NULL) {
 	    tb_free(lookup[j].buffer);
 	} else {
 	    *(lookup[j].number) = 0;
@@ -537,15 +537,15 @@ decode_exp(ERR_PATTERN * exp)
      *          \([a-zA-Z]:\)
      */
     for (n = 1; !failed && (n < NSUBEXP); n++) {
-	if (p->startp[n] == 0 || p->endp[n] == 0)
+	if (p->startp[n] == NULL || p->endp[n] == NULL)
 	    continue;		/* discount nested atom */
 	if (p->startp[n] >= p->endp[n])
 	    continue;		/* discount empty atom */
-	temp = 0;
+	temp = NULL;
 	if (tb_bappend(&temp,
 		       p->startp[n],
-		       (size_t) (p->endp[n] - p->startp[n])) == 0
-	    || tb_append(&temp, EOS) == 0) {
+		       (size_t) (p->endp[n] - p->startp[n])) == NULL
+	    || tb_append(&temp, EOS) == NULL) {
 	    (void) no_memory("finderr");
 	    failed = TRUE;
 	} else if (tb_length(temp) == 0) {
@@ -636,7 +636,7 @@ updateDirs(const char *errverb, const char *errfile)
     } else if (!strcmp("Leaving", errverb)) {
 	if (dir_level > 0) {
 	    beginDisplay();
-	    if (dir_stack[dir_level] != 0)
+	    if (dir_stack[dir_level] != NULL)
 		free(dir_stack[dir_level]);
 	    --dir_level;
 	    endofDisplay();
@@ -671,7 +671,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     static TBUFF *oerrfile;
     static TBUFF *oerrtext;
 
-    static LINE *odotp = 0;
+    static LINE *odotp = NULL;
 
     if (!comp_err_exps(FALSE, 1))
 	return (FALSE);
@@ -687,11 +687,11 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	oerrfile = tb_init(&oerrfile, EOS);
 	oerrtext = tb_init(&oerrtext, EOS);
 	freeDirs();
-	odotp = 0;
+	odotp = NULL;
 	endofDisplay();
     }
     dotp = getdot(sbp);
-    if (dotp == 0) {
+    if (dotp == NULL) {
 	TRACE(("getdot returns null\n"));
 	return (FALSE);
     }
@@ -715,21 +715,21 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	    if (lisreal(tdotp)) {
 		count = 0;
-		while ((exp = next_pattern(count++)) != 0) {
+		while ((exp = next_pattern(count++)) != NULL) {
 		    if (exp->words[W_VERB] > 0)
 			if (lregexec(exp->exp_comp, tdotp, 0,
 				     llength(tdotp), FALSE))
 			    break;
 		}
 
-		if (exp != 0) {
+		if (exp != NULL) {
 		    if (decode_exp(exp))
 			return ABORT;
 
 		    errverb = tb_values(fe_verb);
 		    errfile = tb_values(fe_file);
 
-		    if (errverb != 0 && errfile != 0) {
+		    if (errverb != NULL && errfile != NULL) {
 			updateDirs(errverb, errfile);
 		    }
 		} else if (interrupted()) {
@@ -750,12 +750,12 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	 */
 	if (lisreal(dotp)) {
 	    count = 0;
-	    while ((exp = next_pattern(count++)) != 0
+	    while ((exp = next_pattern(count++)) != NULL
 		   && !lregexec(exp->exp_comp, dotp, 0, llength(dotp), FALSE)) {
 		;
 	    }
 
-	    if (exp != 0) {
+	    if (exp != NULL) {
 		TRACE(("matched TEXT:%.*s\n", llength(dotp), lvalue(dotp)));
 		if (decode_exp(exp))
 		    return ABORT;
@@ -764,16 +764,16 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 		errfile = tb_values(fe_file);
 		errtext = tb_values(fe_text);
 
-		if (errfile != 0
+		if (errfile != NULL
 		    && fe_line > 0) {
 		    if (oerrline != fe_line
 			|| strcmp(tb_values(oerrfile), errfile))
 			break;
 		    if (oerrline == fe_line
-			&& errtext != 0
+			&& errtext != NULL
 			&& strcmp(tb_values(oerrtext), errtext))
 			break;
-		} else if (errverb != 0 && errfile != 0) {
+		} else if (errverb != NULL && errfile != NULL) {
 		    updateDirs(errverb, errfile);
 		}
 	    }
@@ -825,7 +825,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	errtext = lvalue(dotp);
 	len = (size_t) llength(dotp);
     }
-    if ((oerrtext = tb_init(&oerrtext, EOS)) != 0) {
+    if ((oerrtext = tb_init(&oerrtext, EOS)) != NULL) {
 	tb_bappend(&oerrtext, errtext, len);
 	tb_append(&oerrtext, EOS);
     }
@@ -844,10 +844,10 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     oerrline = fe_line;
     (void) tb_scopy(&oerrfile, errfile);
     if (status == TRUE) {
-	TBUFF *match = 0;
+	TBUFF *match = NULL;
 	var_ERROR_EXPR((TBUFF **) 0, exp_table[count - 1].exp_text);
 	if (tb_bappend(&match, lvalue(dotp), (size_t) llength(dotp))
-	    && tb_append(&match, EOS) != 0) {
+	    && tb_append(&match, EOS) != NULL) {
 	    var_ERROR_MATCH((TBUFF **) 0, tb_values(match));
 	    tb_free(&match);
 	}
@@ -914,7 +914,7 @@ finderrbuf(int f GCC_UNUSED, int n GCC_UNUSED)
     if (s == FALSE) {
 	set_febuff(OUTPUT_BufName);
     } else {
-	if ((bp = find_any_buffer(name)) == 0)
+	if ((bp = find_any_buffer(name)) == NULL)
 	    return FALSE;
 	set_febuff(bp->b_bname);
     }
@@ -933,11 +933,11 @@ make_err_regex_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     bprintf("--- Error Meta-Expressions and Resulting Regular Expressions ");
     bpadc('-', term.cols - DOT.o);
 
-    if (exp_table == 0)
+    if (exp_table == NULL)
 	load_patterns();
 
-    if (exp_table != 0
-	&& (bp = find_b_name(ERRORS_BufName)) != 0) {
+    if (exp_table != NULL
+	&& (bp = find_b_name(ERRORS_BufName)) != NULL) {
 	size_t j = 0;
 	b_set_left_margin(curbp, ERR_PREFIX);
 	for_each_line(lp, bp) {

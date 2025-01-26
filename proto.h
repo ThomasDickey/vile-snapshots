@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Id: proto.h,v 1.761 2024/07/06 21:53:16 tom Exp $
+ * $Id: proto.h,v 1.762 2025/01/26 10:41:55 tom Exp $
  */
 
 #ifndef VILE_PROTO_H
@@ -1562,7 +1562,7 @@ extern int  w32_get_reg_sz(HKEY hkey, const char *name, char *value, unsigned le
 extern int  w32_set_reg_sz(HKEY hkey, const char *name, const char *value);
 #endif
 
-#if DISP_NTCONS	
+#if DISP_NTCONS
 extern void w32_set_console_title(const char *title);
 #endif
 

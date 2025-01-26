@@ -12,7 +12,7 @@
 */
 
 /*
- * $Id: estruct.h,v 1.763 2024/07/08 08:08:20 tom Exp $
+ * $Id: estruct.h,v 1.765 2025/01/26 14:31:19 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1157,8 +1157,8 @@ extern void endofDisplay(void);
 #define	char2int(c)	((int)kcod2key(c))	/* mask off sign-extension, etc. */
 
 #define	PLURAL(n)	((n) != 1 ? "s" : "")
-#define NONNULL(s)	((s) != 0 ? (s) : "")
-#define isEmpty(s)	((s) == 0 || *(s) == EOS)
+#define NONNULL(s)	((s) != NULL ? (s) : "")
+#define isEmpty(s)	((s) == NULL || *(s) == EOS)
 
 #define EOS        '\0'
 #define BQUOTE     '`'
@@ -1171,8 +1171,8 @@ extern void endofDisplay(void);
 #define isTab(c)	((c) == '\t')
 
 #define isErrorVal(s)	((s) == error_val)
-#define isLegalVal(s)	((s) != 0 && !isErrorVal(s))
-#define isLegalExp(s,x) ((s = (x)) != 0 && !isErrorVal(s))
+#define isLegalVal(s)	((s) != NULL && !isErrorVal(s))
+#define isLegalExp(s,x) ((s = (x)) != NULL && !isErrorVal(s))
 
 /* protect against losing namespaces */
 #undef	VL_ERROR
@@ -1630,7 +1630,7 @@ typedef enum {
 #define isBackTab(c)	((c) == KEY_BackTab)
 #endif
 
-#define	NonNull(s)	((s == 0) ? "" : s)
+#define	NonNull(s)	((s == NULL) ? "" : s)
 
 #define ESC		tocntrl('[')
 #define BEL		tocntrl('G')	/* ascii bell character		*/
@@ -1665,7 +1665,7 @@ typedef	struct	vl_tbuff	{
 	int	tb_errs;	/* true if we copied error_val here */
 	} TBUFF;
 
-#define isTB_ERRS(p) ((p) != 0 && (p)->tb_errs)
+#define isTB_ERRS(p) ((p) != NULL && (p)->tb_errs)
 
 /*
  * Definitions for 'itbuff.c' (temporary/dynamic int-buffers)
@@ -1794,7 +1794,7 @@ typedef struct	LINE {
 				DOT.o = b_left_margin(curbp); \
 			} while (0)
 #define	for_each_line(lp,bp) for (lp = lforw(buf_head(bp)); \
-					(lp != 0) && (lp != buf_head(bp)); \
+					(lp != NULL) && (lp != buf_head(bp)); \
 					lp = lforw(lp))
 
 #define l_nxtundo		l.l_stklnk
@@ -2149,10 +2149,10 @@ typedef struct {
 	MINORMODE *sm;
 } MAJORMODE;
 
-#define is_c_mode(bp) (bp->majr != 0 && !strcmp(bp->majr->shortname, "c"))
+#define is_c_mode(bp) (bp->majr != NULL && !strcmp(bp->majr->shortname, "c"))
 #define fix_cmode(bp,value)	/* nothing */
 #define for_each_modegroup(bp,n,m,vals) \
-	for (vals = get_submode_vals(bp, n = m); vals != 0; vals = get_submode_valx(bp, m, &n))
+	for (vals = get_submode_vals(bp, n = m); vals != NULL; vals = get_submode_valx(bp, m, &n))
 #else
 #define is_c_mode(bp) (b_val(bp,MDCMOD))
 #define fix_cmode(bp,value)	set_local_b_val(bp, MDCMOD, value)
@@ -2329,7 +2329,7 @@ typedef struct	BUFFER {
 #define set_b_val_rexp(bp,which,val)     b_val_rexp(bp,which) = val
 
 #define window_b_val(wp,val) \
-	((wp != 0 && wp->w_bufp != 0) \
+	((wp != NULL && wp->w_bufp != NULL) \
 		? b_val(wp->w_bufp,val) \
 		: global_b_val(val))
 
@@ -2971,7 +2971,7 @@ typedef struct KILLREG {
 	USHORT kbflag;		/* flags describing kill register	*/
 } KILLREG;
 
-#define	KbSize(i,p)	((p->d_next != 0) ? KBLOCK : kbs[i].kused)
+#define	KbSize(i,p)	((p->d_next != NULL) ? KBLOCK : kbs[i].kused)
 
 #ifndef NULL
 # define NULL 0

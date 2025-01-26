@@ -1,5 +1,5 @@
 /*
- * $Id: filterio.c,v 1.69 2020/05/08 20:53:53 tom Exp $
+ * $Id: filterio.c,v 1.70 2025/01/26 15:00:32 tom Exp $
  *
  * Main program and I/O for external vile syntax/highlighter programs
  */
@@ -190,7 +190,7 @@ flt_succeeds(void)
 }
 
 void
-flt_error(const char *fmt,...)
+flt_error(const char *fmt, ...)
 {
     if (FltOptions('v') || FltOptions('Q')) {
 	va_list ap;
@@ -207,7 +207,7 @@ flt_error(const char *fmt,...)
 }
 
 void
-flt_message(const char *fmt,...)
+flt_message(const char *fmt, ...)
 {
     if (FltOptions('v') || FltOptions('Q')) {
 	va_list ap;
@@ -246,7 +246,7 @@ home_dir(void)
 }
 
 void
-mlforce(const char *fmt,...)
+mlforce(const char *fmt, ...)
 {
     va_list ap;
 

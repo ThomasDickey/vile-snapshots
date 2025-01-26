@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: bas-filt.l,v 1.28 2020/05/10 20:28:46 tom Exp $
+ * $Id: bas-filt.l,v 1.29 2025/01/26 11:05:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Basic
  * input text.
@@ -69,7 +69,7 @@ NUMBER		{INTEGER}|{REAL}|{UUID}|({INTEGER}{HEX}|("&"[Hh]|\$){HEX}){TYPES}
 <NORMAL>{IDENT}			{ const char *attr = is_hex(yytext)
 						     ? Number_attr
 						     : get_keyword_attr(yytext);
-				  if (attr == 0) attr = "";
+				  if (attr == NULL) attr = "";
 				  if (!strcmp(attr, Comment_attr)) {
 				    BEGIN(COMMENT);
 				  } else if (first_token

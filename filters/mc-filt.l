@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: mc-filt.l,v 1.13 2013/12/02 01:32:53 tom Exp $
+ * $Id: mc-filt.l,v 1.14 2025/01/26 11:06:34 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mailcap-file.
  */
@@ -82,7 +82,7 @@ MIMENAME	{MIMELEAF}("/"{MIMELEAF})?
 <PARAMS>{IDENT2}	|
 <PARAMS>{IDENTX}	{ WriteToken(Ident_attr); }
 
-<PARAMS>\\[n]		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); } 
+<PARAMS>\\[n]		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
 <PARAMS>\\.		|
 <PARAMS>\'		{ PushQuote(SSTRING, String_attr); }
 <PARAMS>\"		{ PushQuote(DSTRING, String_attr); }

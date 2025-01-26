@@ -1,5 +1,5 @@
 /*
- * $Id: builtflt.c,v 1.102 2023/08/31 08:07:12 tom Exp $
+ * $Id: builtflt.c,v 1.104 2025/01/26 16:50:14 tom Exp $
  *
  * Main program and I/O for builtin vile syntax/highlighter programs
  */
@@ -65,12 +65,12 @@ parse_filtername(const char *major_name, const char **params)
 
     char *temp;
 
-    *params = 0;
+    *params = NULL;
 
     if (valid_buffer(curbp)
-	&& curbp->majr != 0
+	&& curbp->majr != NULL
 	&& !strcmp(curbp->majr->shortname, major_name)
-	&& (temp = b_val_ptr(curbp, VAL_FILTERNAME)) != 0) {
+	&& (temp = b_val_ptr(curbp, VAL_FILTERNAME)) != NULL) {
 	if (!strncmp(temp, prefix, sizeof(prefix) - 1)) {
 	    char *base = temp + sizeof(prefix) - 1;
 	    char *next = base;
@@ -81,7 +81,7 @@ parse_filtername(const char *major_name, const char **params)
 		    && (isSpace(next[sizeof(suffix) - 1])
 			|| (next[sizeof(suffix) - 1] == EOS))) {
 		    size_t len = (size_t) (next - base);
-		    for (n = 0; builtflt[n] != 0; n++) {
+		    for (n = 0; builtflt[n] != NULL; n++) {
 			const char *name = builtflt[n]->filter_name;
 			if (strlen(name) == len
 			    && !strncmp(base, name, len)) {
@@ -102,14 +102,14 @@ parse_filtername(const char *major_name, const char **params)
 static char *
 param_value(const char **ptr)
 {
-    char *value = 0;
+    char *value = NULL;
     const char *s;
     const char *t;
 
     s = skip_cblanks(*ptr + 1);
     t = skip_ctext(s);
     if (t != s) {
-	if ((value = strmalloc(s)) != 0) {
+	if ((value = strmalloc(s)) != NULL) {
 	    value[t - s] = EOS;
 	    *ptr = t;
 	}
@@ -128,11 +128,11 @@ ProcessArgs(int flag)
     char *value;
 
     if (!flag) {
-	char *command = 0;
+	char *command = NULL;
 	size_t needed = strlen(current_filter->filter_name) + 11 + strlen(s);
 	if (*s)
 	    ++needed;
-	if ((command = malloc(needed + 1)) != 0) {
+	if ((command = malloc(needed + 1)) != NULL) {
 	    sprintf(command, "vile-%s-filt", current_filter->filter_name);
 	    if (*s) {
 		strcat(command, " ");
@@ -152,7 +152,7 @@ ProcessArgs(int flag)
 		flt_options[CharOf(*s)] += 1;
 		switch (*s) {
 		case 'k':
-		    if ((value = param_value(&s)) != 0) {
+		    if ((value = param_value(&s)) != NULL) {
 			if (flag) {
 			    flt_init_table(value);
 			    flt_setup_symbols(value);
@@ -161,7 +161,7 @@ ProcessArgs(int flag)
 		    }
 		    break;
 		case 't':
-		    if ((value = param_value(&s)) != 0) {
+		    if ((value = param_value(&s)) != NULL) {
 			if ((FltOptions('t') = atoi(value)) <= 0)
 			    FltOptions('t') = 8;
 			free(value);
@@ -223,15 +223,15 @@ load_filter(const char *name)
 	}
 
 	sprintf(leafname, "vile-%s-filt.so", name);
-	while ((cp = parse_pathlist(cp, filename, &first)) != 0) {
+	while ((cp = parse_pathlist(cp, filename, &first)) != NULL) {
 	    if (strlen(filename) + strlen(leafname) + 3 >= sizeof(filename))
 		continue;
 	    pathcat(filename, filename, leafname);
 	    TRACE(("load_filter(%s) %s\n", filename, defining));
 	    ++tried;
-	    if ((obj = dlopen(filename, my_RTLD)) != 0) {
+	    if ((obj = dlopen(filename, my_RTLD)) != NULL) {
 		found = 1;
-		if ((def = dlsym(obj, defining)) == 0) {
+		if ((def = dlsym(obj, defining)) == NULL) {
 		    dlclose(obj);
 		    mlwarn("[Error: can't reference variable %s from %s (%s)]",
 			   defining, filename, dlerror());
@@ -340,13 +340,13 @@ flt_gets(char **ptr, size_t *len)
     int need = is_header_line(mark_in, curbp) ? -1 : llength(mark_in.l);
 
     *len = 0;
-    *ptr = 0;
+    *ptr = NULL;
 
     if (need >= 0
-	&& tb_init(&gets_data, 0) != 0
-	&& tb_bappend(&gets_data, lvalue(mark_in.l), (size_t) need) != 0
-	&& tb_append(&gets_data, use_record_sep(curbp)) != 0
-	&& tb_append(&gets_data, EOS) != 0) {
+	&& tb_init(&gets_data, 0) != NULL
+	&& tb_bappend(&gets_data, lvalue(mark_in.l), (size_t) need) != NULL
+	&& tb_append(&gets_data, use_record_sep(curbp)) != NULL
+	&& tb_append(&gets_data, EOS) != NULL) {
 	*ptr = tb_values(gets_data);
 	*len = (unsigned) (need + len_record_sep(curbp));
 
@@ -408,7 +408,7 @@ static BUFFER *
 find_filtermsgs(void)
 {
     BUFFER *bp = make_ro_bp(FLTMSGS_BufName, BFINVS);
-    if (bp != 0) {
+    if (bp != NULL) {
 	set_local_b_val(bp, MDFILTERMSGS, FALSE);
     }
     return bp;
@@ -422,7 +422,7 @@ init_flt_error(void)
 {
     BUFFER *bp;
     if (b_val(curbp, MDFILTERMSGS)) {
-	if ((bp = find_filtermsgs()) != 0) {
+	if ((bp = find_filtermsgs()) != NULL) {
 	    b_clr_changed(bp);	/* so bclear does not prompt */
 	    bclear(bp);
 	}
@@ -440,7 +440,7 @@ flt_error(const char *fmt, ...)
 {
 #ifdef MDFILTERMSGS
     if (b_val(curbp, MDFILTERMSGS)) {
-	const char *filename = ((curbp != 0)
+	const char *filename = ((curbp != NULL)
 				? (isInternalName(curbp->b_fname)
 				   ? curbp->b_bname
 				   : curbp->b_fname)
@@ -448,7 +448,7 @@ flt_error(const char *fmt, ...)
 	BUFFER *bp;
 	va_list ap;
 
-	if ((bp = find_filtermsgs()) != 0) {
+	if ((bp = find_filtermsgs()) != NULL) {
 	    (void) b2printf(bp, "%s: %d:%d: ",
 			    filename,
 			    flt_get_line(),
@@ -475,7 +475,7 @@ flt_message(const char *fmt, ...)
 	BUFFER *bp;
 	va_list ap;
 
-	if ((bp = find_filtermsgs()) != 0) {
+	if ((bp = find_filtermsgs()) != NULL) {
 	    va_start(ap, fmt);
 	    (void) b2vprintf(bp, fmt, ap);
 	    va_end(ap);
@@ -597,7 +597,7 @@ flt_puts(const char *string, int length, const char *marker)
     int count;
 
     if (filter_only > 0) {
-	if (marker != 0 && *marker != EOS && *marker != 'N') {
+	if (marker != NULL && *marker != EOS && *marker != 'N') {
 	    size_t limit = sizeof(bfr1) - 2;
 
 	    strncpy(bfr1, marker, limit)[limit] = EOS;
@@ -611,7 +611,7 @@ flt_puts(const char *string, int length, const char *marker)
 	}
 	flt_echo(string, length);
     } else {
-	if (length > 0 && marker != 0 && *marker != EOS && *marker != 'N') {
+	if (length > 0 && marker != NULL && *marker != EOS && *marker != 'N') {
 	    size_t prefix;
 
 	    save_mark(TRUE);
@@ -665,7 +665,7 @@ flt_lookup(char *name)
 	return TRUE;
     }
 #endif
-    for (n = 0; builtflt[n] != 0; n++) {
+    for (n = 0; builtflt[n] != NULL; n++) {
 	if (!strcmp(name, builtflt[n]->filter_name)) {
 	    current_filter = builtflt[n];
 	    current_params = "";
@@ -777,8 +777,8 @@ var_FILTER_LIST(TBUFF **rp, const char *vp)
     int n;
 
     if (rp) {
-	if (filter_list == 0) {
-	    for (n = 0; builtflt[n] != 0; n++) {
+	if (filter_list == NULL) {
+	    for (n = 0; builtflt[n] != NULL; n++) {
 		if (n)
 		    tb_sappend0(&filter_list, " ");
 		tb_sappend0(&filter_list, builtflt[n]->filter_name);
@@ -802,7 +802,7 @@ vl_is_setting(const void *cmd)
     const CMDFUNC *ptr = (const CMDFUNC *) cmd;
     int result = 0;
 
-    if (ptr != 0) {
+    if (ptr != NULL) {
 	if (ptr == &f_setglobmode
 	    || ptr == &f_delglobmode
 	    || ptr == &f_setlocmode
@@ -825,7 +825,7 @@ vl_is_xcolor(const void *cmd)
     const CMDFUNC *ptr = (const CMDFUNC *) cmd;
     int result = 0;
 
-    if (ptr != 0) {
+    if (ptr != NULL) {
 	if (ptr == &f_set_extra_colors) {
 	    result = 1;
 	}
@@ -844,7 +844,7 @@ vl_is_majormode(const void *cmd)
 #if OPT_MAJORMODE
     const CMDFUNC *ptr = (const CMDFUNC *) cmd;
 
-    if (ptr != 0) {
+    if (ptr != NULL) {
 	if (ptr == &f_define_mode
 	    || ptr == &f_remove_mode) {
 	    result = 1;
@@ -864,7 +864,7 @@ vl_is_submode(const void *cmd)
 #if OPT_MAJORMODE
     const CMDFUNC *ptr = (const CMDFUNC *) cmd;
 
-    if (ptr != 0) {
+    if (ptr != NULL) {
 	if (ptr == &f_define_submode
 	    || ptr == &f_remove_submode) {
 	    result = 1;
@@ -880,7 +880,7 @@ vl_check_cmd(const void *cmd, unsigned long flags)
     const CMDFUNC *actual = (const CMDFUNC *) cmd;
     int result = 0;
 
-    if (actual != 0) {
+    if (actual != NULL) {
 	result = ((actual->c_flags & flags) != 0);
     }
     return result;

@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: txt-filt.l,v 1.42 2016/12/16 12:00:09 tom Exp $
+ * $Id: txt-filt.l,v 1.43 2025/01/26 11:38:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -54,7 +54,7 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 <sTEXT>^[-]+$		|
 <sTEXT>{DASHES}		{ WriteToken(Comment_attr); }
 <sTEXT>{KEYWORD}	{ const char *attr = get_keyword_attr(yytext);
-			  if (attr == 0) attr = (mixedcase(yytext) ? "" : Keyword_attr);
+			  if (attr == NULL) attr = (mixedcase(yytext) ? "" : Keyword_attr);
 			  WriteToken(attr);
 			}
 <sTEXT>{NUMBER}		{ WriteToken(Number_attr); }

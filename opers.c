@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile.  Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Id: opers.c,v 1.105 2015/08/22 00:08:52 tom Exp $
+ * $Id: opers.c,v 1.106 2025/01/26 14:28:56 tom Exp $
  *
  */
 
@@ -38,7 +38,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 	cfp = havemotion;
 	havemotion = NULL;
     } else {
-	TBUFF *tok = 0;
+	TBUFF *tok = NULL;
 
 	mlwrite("%s operation pending...", str);
 	(void) update(FALSE);
@@ -47,7 +47,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 	/* or a command line, as approp. */
 	if (clexec) {
 	    char *value = mac_unquotedarg(&tok);	/* get the next token */
-	    if (value != 0 && strcmp(value, "lines")) {
+	    if (value != NULL && strcmp(value, "lines")) {
 		cfp = engl2fnc(value);
 	    } else {
 		cfp = &f_godotplus;
@@ -82,7 +82,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 	    }
 
 	}
-	if (cfp != 0) {
+	if (cfp != NULL) {
 	    mlerase();
 	} else {
 	    if (!clexec) {
@@ -147,7 +147,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 
     regionshape = rgn_EXACT;
     doingopcmd = FALSE;
-    haveregion = FALSE;
+    haveregion = NULL;
     cmd_motion = save_cmd_motion;
 
     returnCode(status);
@@ -244,7 +244,7 @@ operyank(int f, int n)
     opcmd = OPDEL;
     wantregion = &region;
     s = vile_op(f, n, yankregion, "Yank");
-    wantregion = 0;
+    wantregion = NULL;
     /*
      * If the associated motion was to the left, or up, we want to set DOT to
      * the beginning of the region, to match vi's behavior.  Otherwise leave

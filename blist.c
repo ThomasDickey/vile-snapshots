@@ -1,6 +1,6 @@
 /*
- * $Id: blist.c,v 1.17 2018/10/21 19:37:24 tom Exp $
- * Copyright 2007-2013,2018 by Thomas E. Dickey
+ * $Id: blist.c,v 1.18 2025/01/26 14:47:08 tom Exp $
+ * Copyright 2007-2018,2025 by Thomas E. Dickey
  *
  * Provide binary-search lookup of arrays of sorted structs.  The beginning of
  * each struct is a pointer to a string, which is the key by which the structs
@@ -45,7 +45,7 @@ blist_count(BLIST * data)
 {
     if (data->itemCount < 0) {
 	int n;
-	for (n = 0; ItemOf(data, n) != 0; ++n) {
+	for (n = 0; ItemOf(data, n) != NULL; ++n) {
 	    ;
 	}
 	data->itemCount = n;
@@ -77,7 +77,7 @@ blist_match(BLIST * data, const char *name)
 		    (size_t) last,
 		    (size_t) data->itemSize,
 		    exact_match);
-    if (check != 0) {
+    if (check != NULL) {
 	rc = (int) ItemToInx(data, check);
     }
     COUNTER(total_linear, rc + 1);

@@ -25,7 +25,7 @@ STDMETHODIMP CDSAddIn::OnConnection(IApplication* pApp, VARIANT_BOOL bFirstTime,
     hr            = oleauto_init();
     if (FAILED(hr))
         return (hr);
-	
+
 	// Store info passed to us
 	IApplication* pApplication = NULL;
 	hr = pApp->QueryInterface(IID_IApplication, (void**) &pApplication);
@@ -38,9 +38,9 @@ STDMETHODIMP CDSAddIn::OnConnection(IApplication* pApp, VARIANT_BOOL bFirstTime,
 	CCommandsObj::CreateInstance(&m_pCommands);
     if (! m_pCommands)
     {
-        ::MessageBox(NULL, 
+        ::MessageBox(NULL,
                "Unexpected OLE error:  CCommandsObj::CreateInstance() failed.",
-                     PROGNAM, 
+                     PROGNAM,
                      MB_OK|MB_ICONSTOP);
 		return (E_UNEXPECTED);
     }
@@ -50,52 +50,52 @@ STDMETHODIMP CDSAddIn::OnConnection(IApplication* pApp, VARIANT_BOOL bFirstTime,
 	//  be Release'd in CCommand's destructor.
 	if (! m_pCommands->SetApplicationObject(pApplication))
     {
-        ::MessageBox(NULL, 
+        ::MessageBox(NULL,
             "Unexpected OLE error:  CCommands::SetApplicationObject() failed.",
-                     PROGNAM, 
+                     PROGNAM,
                      MB_OK|MB_ICONSTOP);
 		return (E_UNEXPECTED);
     }
     hr = pApplication->SetAddInInfo((long) AfxGetInstanceHandle(),
-                                    (LPDISPATCH) m_pCommands, 
-                                    IDR_TOOLBAR_MEDIUM, 
-                                    IDR_TOOLBAR_LARGE, 
+                                    (LPDISPATCH) m_pCommands,
+                                    IDR_TOOLBAR_MEDIUM,
+                                    IDR_TOOLBAR_LARGE,
                                     m_dwCookie);
     if (FAILED(hr))
         return (ReportLastError(hr));
 
 	// Inform DevStudio of the commands we implement
-	if (! AddCommand(pApplication, 
-                     "VisVileConfig", 
+	if (! AddCommand(pApplication,
+                     "VisVileConfig",
                      "VisVileConfigCmd",
-			         IDS_CMD_CONFIG, 
+			         IDS_CMD_CONFIG,
                      0,
                      bFirstTime))
     {
 		return (E_UNEXPECTED);
     }
-	if (! AddCommand(pApplication, 
-                     "VisVileEnable", 
+	if (! AddCommand(pApplication,
+                     "VisVileEnable",
                      "VisVileEnableCmd",
-			         IDS_CMD_ENABLE, 
+			         IDS_CMD_ENABLE,
                      1,
                      bFirstTime))
     {
 		return (E_UNEXPECTED);
     }
-	if (! AddCommand(pApplication, 
-                     "VisVileDisable", 
+	if (! AddCommand(pApplication,
+                     "VisVileDisable",
                      "VisVileDisableCmd",
-			         IDS_CMD_DISABLE, 
+			         IDS_CMD_DISABLE,
                      2,
                      bFirstTime))
     {
 		return (E_UNEXPECTED);
     }
 	if (! AddCommand(pApplication,
-                     "VisVileOpenDoc", 
+                     "VisVileOpenDoc",
                      "VisVileOpenDocCmd",
-			         IDS_CMD_LOAD, 
+			         IDS_CMD_LOAD,
                      3,
                      bFirstTime))
     {
@@ -124,10 +124,10 @@ STDMETHODIMP CDSAddIn::OnDisconnection(VARIANT_BOOL bLastTime)
 // 'GlyphIndex' the image index into the command buttons bitmap
 // Return true on success
 //
-bool CDSAddIn::AddCommand(IApplication *pApp, 
-                          char         *MethodName, 
+bool CDSAddIn::AddCommand(IApplication *pApp,
+                          char         *MethodName,
                           char         *CmdName,
-			              UINT         StrResId, 
+			              UINT         StrResId,
                           UINT         GlyphIndex,
                           VARIANT_BOOL bFirstTime)
 {
@@ -149,9 +149,9 @@ bool CDSAddIn::AddCommand(IApplication *pApp,
 
         tmp  = "Duplicate command installation rejected\r\rDuplicate name: ";
         tmp += MethodName;
-        ::MessageBox(NULL, 
+        ::MessageBox(NULL,
                      tmp,
-                     PROGNAM, 
+                     PROGNAM,
                      MB_OK|MB_ICONSTOP);
     }
 

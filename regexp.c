@@ -1,7 +1,7 @@
 /*
- * $Id: regexp.c,v 1.227 2022/08/09 22:38:31 tom Exp $
+ * $Id: regexp.c,v 1.229 2025/01/26 17:08:26 tom Exp $
  *
- * Copyright 2005-2020,2022 Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005-2022,2025 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -674,7 +674,7 @@ use_system_ctype(UINT * target, const char *source)
 			     source,
 			     (B_COUNT) (regnomore - source)) > 0)
 	&& (*target <= sys_CTYPE_SIZE)
-	&& (vl_mb_to_utf8((int) *target) == 0)) {
+	&& (vl_mb_to_utf8((int) *target) == NULL)) {
 	rc = TRUE;
     }
     return rc;
@@ -683,7 +683,7 @@ use_system_ctype(UINT * target, const char *source)
 #define vl_toupper(ch) \
     ((reg_utf8flag \
 	&& ((ch) <= (int) sys_CTYPE_SIZE) \
-	&& (vl_mb_to_utf8(ch) == 0)) \
+	&& (vl_mb_to_utf8(ch) == NULL)) \
 	? (int) sys_toupper(ch) \
 	: (int) toUpper(ch))
 
@@ -984,10 +984,10 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
 	}
     }
 #if NO_LEAKS
-    if (exp != 0) {
+    if (exp != NULL) {
 	beginDisplay();
 	free(exp);
-	exp = 0;
+	exp = NULL;
 	explen = 0;
 	endofDisplay();
     }
@@ -1357,11 +1357,11 @@ parse_char_class(char **src)
 static int
 parse_unsupported(const char *src)
 {
-    if (strncmp(src, "[.", (size_t) 2) == 0 && strstr(src, ".]") != 0) {
+    if (strncmp(src, "[.", (size_t) 2) == 0 && strstr(src, ".]") != NULL) {
 	regerror("collating symbols are not implemented");
 	return 1;
     }
-    if (strncmp(src, "[=", (size_t) 2) == 0 && strstr(src, "=]") != 0) {
+    if (strncmp(src, "[=", (size_t) 2) == 0 && strstr(src, "=]") != NULL) {
 	regerror("equivalence class expressions are not implemented");
 	return 1;
     }
@@ -1378,7 +1378,7 @@ reg_strcspn(const char *s, const char *reject)
 
     while (s < reglimit) {
 	if (*s != EOS) {
-	    if (vl_index(reject, CharOf(*s)) != 0) {
+	    if (vl_index(reject, CharOf(*s)) != NULL) {
 		break;
 	    }
 	}
@@ -1470,7 +1470,7 @@ regatom(int *flagp, int at_bop)
 			++regparse;
 			ch = WCHAR_AT(regparse, reglimit);
 			if (ch == EOS
-			    || (strchr(ANY_ESC, ch) == 0
+			    || (strchr(ANY_ESC, ch) == NULL
 				&& isAlpha(ch))) {
 			    regerror("unexpected escape in range");
 			    return NULL;
@@ -1802,7 +1802,7 @@ regstrncmp(const char *txt_a,
 static char *
 regstrchr(char *s, int c, const char *e, int ic)
 {
-    char *result = 0;
+    char *result = NULL;
 
     while (s < e) {
 	if (EQ_CHARS(WCHAR_AT(s, e), c, ic)) {
@@ -2353,7 +2353,7 @@ regmatch(char *prog, int plevel, int ic)
 #if OPT_MULTIBYTE
 #define LOCAL_RPTS 100
 		char *repeats[LOCAL_RPTS];
-		char **rpts = 0;
+		char **rpts = NULL;
 #endif
 		decl_state();
 
@@ -2397,7 +2397,7 @@ regmatch(char *prog, int plevel, int ic)
 
 		    if (no >= LOCAL_RPTS) {
 			rpts = typeallocn(char *, (size_t) no + 1);
-			if (rpts == 0)
+			if (rpts == NULL)
 			    returnReg(0);
 		    } else {
 			rpts = repeats;
@@ -2773,7 +2773,7 @@ nregexec(regexp * prog,
     int s;
 
     REGTRACE((T_CALLED "nregexec %d..%d\n", startoff, endoff));
-    set_utf8flag(0);
+    set_utf8flag(NULL);
     s = regexec(prog, string, stringend, startoff, endoff, ic);
     returnReg(s);
 }
@@ -2788,7 +2788,7 @@ regparser(const char **source)
 {
     const char *parse = *source;
     int delim = CharOf(*parse);
-    char *result = 0;
+    char *result = NULL;
     int escape = 0;
     int braces = 0;
 
@@ -2809,11 +2809,11 @@ regparser(const char **source)
 	}
 	if (*parse == '\0' || escape || braces) {
 	    free(result);
-	    result = 0;
+	    result = NULL;
 	} else {
 	    result[parse - *source - 1] = '\0';
 	}
-	if (result != 0) {
+	if (result != NULL) {
 	    TRACE(("...regparser {%s}\n", result));
 	    *source = parse;
 	}

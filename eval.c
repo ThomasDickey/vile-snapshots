@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Id: eval.c,v 1.472 2024/07/08 08:11:03 tom Exp $
+ * $Id: eval.c,v 1.473 2025/01/26 14:08:10 tom Exp $
  */
 
 #include	<estruct.h>
@@ -99,7 +99,7 @@ one_ctype_row(VL_CTYPE2 * enc, int ch)
 #endif
 
     for (j = 0; j != vl_UNUSED; j++) {
-	if ((s = choice_to_name(&fsm_charclass_blist, (int) j)) != 0) {
+	if ((s = choice_to_name(&fsm_charclass_blist, (int) j)) != NULL) {
 
 	    test = (CHARTYPE) (1 << j);
 
@@ -148,7 +148,7 @@ make_ctype_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	WINDOW *wp = recomputing_win();
 	BUFFER *bp = recomputing_buf();
 
-	if (wp != 0 && bp != 0 && (curbp != bp)) {
+	if (wp != NULL && bp != NULL && (curbp != bp)) {
 	    VL_CTYPE2 *my_enc = (b_is_utfXX(bp)
 				 ? &vl_wide_enc
 				 : &vl_real_enc);
@@ -194,7 +194,7 @@ show_CharClasses(BUFFER *bp)
 
     rc = liststuff(PRINTABLECHARS_BufName,
 		   -TRUE, make_ctype_list, 0, (void *) 0);
-    if ((bp = find_b_name(PRINTABLECHARS_BufName)) != 0) {
+    if ((bp = find_b_name(PRINTABLECHARS_BufName)) != NULL) {
 	set_b_val(bp, VAL_TAB, 7);
     }
     return rc;
@@ -255,7 +255,7 @@ get_charclass_code(void)
     static TBUFF *var;
     int status;
 
-    if (var == 0)
+    if (var == NULL)
 	tb_scopy(&var, "");
     status = kbd_reply("Character class: ", &var,
 		       eol_history, '=',
@@ -279,13 +279,13 @@ get_charclass_regexp(void)
     static TBUFF *var;
     int status;
 
-    if (var == 0)
+    if (var == NULL)
 	tb_scopy(&var, "");
     status = kbd_reply("Character pattern: ", &var,
 		       eol_history, '=', KBD_NOEVAL, no_completion);
     return ((status == TRUE)
 	    ? new_regexval(tb_values(var), TRUE)
-	    : 0);
+	    : NULL);
 }
 
 static int
@@ -322,7 +322,7 @@ set_charclass(int f GCC_UNUSED, int n GCC_UNUSED)
 
     if ((code = get_charclass_code()) >= 0) {
 	ctype = (CHARTYPE) (1 << code);
-	if ((exp = get_charclass_regexp()) != 0) {
+	if ((exp = get_charclass_regexp()) != NULL) {
 	    for (count = 0, ch = 0; ch < N_chars; ch++) {
 		if (!istype(ctype, ch)
 		    && match_charclass_regexp(ch, exp)) {
@@ -350,7 +350,7 @@ unset_charclass(int f GCC_UNUSED, int n GCC_UNUSED)
 
     if ((code = get_charclass_code()) >= 0) {
 	ctype = (CHARTYPE) (1 << code);
-	if ((exp = get_charclass_regexp()) != 0) {
+	if ((exp = get_charclass_regexp()) != NULL) {
 	    for (count = 0, ch = 0; ch < N_chars; ch++) {
 		if (istype(ctype, ch)
 		    && match_charclass_regexp(ch, exp)) {
@@ -419,7 +419,7 @@ show_charclass(TBUFF **result, const char *arg)
 
     for (j = 0; j != vl_UNUSED; j++) {
 	if (((CHARTYPE) (1 << j) & k) != 0
-	    && (s = choice_to_name(&fsm_charclass_blist, (int) j)) != 0) {
+	    && (s = choice_to_name(&fsm_charclass_blist, (int) j)) != NULL) {
 	    if (tb_length(*result))
 		tb_sappend0(result, "+");
 	    tb_sappend0(result, s);
@@ -450,7 +450,7 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
 	bpadc('-', term.cols - DOT.o);
 	bputc('\n');
 
-	for (p = (UVAR *) ptr; p->u_name != 0; ++p) {
+	for (p = (UVAR *) ptr; p->u_name != NULL; ++p) {
 	    bprintf("\n$%s = ", p->u_name);
 	    bputsn_xcolor(p->u_value,
 			  (int) strlen(p->u_value),
@@ -472,7 +472,7 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
     }
 
     if (vars_to_list & 2) {
-	if (arg_stack != 0 && ((k = arg_stack->num_args) != 0)) {
+	if (arg_stack != NULL && ((k = arg_stack->num_args) != 0)) {
 	    if (!first)
 		bputc('\n');
 	    bprintf("--- %s parameters ",
@@ -488,10 +488,10 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
 	}
     }
     if (vars_to_list & 4) {
-	if (temp_vars != 0) {
+	if (temp_vars != NULL) {
 	    if (!first)
 		bputc('\n');
-	    for (p = temp_vars, j = 0; p != 0; p = p->next) {
+	    for (p = temp_vars, j = 0; p != NULL; p = p->next) {
 		if (!j++) {
 		    bprintf("--- Temporary variables ");
 		    bpadc('-', term.cols - DOT.o);
@@ -528,7 +528,7 @@ is_mode_name(const char *name, int showall, VALARGS * args)
 static const char *
 get_listvalue(const char *name, int showall, int *typep)
 {
-    const char *result = 0;
+    const char *result = NULL;
     VALARGS args;
     int s;
     int vnum;
@@ -566,27 +566,27 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
     int showall;
     int type;
     int rc = FALSE;
-    UVAR *list = 0;
+    UVAR *list = NULL;
 
     TRACE((T_CALLED "show_VariableList()\n"));
 
     Names = show_vars_f ? list_of_modes() : statevars;
-    if (Names != 0) {
+    if (Names != NULL) {
 	showall = show_vars_f ? (show_vars_n > 1) : FALSE;
 
 	beginDisplay();
 	/* count the variables */
-	for (t = 0; Names[t] != 0; t++) {
+	for (t = 0; Names[t] != NULL; t++) {
 	    ;
 	}
 	++t;			/* guarantee a null entry on the end */
 
-	if ((list = typecallocn(UVAR, t)) != 0) {
+	if ((list = typecallocn(UVAR, t)) != NULL) {
 	    /* collect data for state-variables, since some depend on window */
-	    for (s = 0; Names[s] != 0; s++) {
+	    for (s = 0; Names[s] != NULL; s++) {
 		list[s].u_name = (char *) Names[s];
 		list[s].u_type = VALTYPE_STRING;
-		if ((vv = get_listvalue(Names[s], showall, &type)) != 0) {
+		if ((vv = get_listvalue(Names[s], showall, &type)) != NULL) {
 		    list[s].u_type = (char) type;
 		    if (isErrorVal(vv))
 			list[s].u_type = VALTYPE_UNKNOWN;
@@ -606,7 +606,7 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
 	    /* back to the buffer whose modes we just listed */
 	    swbuffer(wp->w_bufp);
 
-	    for (s = 0; Names[s] != 0; s++) {
+	    for (s = 0; Names[s] != NULL; s++) {
 		free(list[s].u_value);
 	    }
 	    FreeIfNeeded(list);
@@ -648,7 +648,7 @@ describe_dlr_vars(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     char temp[NSTRING];
     const char *what;
 
-    for (j = 0; statevar_funcs[j].func != 0; ++j) {
+    for (j = 0; statevar_funcs[j].func != NULL; ++j) {
 	if (j)
 	    bputc('\n');
 	lsprintf(temp, "\"%s\"", statevars[j]);
@@ -734,7 +734,7 @@ list_amp_funcs(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     bprintf("--- &functions ");
     bpadc('-', term.cols - DOT.o);
 
-    for (n = 0; vl_ufuncs[n].f_name != 0; ++n) {
+    for (n = 0; vl_ufuncs[n].f_name != NULL; ++n) {
 	int nparams = (int) (vl_ufuncs[n].f_code & NARGMASK);
 	const char *t_params = UF_PARAMS(vl_ufuncs[n].f_code);
 	const char *t_return = UF_RETURN(vl_ufuncs[n].f_code);
@@ -832,10 +832,10 @@ translate_string(TBUFF **result, const char *from, const char *to, const char *s
     int len_to = (int) strlen(to);
     char *s, *t;
 
-    if (tb_scopy(result, string) != 0) {
-	if ((s = tb_values(*result)) != 0) {
+    if (tb_scopy(result, string) != NULL) {
+	if ((s = tb_values(*result)) != NULL) {
 	    for (; *s != EOS; ++s) {
-		if ((t = vl_index(from, *s)) != 0
+		if ((t = vl_index(from, *s)) != NULL
 		    && (int) (t - from) < len_to) {
 		    *s = to[t - from];
 		}
@@ -993,7 +993,7 @@ default_mode_value(TBUFF **result, char *name)
 static char *
 dequoted_parameter(TBUFF **tok)
 {
-    char *result = 0;
+    char *result = NULL;
     char *previous;
     const char *newvalue;
     int strip;
@@ -1028,7 +1028,7 @@ dequoted_parameter(TBUFF **tok)
 	} else {
 	    if (strip) {
 		if (((const char *) previous) != newvalue) {
-		    TBUFF *fix = 0;
+		    TBUFF *fix = NULL;
 		    tb_scopy(&fix, newvalue);
 		    tb_free(tok);
 		    *tok = fix;
@@ -1141,7 +1141,7 @@ test_isa_class(const char *classname, const char *value)
     size_t len = strlen(classname);
 
     if (!strncmp(classname, BUF_CLASSNAME, len)) {
-	result = (find_b_name(value) != 0);
+	result = (find_b_name(value) != NULL);
     } else if (!strncmp(classname, COLOR_CLASSNAME, len)) {
 #if OPT_COLOR_CHOICES
 	result = (choice_to_code(&fsm_color_blist, value, len) != ENUM_ILLEGAL);
@@ -1227,7 +1227,7 @@ ufunc_get_motion(TBUFF **result, const char *name)
     const BINDINGS *bs = vl_get_binding(name);
     const CMDFUNC *cmd = kcod2fnc(bs, key);
 
-    if (cmd != 0 && (cmd->c_flags & MOTION)) {
+    if (cmd != NULL && (cmd->c_flags & MOTION)) {
 	tb_sappend0(result, fnc2engl(cmd));
 	rc = TRUE;
     }
@@ -1262,7 +1262,7 @@ run_func(int fnum)
     REGEXVAL *exp;
     BUFFER *bp;
     TBUFF *args[MAXARGS];
-    TBUFF *juggle = 0;
+    TBUFF *juggle = NULL;
     char *arg[MAXARGS];		/* function arguments */
     char *cp;
     const char *sp;
@@ -1292,14 +1292,14 @@ run_func(int fnum)
 
     for (i = 0; i < MAXARGS; ++i) {
 	arg[i] = error_val;
-	args[i] = 0;
+	args[i] = NULL;
 	nums[i] = 0;
 	bools[i] = 0;
     }
 
     /* fetch required arguments */
     for (i = 0; i < nargs; i++) {
-	if ((arg[i] = dequoted_parameter(&args[i])) == 0
+	if ((arg[i] = dequoted_parameter(&args[i])) == NULL
 	    || isErrorVal(arg[i])
 	    || isTB_ERRS(args[i])) {
 	    arg[i] = error_val;
@@ -1468,12 +1468,12 @@ run_func(int fnum)
 	    is_error = TRUE;
 	break;
     case UFCMATCH:
-	if ((exp = new_regexval(arg[0], TRUE)) != 0) {
+	if ((exp = new_regexval(arg[0], TRUE)) != NULL) {
 	    value = nregexec(exp->reg, arg[1], (char *) 0, 0, -1, TRUE);
 	}
 	break;
     case UFMATCH:
-	if ((exp = new_regexval(arg[0], TRUE)) != 0)
+	if ((exp = new_regexval(arg[0], TRUE)) != NULL)
 	    value = nregexec(exp->reg, arg[1], (char *) 0, 0, -1, FALSE);
 	break;
     case UFRANDOM:		/* FALLTHRU */
@@ -1530,7 +1530,7 @@ run_func(int fnum)
 	break;
     case UFFTIME:
 	if (!is_error
-	    && (bp = find_any_buffer(arg[0])) != 0
+	    && (bp = find_any_buffer(arg[0])) != NULL
 	    && !is_internalname(bp->b_fname))
 	    value = (long) file_modified(bp->b_fname);
 	break;
@@ -1579,7 +1579,7 @@ run_func(int fnum)
 	    switch (choice_to_code(&fsm_path_blist, arg[0], strlen(arg[0]))) {
 	    case PATH_END:
 		cp = pathleaf(arg[1]);
-		if ((cp = strchr(cp, '.')) != 0)
+		if ((cp = strchr(cp, '.')) != NULL)
 		    tb_scopy(&result, SL_TO_BSL(cp));
 		break;
 	    case PATH_FULL:
@@ -1599,8 +1599,8 @@ run_func(int fnum)
 		break;
 	    case PATH_ROOT:
 		tb_scopy(&result, SL_TO_BSL(pathleaf(arg[1])));
-		if (tb_values(result) != 0
-		    && (cp = strchr(tb_values(result), '.')) != 0) {
+		if (tb_values(result) != NULL
+		    && (cp = strchr(tb_values(result), '.')) != NULL) {
 		    *cp = EOS;
 		    tb_setlen(&result, -1);
 		}
@@ -1655,7 +1655,7 @@ run_func(int fnum)
 		&& i >= 0
 		&& i < NKREGS) {
 		KILL *kp = kbs[i].kbufh;
-		while (kp != 0) {
+		while (kp != NULL) {
 		    tb_bappend(&result,
 			       (char *) (kp->d_chunk),
 			       (size_t) KbSize(i, kp));
@@ -1669,7 +1669,7 @@ run_func(int fnum)
 	if (!is_error) {
 	    for (sp = arg[0]; *sp != 0; ++sp) {
 		int ch = CharOf(*sp);
-		if (strchr("\\.[]*^$~", ch) != 0) {
+		if (strchr("\\.[]*^$~", ch) != NULL) {
 		    tb_append(&result, BACKSLASH);
 		}
 		tb_append(&result, ch);
@@ -1679,7 +1679,7 @@ run_func(int fnum)
 	break;
     case UFBCHANGED:
 	if (!is_error
-	    && (bp = find_any_buffer(arg[0])) != 0) {
+	    && (bp = find_any_buffer(arg[0])) != NULL) {
 	    value = b_is_changed(bp);
 	} else {
 	    is_error = TRUE;
@@ -1687,7 +1687,7 @@ run_func(int fnum)
 	break;
     case UFFCHANGED:
 	if (!is_error
-	    && (bp = find_any_buffer(arg[0])) != 0) {
+	    && (bp = find_any_buffer(arg[0])) != NULL) {
 	    value = eval_fchanged(bp);
 	} else {
 	    is_error = TRUE;
@@ -1730,7 +1730,7 @@ lookup_tempvar(const char *name)
     UVAR *p;
 
     if (*name) {
-	for (p = temp_vars; p != 0; p = p->next)
+	for (p = temp_vars; p != NULL; p = p->next)
 	    if (!vl_stricmp(name, p->u_name))
 		return p;
     }
@@ -1823,7 +1823,7 @@ FindVar(char *var, VWRAP * vd)
 
     vd->v_type = VW_NOVAR;
     vd->v_num = ILLEGAL_NUM;
-    vd->v_ptr = 0;
+    vd->v_ptr = NULL;
 
     if (!var[1]) {
 	vd->v_type = VW_NOVAR;
@@ -1841,10 +1841,10 @@ FindVar(char *var, VWRAP * vd)
 	    vd->v_type = VW_TEMPVAR;
 	} else {		/* new */
 	    beginDisplay();
-	    if ((p = typealloc(UVAR)) != 0) {
-		if ((p->u_name = strmalloc(VarName(var))) != 0) {
+	    if ((p = typealloc(UVAR)) != NULL) {
+		if ((p->u_name = strmalloc(VarName(var))) != NULL) {
 		    p->next = temp_vars;
-		    p->u_value = 0;
+		    p->u_value = NULL;
 		    temp_vars = vd->v_ptr = p;
 		    vd->v_type = VW_TEMPVAR;
 		    free_vars_cmpl();
@@ -1858,7 +1858,7 @@ FindVar(char *var, VWRAP * vd)
 
     case '&':			/* indirect operator? */
 	if (vl_lookup_func(var) == UFINDIRECT) {
-	    TBUFF *tok = 0;
+	    TBUFF *tok = NULL;
 	    /* grab token, and eval it */
 	    execstr = get_token(execstr, &tok, eol_null, EOS, (int *) 0);
 	    (void) vl_strncpy(var, tokval(tb_values(tok)), (size_t) NLINE);
@@ -1907,7 +1907,7 @@ PromptForVariableName(TBUFF **result)
     static TBUFF *var;
 
     /* get the variable we want to set */
-    if (var == 0)
+    if (var == NULL)
 	tb_scopy(&var, "");
     status = kbd_reply("Variable name: ", &var,
 		       mode_eol, '=',
@@ -1988,7 +1988,7 @@ free_UVAR_value(UVAR * p)
 	free(p->u_value);
 	endofDisplay();
     }
-    p->u_value = 0;
+    p->u_value = NULL;
 }
 
 /*
@@ -2003,10 +2003,10 @@ rmv_tempvar(const char *name)
     if (*name == '%')
 	name++;
 
-    for (p = temp_vars, q = 0; p != 0; q = p, p = p->next) {
+    for (p = temp_vars, q = NULL; p != NULL; q = p, p = p->next) {
 	if (!vl_stricmp(p->u_name, name)) {
 	    TRACE(("rmv_tempvar(%s) ok\n", name));
-	    if (q != 0)
+	    if (q != NULL)
 		q->next = p->next;
 	    else
 		temp_vars = p->next;
@@ -2109,7 +2109,7 @@ SetVarValue(VWRAP * var, char *name, const char *value)
     char *savestr;
     VALARGS args;
 
-    if (isEmpty(name) || value == 0)
+    if (isEmpty(name) || value == NULL)
 	return FALSE;
 
     status = TRUE;
@@ -2137,7 +2137,7 @@ SetVarValue(VWRAP * var, char *name, const char *value)
 	free_UVAR_value(var->v_ptr);
 	if (isErrorVal(value)) {
 	    var->v_ptr->u_value = error_val;
-	} else if ((var->v_ptr->u_value = strmalloc(value)) == 0) {
+	} else if ((var->v_ptr->u_value = strmalloc(value)) == NULL) {
 	    status = FALSE;
 	    var->v_ptr->u_value = error_val;
 	}
@@ -2259,7 +2259,7 @@ set_ctrans(const char *thePalette)
 
     TRACE(("set_ctrans(%s)\n", thePalette));
 
-    if (thePalette != 0) {
+    if (thePalette != NULL) {
 	while (*thePalette != EOS) {
 	    thePalette = skip_cblanks(thePalette);
 	    value = (int) strtol(thePalette, &next, 0);
@@ -2408,7 +2408,7 @@ render_int(TBUFF **rp, int i)
 
     p = tb_values(tb_alloc(rp, (size_t) 32));
     q = lsprintf(p, "%d", i);
-    if (*rp != 0 && q != 0 && p != 0)
+    if (*rp != NULL && q != NULL && p != NULL)
 	(*rp)->tb_used = (size_t) (q - p + 1);
     return p;
 }
@@ -2421,7 +2421,7 @@ render_long(TBUFF **rp, long i)
 
     p = tb_values(tb_alloc(rp, (size_t) 32));
     q = lsprintf(p, "%ld", i);
-    if (*rp != 0 && q != 0 && p != 0)
+    if (*rp != NULL && q != NULL && p != NULL)
 	(*rp)->tb_used = (size_t) (q - p + 1);
     return p;
 }
@@ -2447,7 +2447,7 @@ render_ulong(TBUFF **rp, ULONG i)
 
     p = tb_values(tb_alloc(rp, (size_t) 32));
     q = lsprintf(p, "%lu", i);
-    if (*rp != 0 && q != 0 && p != 0)
+    if (*rp != NULL && q != NULL && p != NULL)
 	(*rp)->tb_used = (size_t) (q - p + 1);
     return p;
 }
@@ -2502,7 +2502,7 @@ scan_bool(const char *val)
     /* check for "numeric truth", like C.  0 is false, everything else
      * is true
      */
-    return (strtol(val, 0, 0) != 0);
+    return (strtol(val, NULL, 0) != 0);
 }
 
 /* discriminate types of tokens */
@@ -2555,7 +2555,7 @@ complete_integer(DONE_ARGS)
     (void) flags;
     (void) pos;
     IGNORE_RC(strtol(buf, &tmp, 0));
-    if ((tmp != 0) && (tmp != buf) && (*tmp == 0) && isSpace(c)) {
+    if ((tmp != NULL) && (tmp != buf) && (*tmp == 0) && isSpace(c)) {
 	if (c != NAMEC)		/* put it back (cf: kbd_complete) */
 	    unkeystroke(c);
 	return TRUE;
@@ -2570,7 +2570,7 @@ complete_FSM(DONE_ARGS, const FSM_CHOICES * choices)
 
     if (isDigit(*buf)) {	/* allow numbers for colors */
 	status = complete_integer(PASS_DONE_ARGS);
-    } else if (choices != 0) {
+    } else if (choices != NULL) {
 	status = kbd_complete(PASS_DONE_ARGS,
 			      (const char *) choices,
 			      sizeof(FSM_CHOICES));
@@ -2628,10 +2628,10 @@ init_vars_cmpl(void)
     UVAR *p;
     unsigned count = 0;
 
-    if (vars_cmpl_list == 0) {
+    if (vars_cmpl_list == NULL) {
 	for (pass = 0; pass < 2; pass++) {
 	    count = 0;
-	    for (p = temp_vars; p != 0; p = p->next) {
+	    for (p = temp_vars; p != NULL; p = p->next) {
 		if (pass != 0)
 		    vars_cmpl_list[count] = p->u_name;
 		count++;
@@ -2640,13 +2640,13 @@ init_vars_cmpl(void)
 		beginDisplay();
 		vars_cmpl_list = typeallocn(char *, (size_t) count + 1);
 		endofDisplay();
-		if (vars_cmpl_list == 0)
+		if (vars_cmpl_list == NULL)
 		    break;
 	    }
 	}
 
-	if (vars_cmpl_list != 0) {
-	    vars_cmpl_list[count] = 0;
+	if (vars_cmpl_list != NULL) {
+	    vars_cmpl_list[count] = NULL;
 	    qsort(vars_cmpl_list, (size_t) count, sizeof(char *), qs_vars_cmp);
 	}
 
@@ -2660,7 +2660,7 @@ complete_vars(DONE_ARGS)
     int status = FALSE;
     char **nptr;
 
-    if ((nptr = init_vars_cmpl()) != 0) {
+    if ((nptr = init_vars_cmpl()) != NULL) {
 	status = kbd_complete(PASS_DONE_ARGS,
 			      (const char *) nptr,
 			      sizeof(char *));
@@ -2684,9 +2684,9 @@ read_argument(TBUFF **paramp, const PARAM_INFO * info)
     char bname[NBUFN];
     KBD_OPTIONS flags = 0;	/* no expansion, etc. */
 
-    if (mac_tokval(paramp) == 0) {
+    if (mac_tokval(paramp) == NULL) {
 	prompt = "String";
-	if (info != 0) {
+	if (info != NULL) {
 	    switch (info->pi_type) {
 	    case PT_BOOL:
 		prompt = "Boolean";
@@ -2738,11 +2738,11 @@ read_argument(TBUFF **paramp, const PARAM_INFO * info)
 	    default:
 		break;
 	    }
-	    if (info->pi_text != 0)
+	    if (info->pi_text != NULL)
 		prompt = info->pi_text;
 	}
 
-	temp = 0;
+	temp = NULL;
 	tb_scopy(&temp, prompt);
 	tb_sappend0(&temp, ": ");
 
@@ -2754,13 +2754,13 @@ read_argument(TBUFF **paramp, const PARAM_INFO * info)
 	 * If we've run out of parameters on the command-line, force this
 	 * to be interactive.
 	 */
-	if (execstr == 0 || !*skip_blanks(execstr)) {
+	if (execstr == NULL || !*skip_blanks(execstr)) {
 	    clexec = FALSE;
 	    isnamedcmd = TRUE;
 	    execstr = empty_string;
 	}
 
-	if (info != 0) {
+	if (info != NULL) {
 	    switch (info->pi_type) {
 	    case PT_FILE:
 		status = mlreply_file(tb_values(temp), (TBUFF **) 0,
@@ -2818,7 +2818,7 @@ save_arguments(BUFFER *bp)
     const char *cp;
     TBUFF **all_args;
 
-    if (cmd != 0 && cmd->c_args != 0) {
+    if (cmd != NULL && cmd->c_args != NULL) {
 	for (max_args = 0;
 	     cmd->c_args[max_args].pi_type != PT_UNKNOWN;
 	     max_args++) ;
@@ -2831,9 +2831,9 @@ save_arguments(BUFFER *bp)
 #define tb_allocn(n) typecallocn(TBUFF *, n)	/* FIXME: indent */
 
     beginDisplay();
-    if ((p = typealloc(PROC_ARGS)) == 0) {
+    if ((p = typealloc(PROC_ARGS)) == NULL) {
 	status = no_memory("save_arguments");
-    } else if ((all_args = tb_allocn((size_t) max_args + 1)) == 0) {
+    } else if ((all_args = tb_allocn((size_t) max_args + 1)) == NULL) {
 	status = no_memory("save_arguments");
 	free(p);
     } else {
@@ -2850,10 +2850,10 @@ save_arguments(BUFFER *bp)
 	 * as is.
 	 */
 	p->result = this_macro_result;
-	this_macro_result = 0;
+	this_macro_result = NULL;
 
 	tb_scopy(&(p->all_args[num_args]), bp->b_bname);
-	if (p->all_args[num_args] == 0) {
+	if (p->all_args[num_args] == NULL) {
 	    fail = TRUE;
 	} else {
 	    ++num_args;
@@ -2884,7 +2884,7 @@ save_arguments(BUFFER *bp)
 		    copied = TRUE;
 		}
 
-		if (copied && p->all_args[num_args] == 0) {
+		if (copied && p->all_args[num_args] == NULL) {
 		    status = no_memory("save_arguments");
 		    fail = TRUE;
 		    break;
@@ -2925,7 +2925,7 @@ restore_arguments(BUFFER *bp GCC_UNUSED)
 
     TRACE(("restore_arguments(%s)\n", bp->b_bname));
 
-    if (p != 0) {
+    if (p != NULL) {
 	/*
 	 * Restore the caller's $return variable.
 	 */
@@ -2960,7 +2960,7 @@ get_argument(const char *name)
     char *str;
     char *result = error_val;
 
-    if (arg_stack != 0) {
+    if (arg_stack != NULL) {
 	if (*name == '#') {
 	    result = render_int(&value, arg_stack->num_args);
 	} else if (*name == '*') {
@@ -3036,7 +3036,7 @@ tempvar_arg_eval(const char *argp)
     static TBUFF *tmp;
     UVAR *p;
     const char *result;
-    if ((p = lookup_tempvar(argp + 1)) != 0) {
+    if ((p = lookup_tempvar(argp + 1)) != NULL) {
 	tb_scopy(&tmp, p->u_value);
 	result = tb_values(tmp);
     } else {
@@ -3113,10 +3113,10 @@ directive_arg_eval(const char *argp)
     if (strncmp("~/", argp, 2))
 	return error_val;
 #endif
-    if (argp == 0)
+    if (argp == NULL)
 	argp = "";
     tb_alloc(&tkbuf, NFILEN + strlen(argp));
-    if (tb_values(tkbuf) != 0)
+    if (tb_values(tkbuf) != NULL)
 	result = lengthen_path(strcpy(tb_values(tkbuf), argp));
     else
 	result = "";
@@ -3197,7 +3197,7 @@ s2status(const char *val)
 	    result = FALSE;
 	} else {
 	    char temp[12];
-	    char *next = 0;
+	    char *next = NULL;
 	    long test = strtol(val, &next, 0);
 	    size_t sz = strlen(val);
 	    if ((const char *) next != val && isEmpty(next)) {
@@ -3260,7 +3260,7 @@ can_evaluate(void)
     int result = FALSE;
     int type;
     char *save = execstr;
-    TBUFF *tok = 0;
+    TBUFF *tok = NULL;
 
     if (mac_token(&tok)) {
 	type = toktyp(tb_values(tok));
@@ -3277,9 +3277,9 @@ evaluate(int f, int n)
     static char Expression[] = "Expression";
     static PARAM_INFO info =
     {
-	PT_STR, Expression, 0
+	PT_STR, Expression, NULL
     };
-    TBUFF *params = 0, *tok = 0, *cmd = 0;
+    TBUFF *params = NULL, *tok = NULL, *cmd = NULL;
     char *old, *tmp;
     int code = FALSE;
 
@@ -3290,7 +3290,7 @@ evaluate(int f, int n)
 	    TRACE(("EVAL %s\n", execstr));
 	    for (;;) {
 		if (can_evaluate()) {
-		    if ((tmp = mac_unquotedarg(&tok)) != 0) {
+		    if ((tmp = mac_unquotedarg(&tok)) != NULL) {
 			if (tb_length(cmd))
 			    tb_sappend0(&cmd, " ");
 			tb_sappend0(&cmd, tmp);
@@ -3303,7 +3303,7 @@ evaluate(int f, int n)
 		    break;
 		}
 	    }
-	    if ((tmp = tb_values(cmd)) != 0) {
+	    if ((tmp = tb_values(cmd)) != NULL) {
 		execstr = tmp;
 		TRACE(("...docmd {%s}\n", execstr));
 		code = docmd(tmp, TRUE, f, n);
@@ -3324,7 +3324,7 @@ evaluate(int f, int n)
 static size_t
 s2size(const char *s)
 {
-    long n = strtol(s, 0, 0);
+    long n = strtol(s, NULL, 0);
     if (n < 0)
 	n = 0;
     return (size_t) n;
@@ -3351,9 +3351,9 @@ s2offset(const char *s, const char *n)
 LINE *
 label2lp(BUFFER *bp, const char *label)
 {
-    LINE *result = 0;
+    LINE *result = NULL;
 
-    if (bp != 0 && label != 0 && *label != EOS) {
+    if (bp != NULL && label != NULL && *label != EOS) {
 	LINE *glp;
 	size_t len = strlen(label);
 	int need = (int) len + 1;
@@ -3450,7 +3450,7 @@ must_quote_token(const char *values, size_t last)
 {
     size_t n;
 
-    if (last != 0 && values != 0) {
+    if (last != 0 && values != NULL) {
 	for (n = 0; n < last; n++) {
 	    int ch = CharOf(values[n]);
 	    if (ch == SQUOTE

@@ -4,7 +4,7 @@
  * physical display screen the same as the virtual display screen. These
  * functions use hints that are left in the windows by the commands.
  *
- * $Id: display.c,v 1.583 2024/01/17 23:43:45 tom Exp $
+ * $Id: display.c,v 1.585 2025/01/26 17:07:24 tom Exp $
  */
 
 #include	"estruct.h"
@@ -132,7 +132,7 @@ dfputsn(OutFunc outfunc, const char *s, int width, int limit)
 {
     int l = 0;
 
-    if (s != 0) {
+    if (s != NULL) {
 	int length = (int) strlen(s);
 
 	if (width < 0)
@@ -431,7 +431,7 @@ preset_vattrs(int row, int col, int attr, size_t len)
 static void
 freeVIDEO(VIDEO * vp)
 {
-    if (vp != 0) {
+    if (vp != NULL) {
 #if OPT_VIDEO_ATTRS
 	FreeIfNeeded(VideoAttr(vp));
 #endif
@@ -446,21 +446,21 @@ video_alloc(VIDEO ** vpp)
     size_t have = (size_t) ((term.maxcols > 0) ? term.maxcols : 1);
     size_t need = sizeof(VIDEO_TEXT) * (have - 1);
 
-    if ((vp = typeallocplus(VIDEO, need)) != 0) {
+    if ((vp = typeallocplus(VIDEO, need)) != NULL) {
 	(void) memset((char *) vp, 0, sizeof(VIDEO) + need);
 
 #if OPT_VIDEO_ATTRS
 	VideoAttr(vp) = typecallocn(VIDEO_ATTR, have);
-	if (VideoAttr(vp) == 0) {
+	if (VideoAttr(vp) == NULL) {
 	    FreeAndNull(vp);
 	}
 #endif
-	if (vp != 0) {
+	if (vp != NULL) {
 	    freeVIDEO(*vpp);
 	    *vpp = vp;
 	}
     }
-    return (vp != 0);
+    return (vp != NULL);
 }
 
 static int
@@ -507,14 +507,14 @@ vtfree(void)
 	    freeVIDEO(vscreen[i]);
 	}
 	free((char *) vscreen);
-	vscreen = 0;
+	vscreen = NULL;
     }
     if (pscreen) {
 	for (i = 0; i < term.maxrows; ++i) {
 	    freeVIDEO(pscreen[i]);
 	}
 	free((char *) pscreen);
-	pscreen = 0;
+	pscreen = NULL;
     }
     FreeIfNeeded(lmap0);
     FreeIfNeeded(lmap);
@@ -528,7 +528,7 @@ vtfree(void)
 int
 is_vtinit(void)
 {
-    return (vscreen != 0);
+    return (vscreen != NULL);
 }
 
 /*
@@ -584,12 +584,12 @@ current_video(void)
     if (vtrow < 0) {
 	static VIDEO *fake_line;
 	static int length;
-	if (length != term.maxcols || fake_line == 0) {
+	if (length != term.maxcols || fake_line == NULL) {
 	    if (video_alloc(&fake_line)) {
 		length = term.maxcols;
 	    } else {
 		freeVIDEO(fake_line);
-		fake_line = 0;
+		fake_line = NULL;
 	    }
 	}
 	vp = fake_line;
@@ -695,7 +695,7 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
     UINT ch = (UCHAR) (*src);
     VIDEO *vp = current_video();
 
-    if (vp != 0) {
+    if (vp != NULL) {
 	if (isPrint(ch) && vtcol >= 0 && vtcol < lastcol) {
 #if OPT_MULTIBYTE
 	    if (!b_is_utfXX(wp->w_bufp) && (vl_encoding >= enc_UTF8)) {
@@ -767,7 +767,7 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 static void
 vtputsn(WINDOW *wp, const char *src, size_t n)
 {
-    if (src != 0) {
+    if (src != NULL) {
 	while (n != 0 && *src != EOS) {
 	    vtputc(wp, src++, (unsigned) (n--));
 	}
@@ -1712,7 +1712,7 @@ kbd_openup(void)
     term.flush();
 
 #if !OPT_PSCREEN
-    if (pscreen != 0) {
+    if (pscreen != NULL) {
 	int i, j;
 	for (i = 0; i < term.rows - 1; ++i) {
 	    for (j = 0; j < term.cols; ++j) {
@@ -1740,7 +1740,7 @@ void
 kbd_overlay(const char *s)
 {
     my_overlay[0] = EOS;
-    if ((mpresf = (s != 0 && *s != EOS)) != 0) {
+    if ((mpresf = (s != NULL && *s != EOS)) != 0) {
 	vl_strncpy(my_overlay, s, sizeof(my_overlay));
     }
 }
@@ -1756,9 +1756,9 @@ kbd_flush(void)
 
 	vtmove(row, -w_val(wminip, WVAL_SIDEWAYS));
 
-	ok = (wminip != 0
-	      && wminip->w_dot.l != 0
-	      && lvalue(wminip->w_dot.l) != 0);
+	ok = (wminip != NULL
+	      && wminip->w_dot.l != NULL
+	      && lvalue(wminip->w_dot.l) != NULL);
 	if (ok) {
 	    TRACE(("SHOW:%2d:%s\n",
 		   llength(wminip->w_dot.l),
@@ -1903,7 +1903,7 @@ offs2col0(WINDOW *wp,
 int
 offs2col(WINDOW *wp, LINE *lp, C_NUM offset)
 {
-    return offs2col0(wp, lp, offset, 0, 0);
+    return offs2col0(wp, lp, offset, NULL, NULL);
 }
 
 /*
@@ -2030,7 +2030,7 @@ row2window(int row)
 	if (row >= wp->w_toprow && row <= mode_row(wp))
 	    return wp;
     }
-    return 0;
+    return NULL;
 }
 #endif
 
@@ -2070,9 +2070,9 @@ is_recomputing(WINDOW *wp)
 BUFFER *
 recomputing_buf(void)
 {
-    BUFFER *result = 0;
+    BUFFER *result = NULL;
 
-    if (recomp_win != 0)
+    if (recomp_win != NULL)
 	result = recomp_win->w_bufp;
 
     return result;
@@ -2105,10 +2105,10 @@ recompute_buffer(BUFFER *bp)
 
 	if (recomp_len < bp->b_nwnd) {
 	    recomp_len = (size_t) bp->b_nwnd + 1;
-	    recomp_tbl = (recomp_tbl != 0)
+	    recomp_tbl = (recomp_tbl != NULL)
 		? typereallocn(SAVEWIN, recomp_tbl, recomp_len)
 		: typeallocn(SAVEWIN, recomp_len);
-	    if (recomp_tbl == 0) {
+	    if (recomp_tbl == NULL) {
 		recomp_len = 0;
 		return;
 	    }
@@ -2117,8 +2117,8 @@ recompute_buffer(BUFFER *bp)
 
 	/* remember where we are, to reposition */
 	/* ...in case line is deleted from buffer-list */
-	relisting_b_vals = 0;
-	relisting_w_vals = 0;
+	relisting_b_vals = NULL;
+	relisting_w_vals = NULL;
 	if (curbp == bp) {
 	    relisting_b_vals = b_vals;
 	} else {
@@ -2164,10 +2164,10 @@ recompute_buffer(BUFFER *bp)
 	curwp = savewp;
 	curbp = savebp;
 	curgoal = mygoal;
-	relisting_b_vals = 0;
-	relisting_w_vals = 0;
+	relisting_b_vals = NULL;
+	relisting_w_vals = NULL;
 
-	recomp_win = 0;
+	recomp_win = NULL;
     }
     b_clr_obsolete(bp);
 
@@ -2470,7 +2470,7 @@ update_window_attrs(WINDOW *wp)
     }
 
     ++lmax;
-    lmap[lmax].lp = 0;
+    lmap[lmax].lp = NULL;
     lmap[lmax].map = TopRow(wp) + wp->w_ntrows;
     lmap[lmax].left = -1;
     lmap[lmax].right = -1;
@@ -2735,7 +2735,7 @@ update_cursor_position(int *screenrowp, int *screencolp)
     int nuadj;
     int liadj;
 
-    if (curwp == 0) {
+    if (curwp == NULL) {
 	*screenrowp = 0;
 	*screencolp = 0;
 	return FALSE;
@@ -3173,7 +3173,7 @@ mlfs_skipfix(const char **fsp)
 #endif /* OPT_MLFORMAT */
 
 #define PutModename(format, name) { \
-		if (ms != 0) { \
+		if (ms != NULL) { \
 			ms = lsprintf(ms, format, \
 				mcnt ? ' ' : '[', \
 				name); \
@@ -3186,7 +3186,7 @@ mlfs_skipfix(const char **fsp)
 
 #if OPT_MAJORMODE
 #define PutMajormode(bp) \
-	if (bp->majr != 0) \
+	if (bp->majr != NULL) \
 	    PutModename("%c%s", \
 		brief \
 		? bp->majr->shortname \
@@ -3198,7 +3198,7 @@ mlfs_skipfix(const char **fsp)
 static int
 modeline_modes(BUFFER *bp, char **msptr, int brief)
 {
-    char *ms = msptr ? *msptr : 0;
+    char *ms = msptr ? *msptr : NULL;
     size_t mcnt = 0;
 
     PutMajormode(bp);
@@ -3252,16 +3252,16 @@ modeline_modes(BUFFER *bp, char **msptr, int brief)
     if (mcnt && ms)
 	*ms++ = ']';
     if (b_is_changed(bp)) {
-	if (ms != 0)
+	if (ms != NULL)
 	    ms = lsprintf(ms, "%s[modified]", mcnt ? " " : "");
 	mcnt++;
     }
     if (kbd_mac_recording()) {
-	if (ms != 0)
+	if (ms != NULL)
 	    ms = lsprintf(ms, "%s[recording]", mcnt ? " " : "");
 	mcnt++;
     }
-    if (ms != 0)
+    if (ms != NULL)
 	*msptr = ms;
     return (mcnt != 0);
 }
@@ -3299,7 +3299,7 @@ rough_position(WINDOW *wp)
 {
     LINE *lp = wp->w_line.l;
     int rows = wp->w_ntrows;
-    const char *msg = 0;
+    const char *msg = NULL;
 
     while (rows-- > 0) {
 	lp = lforw(lp);
@@ -3421,7 +3421,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
     int n;
     int skip = TRUE;
 
-    if (fs == 0)
+    if (fs == NULL)
 	return;
 
     if (wp == wnullp)
@@ -3490,7 +3490,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		break;
 	    case 'M':
 	    case 'm':
-		if (bp != 0 && modeline_modes(bp, (char **) 0, (fc == 'M'))) {
+		if (bp != NULL && modeline_modes(bp, (char **) 0, (fc == 'M'))) {
 		    mlfs_prefix(&fs, &ms, lchar);
 		    (void) modeline_modes(bp, &ms, (fc == 'M'));
 		    mlfs_suffix(&fs, &ms, lchar);
@@ -3501,7 +3501,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	    case 'F':
 		skip = TRUE;	/* assumption */
 
-		if (bp != 0 && bp->b_fname != 0) {
+		if (bp != NULL && bp->b_fname != NULL) {
 		    char *p;
 
 		    /*
@@ -3510,7 +3510,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		     */
 		    vl_strncpy(temp, bp->b_fname, sizeof(temp));
 
-		    if ((p = shorten_path(temp, FALSE)) != 0
+		    if ((p = shorten_path(temp, FALSE)) != NULL
 			&& *(p = skip_space_tab(p)) != '\0'
 			&& !eql_bname(bp, p)
 			&& ((fc == 'f')
@@ -3531,15 +3531,15 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	    case 'n':
 	    case 'N':
 		mlfs_prefix(&fs, &ms, lchar);
-		if (bp != 0) {
-		    if (bp->b_fname != 0 && !is_internalname(bp->b_bname)) {
+		if (bp != NULL) {
+		    if (bp->b_fname != NULL && !is_internalname(bp->b_bname)) {
 
 			vl_strncpy(temp, bp->b_fname, sizeof(temp));
 
 			switch (fc) {
 			case 'r':
 			    want = shorten_path(temp, FALSE);
-			    if (want == 0)
+			    if (want == NULL)
 				want = temp;
 			    break;
 			case 'n':
@@ -3566,7 +3566,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	    case 'p':		/* percentage */
 	    case 'L':		/* number of lines in buffer */
 
-		if (w_val(wp, WMDRULER) && (bp != 0 && !is_empty_buf(bp))) {
+		if (w_val(wp, WMDRULER) && (bp != NULL && !is_empty_buf(bp))) {
 		    int val = 0;
 		    switch (fc) {
 		    case 'l':
@@ -3593,7 +3593,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 #ifdef WMDSHOWCHAR
 	    case 'C':
 		if (w_val(wp, WMDSHOWCHAR)
-		    && (bp != 0 && !is_empty_buf(bp))
+		    && (bp != NULL && !is_empty_buf(bp))
 		    && (wp->w_dot.o < llength(wp->w_dot.l)
 			|| line_has_newline(wp->w_dot.l, bp))) {
 		    sprintf(temp, "%02X", char_at_mark(wp->w_dot));
@@ -3614,7 +3614,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 #ifdef WMDRULER
 		       !w_val(wp, WMDRULER) ||
 #endif
-		       ((bp == 0) || is_empty_buf(bp))) {
+		       ((bp == NULL) || is_empty_buf(bp))) {
 		    mlfs_prefix(&fs, &ms, lchar);
 		    ms = lsprintf(ms, " %s ", rough_position(wp));
 		    mlfs_suffix(&fs, &ms, lchar);
@@ -3629,7 +3629,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		if (fs != save_fs) {
 		    int flag = clexec;
 		    char *save_execstr;
-		    TBUFF *tok = 0;
+		    TBUFF *tok = NULL;
 
 		    save_execstr = execstr;
 		    clexec = TRUE;
@@ -3689,7 +3689,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 
     tb_bappend(result, left_ms, strlen(left_ms));
 
-    if (tb_values(*result) != 0) {
+    if (tb_values(*result) != NULL) {
 	have_cols = tb_columns(*result);
 
 	if ((have_cols < term.cols)
@@ -3721,7 +3721,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
     }
 
     /* mark column 80 */
-    if (tb_values(*result) != 0) {
+    if (tb_values(*result) != NULL) {
 	have_cols = tb_columns(*result);
 
 	if (need_eighty_column_indicator) {
@@ -3740,7 +3740,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		right_offs = str_col2offs(wp, col,
 					  tb_values(*result),
 					  (int) tb_length(*result));
-		if ((ss = tb_values(*result)) != 0
+		if ((ss = tb_values(*result)) != NULL
 		    && ss[right_offs] == lchar) {
 		    ss[right_offs] = '|';
 		}
@@ -4209,8 +4209,8 @@ update(int force /* force update past type ahead? */ )
      * auto_set_title logic is otherwise likely to set the title frequently if
      * [Buffer List] is visible.
      */
-    if (tb_values(request_title) != 0
-	&& (tb_values(current_title) == 0
+    if (tb_values(request_title) != NULL
+	&& (tb_values(current_title) == NULL
 	    || strcmp(tb_values(current_title), tb_values(request_title)))) {
 	tb_copy(&current_title, request_title);
 	term.set_title(tb_values(request_title));
@@ -4243,7 +4243,7 @@ update(int force /* force update past type ahead? */ )
 #endif
     }
 #ifdef WMDSHOWVARS
-    if (curwp != 0
+    if (curwp != NULL
 	&& w_val(curwp, WMDSHOWVARS)) {
 	updatelistvariables();
     }
@@ -4380,7 +4380,7 @@ hilite(int row, int colfrom, int colto, int on)
 #endif
 #ifdef WMDLINEWRAP
     WINDOW *wp = row2window(row);
-    if (wp == 0)
+    if (wp == NULL)
 	return;
     if (w_val(wp, WMDLINEWRAP)) {
 	if (colfrom < 0)
@@ -4488,8 +4488,8 @@ mlmsg(const char *fmt, va_list app2)
 #if DISP_NTWIN
     int cursor_state = 0;
 #endif
-    int do_crlf = (strchr(fmt, '\n') != 0
-		   || strchr(fmt, '\r') != 0);
+    int do_crlf = (strchr(fmt, '\n') != NULL
+		   || strchr(fmt, '\r') != NULL);
 
     if (no_minimsgs) {
 	kbd_alarm();
@@ -4593,7 +4593,7 @@ mlmsg(const char *fmt, va_list app2)
 void
 mlwrite(const char *fmt, ...)
 {
-    if (fmt != 0) {
+    if (fmt != NULL) {
 	va_list ap;
 	if (global_b_val(MDTERSE) || kbd_replaying(FALSE) || !vl_msgs) {
 	    if (!clhide)
@@ -4613,7 +4613,7 @@ mlwrite(const char *fmt, ...)
 void
 mlforce(const char *fmt, ...)
 {
-    if (fmt != 0) {
+    if (fmt != NULL) {
 	va_list ap;
 	va_start(ap, fmt);
 	mlmsg(fmt, ap);
@@ -4625,7 +4625,7 @@ mlforce(const char *fmt, ...)
 void
 mlprompt(const char *fmt, ...)
 {
-    if (fmt != 0) {
+    if (fmt != NULL) {
 	va_list ap;
 	int osgarbf = sgarbf;
 	if (!vl_msgs) {
@@ -4644,7 +4644,7 @@ mlprompt(const char *fmt, ...)
 void
 dbgwrite(const char *fmt, ...)
 {
-    if (fmt != 0) {
+    if (fmt != NULL) {
 	char temp[80];
 
 	va_list ap;		/* ptr to current data field */
@@ -4667,7 +4667,7 @@ void
 mlerror(const char *str)
 {
     int save_err = errno;
-    const char *t = 0;
+    const char *t = NULL;
 #ifdef HAVE_STRERROR
 #if SYS_VMS
     if (save_err == EVMSERR)
@@ -4682,10 +4682,10 @@ mlerror(const char *str)
 	t = sys_errlist[save_err];
 #endif /* HAVE_SYS_ERRLIST */
 #endif /* HAVE_STRERROR */
-    if (t != 0) {
+    if (t != NULL) {
 	/* Borland's strerror() returns newlines on the end of the strings */
 	static TBUFF *tt;
-	if (tb_scopy(&tt, t) != 0) {
+	if (tb_scopy(&tt, t) != NULL) {
 	    t = mktrimmed(tb_values(tt));
 	}
 	mlwarn("[Error %s: %s]", str, t);
@@ -4729,7 +4729,7 @@ lspputc(int c)
 char *
 lsprintf(char *buf, const char *fmt, ...)
 {
-    if ((lsp = buf) != 0) {
+    if ((lsp = buf) != NULL) {
 	va_list ap;
 	va_start(ap, fmt);
 
@@ -4746,7 +4746,7 @@ lsprintf(char *buf, const char *fmt, ...)
 int
 format_int(char *buf, UINT number, UINT radix)
 {
-    if ((lsp = buf) != 0) {
+    if ((lsp = buf) != NULL) {
 	dfputi(lspputc, number, radix);
 	*lsp = EOS;
     }
@@ -4888,13 +4888,13 @@ LINE *
 b2vprintf(BUFFER *bp, const char *fmt, va_list app2)
 {
     va_list app;
-    LINE *result = 0;
+    LINE *result = NULL;
     WINDOW *save_wp;
     BUFFER *save_bp = curbp;
     W_TRAITS save_w_traits;
     OutFunc save_outfn;
 
-    if ((save_wp = push_fake_win(bp)) != 0) {
+    if ((save_wp = push_fake_win(bp)) != NULL) {
 	int save_curgoal = curgoal;
 
 	save_outfn = dfoutfn;
@@ -4950,7 +4950,7 @@ tprintf(const char *fmt, ...)
 #endif
 
     if (!nested
-	&& (bp = make_ro_bp(TRACE_BufName, BFINVS)) != 0) {
+	&& (bp = make_ro_bp(TRACE_BufName, BFINVS)) != NULL) {
 	nested = TRUE;
 
 	va_start(ap, fmt);
@@ -5047,7 +5047,7 @@ stop_working(void)
     if (mpresf) {		/* erase leftover working-message */
 	int save_row = ttrow;
 	int save_col = ttcol;
-	kbd_overlay(0);
+	kbd_overlay(NULL);
 	kbd_flush();
 	movecursor(save_row, save_col);
 	term.flush();

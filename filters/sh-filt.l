@@ -10,7 +10,7 @@
 %{
 
 /*
- * $Id: sh-filt.l,v 1.184 2022/01/30 20:27:01 tom Exp $
+ * $Id: sh-filt.l,v 1.185 2025/01/26 11:40:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -43,7 +43,7 @@ DefineOptFilter(sh, OPTS);
 #define LEN_BACKTIC2_DOWN 3	/* "$((" */
 #define LEN_BRACEGRP_DOWN 3	/* "$("{space} */
 
-#define isQuote(ch) (ch != 0 && strchr("\\'\"", ch) != 0)
+#define isQuote(ch) (ch != 0 && strchr("\\'\"", ch) != NULL)
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -273,7 +273,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			    WriteToken(String_attr);
 			}
 <NORMAL>"(("		{ if (FltOptions('K')) {
-			    WriteToken(Action_attr); 
+			    WriteToken(Action_attr);
 			    push_state(KSH_MATH);
 			  } else {
 			    ECHO;
@@ -296,7 +296,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			}
 
 <KSH_MATH>"))"		{
-			  WriteToken(Action_attr); 
+			  WriteToken(Action_attr);
 			  pop_state();
 			  resume_state();
 			}
@@ -350,7 +350,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <HEREDOC2>^[^\r\n]+	{ check_heredoc(yytext, yyleng); }
 <HEREDOC2>{CRLF}+	{ flt_bfr_append(yytext, yyleng); }
 
-<DQUOTED>{BACKTIC1_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC1_DOWN)) 
+<DQUOTED>{BACKTIC1_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC1_DOWN))
 			      flt_bfr_append(yytext, yyleng);
 			}
 <DQUOTED>{BACKTIC2_DOWN} { handle_backtic2(yytext, yyleng, yyleng, 1); }
@@ -367,7 +367,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <SQUOTED>[^']		{ flt_bfr_append(yytext, yyleng); }
 <SQUOTED>\'		{ PopQuote(); }
 
-<EXPRS>{BACKTIC1_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC1_DOWN)) 
+<EXPRS>{BACKTIC1_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC1_DOWN))
 			      flt_bfr_append(yytext, yyleng);
 			}
 <EXPRS>{BACKTIC2_DOWN}	{ handle_backtic2(yytext, yyleng, yyleng, 1); }
@@ -613,11 +613,11 @@ save_here(const char *text, int length)
 	    break;
 	}
     }
-    if ((here_tag = do_alloc(here_tag, (size_t) length, &here_len)) != 0) {
+    if ((here_tag = do_alloc(here_tag, (size_t) length, &here_len)) != NULL) {
 	s = here_tag;
 	/* skip leading "<<" or "<<-", and blanks */
 	while (length > 0
-	       && (strchr("<->", *text) != 0
+	       && (strchr("<->", *text) != NULL
 		   || isspace(CharOf(*text)))) {
 	    --length;
 	    ++text;
@@ -632,7 +632,7 @@ save_here(const char *text, int length)
 		}
 	    } else if ((delim == '"') && (*text == '\\')) {
 		;
-	    } else if ((delim == 0) && (strchr(" \t", *text) != 0)) {
+	    } else if ((delim == 0) && (strchr(" \t", *text) != NULL)) {
 		if (s != here_tag)
 		    break;
 	    } else {
@@ -666,7 +666,7 @@ vname_allows_dots(const char *text, int length)
     if (!FltOptions('K')) {
 	char *dot = strchr(text, '.');
 
-	if (dot != 0) {
+	if (dot != NULL) {
 	    result = (int) (dot - text);
 	    if (result == (*text != '$'))
 		++result;
@@ -790,9 +790,9 @@ is_numeric(const char *text, int length)
 		}
 	    } else if ((have_exp == 0) && (ch == '.')) {
 		have_dot = 1;
-	    } else if ((have_exp == 0) && strchr(ExpFlags, ch) != 0) {
+	    } else if ((have_exp == 0) && strchr(ExpFlags, ch) != NULL) {
 		have_exp = 1;
-	    } else if ((have_exp == 1) && strchr("+-", ch) != 0) {
+	    } else if ((have_exp == 1) && strchr("+-", ch) != NULL) {
 		have_exp = 2;
 	    } else if (isdigit(ch)) {
 		if (have_exp)
@@ -821,7 +821,7 @@ got_here(const char *text, int length)
     int pass, j, k;
     int rc = 0;
 
-    if (here_tag != 0) {
+    if (here_tag != NULL) {
 	for (pass = 0; pass < 2; pass++) {
 	    for (j = 0; j < length; j++) {
 		if (here_tag[j] == '\0') {

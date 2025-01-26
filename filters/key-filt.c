@@ -1,5 +1,5 @@
 /*
- * $Id: key-filt.c,v 1.53 2023/07/02 16:07:40 tom Exp $
+ * $Id: key-filt.c,v 1.54 2025/01/26 10:50:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -29,7 +29,7 @@ color_code(const char *s, const char **t)
 
     if (*s != 0) {
 	for (;;) {
-	    while ((*s != '\0') && strchr("RUBI", *s) != 0)
+	    while ((*s != '\0') && strchr("RUBI", *s) != NULL)
 		++s;
 	    if (*s == '\0') {
 		result = 1;
@@ -54,7 +54,7 @@ color_code(const char *s, const char **t)
 static int
 is_color(const char *s)
 {
-    const char *t = 0;
+    const char *t = NULL;
     return color_code(s, &t);
 }
 
@@ -74,9 +74,9 @@ color_of(char *s, int arg)
     if (is_class(s)) {
 	if (FltOptions('c')) {
 	    result = get_keyword_attr(s);
-	    if (result == 0)
+	    if (result == NULL)
 		result = class_attr(s);
-	    if (result == 0)
+	    if (result == NULL)
 		result = Ident2_attr;
 	} else {
 	    result = Ident2_attr;
@@ -172,7 +172,7 @@ actual_color(const char *param, int len, int arg, int *theirs)
     if (result == s)
 	*theirs = 1;
 
-    if (result != 0 && *result != 0 && !is_color(result)) {
+    if (result != NULL && *result != 0 && !is_color(result)) {
 	result = Literal_attr;
     }
 

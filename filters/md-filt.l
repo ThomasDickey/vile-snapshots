@@ -10,7 +10,7 @@
 %{
 
 /*
- * $Id: md-filt.l,v 1.74 2024/01/21 16:21:45 tom Exp $
+ * $Id: md-filt.l,v 1.75 2025/01/26 15:00:32 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a markdown file.
  *
@@ -280,7 +280,7 @@ atx_header(const char *value, int length)
 	if (value[level] != '#' || (level == 6))
 	    break;
     }
-    if (level == length || !isspace((unsigned char)value[level])) {
+    if (level == length || !isspace((unsigned char) value[level])) {
 	flt_bfr_embed(value, length, Error_attr);
     } else {
 	flt_bfr_embed(value, level, Action_attr);

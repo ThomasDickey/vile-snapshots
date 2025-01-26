@@ -1,12 +1,12 @@
 %pointer
-%s NORMAL 
+%s NORMAL
 
 %o 6000
 
 %{
 
 /*
- * $Id: mcrlfilt.l,v 1.8 2013/12/02 01:32:53 tom Exp $
+ * $Id: mcrlfilt.l,v 1.9 2025/01/26 11:08:22 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a mCRL(2) specification
  * or model, based on the text filter.

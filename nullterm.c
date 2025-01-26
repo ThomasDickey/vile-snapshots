@@ -2,7 +2,7 @@
  * Define an empty terminal type for machines where we cannot use 'dumb_term',
  * so that command-line prompting will have something to talk to.
  *
- * $Id: nullterm.c,v 1.12 2011/11/24 20:04:08 tom Exp $
+ * $Id: nullterm.c,v 1.13 2025/01/26 14:26:27 tom Exp $
  */
 
 #include	<estruct.h>
@@ -25,7 +25,7 @@ nullterm_open(void)
 #if OPT_COLOR
     int pass;
     int nc;
-    char *value = 0;
+    char *value = NULL;
     char temp[80];
     size_t need = 3;
 
@@ -47,7 +47,7 @@ nullterm_open(void)
 	    free(value);
 	} else {
 	    value = malloc(need);
-	    if (value == 0)
+	    if (value == NULL)
 		break;
 	    *value = EOS;
 	}

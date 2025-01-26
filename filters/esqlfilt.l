@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: esqlfilt.l,v 1.27 2013/12/02 01:32:53 tom Exp $
+ * $Id: esqlfilt.l,v 1.28 2025/01/26 11:05:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -108,7 +108,7 @@ static void
 process_keyword(char *text, int len)
 {
     const char *temp = "";
-    const char *attr = 0;
+    const char *attr = NULL;
 
     switch (exec_sql) {
     case 0:
@@ -146,7 +146,7 @@ process_keyword(char *text, int len)
     if ((exec_sql >= 2) || in_execute || in_block) {
 	if (*temp == 0)
 	    temp = lowercase_of(text);
-	if ((attr = get_keyword_attr(text)) == 0) {
+	if ((attr = get_keyword_attr(text)) == NULL) {
 	    set_symbol_table(other_symbols);
 	    attr = get_keyword_attr(text);
 	    set_symbol_table(default_table);

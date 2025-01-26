@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Id: insert.c,v 1.192 2022/08/21 23:10:57 tom Exp $
+ * $Id: insert.c,v 1.193 2025/01/26 14:15:12 tom Exp $
  */
 
 #include	"estruct.h"
@@ -488,12 +488,12 @@ replacechar(int f, int n)
 static const CMDFUNC *
 can_ins_exec(int c)
 {
-    const CMDFUNC *cfp = 0;
+    const CMDFUNC *cfp = NULL;
     int always = isSpecial(c);
     int okay = FALSE;
 
     if (always || global_g_val(GMDINSEXEC)) {
-	if ((cfp = InsertKeyBinding(c)) != 0) {
+	if ((cfp = InsertKeyBinding(c)) != NULL) {
 	    okay = always;
 
 	    if (!always) {
@@ -532,7 +532,7 @@ can_ins_exec(int c)
 	}
     }
 
-    return okay ? cfp : 0;
+    return okay ? cfp : NULL;
 }
 
 /*
@@ -603,7 +603,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splicep)
 	cur_count += dotcmdcnt - dotcmdrep;
     }
 
-    if (playback && (insbuff != 0))
+    if (playback && (insbuff != NULL))
 	itb_first(insbuff);
     else if (!itb_init(&insbuff, esc_c)) {
 	nested--;
@@ -677,7 +677,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splicep)
 	/* if we're allowed to honor SPEC bindings,
 	   then see if it's bound to something, and
 	   execute it */
-	if ((cfp = can_ins_exec(c)) != 0) {
+	if ((cfp = can_ins_exec(c)) != NULL) {
 	    backsp_limit = insertion_exec(cfp);
 	    continue;
 	} else if (isSpecial(c)) {
@@ -725,7 +725,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splicep)
 	    /* if we're allowed to honor meta-character bindings,
 	       then see if it's bound to something, and
 	       insert it if not */
-	    if ((cfp = can_ins_exec(c)) != 0) {
+	    if ((cfp = can_ins_exec(c)) != NULL) {
 		backsp_limit = insertion_exec(cfp);
 		continue;
 	    }
@@ -833,8 +833,8 @@ is_cindent_char(BUFFER *bp, int ch)
 {
     return valid_buffer(bp)
 	&& b_val(bp, MDCINDENT)
-	&& (b_val_ptr(bp, VAL_CINDENT_CHARS) != 0)
-	&& (vl_index(b_val_ptr(bp, VAL_CINDENT_CHARS), ch) != 0);
+	&& (b_val_ptr(bp, VAL_CINDENT_CHARS) != NULL)
+	&& (vl_index(b_val_ptr(bp, VAL_CINDENT_CHARS), ch) != NULL);
 }
 
 /*

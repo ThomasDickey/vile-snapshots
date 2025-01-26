@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Id: glob.c,v 1.105 2023/01/15 13:29:33 tom Exp $
+ * $Id: glob.c,v 1.106 2025/01/26 14:13:25 tom Exp $
  *
  */
 
@@ -91,7 +91,7 @@ huh ? ?
  */
 static size_t myMax = 0;	/* length and index of the expanded list */
 static size_t myLen = 0;	/* length and index of the expanded list */
-static char **myVec = 0;	/* the expanded list */
+static char **myVec = NULL;	/* the expanded list */
 
 /*--------------------------------------------------------------------------*/
 #if UNIX_GLOBBING
@@ -185,29 +185,29 @@ record_a_match(char *item)
     char **myTmp;
 
     beginDisplay();
-    if (item != 0 && *item != EOS) {
-	if ((item = strmalloc(item)) == 0) {
+    if (item != NULL && *item != EOS) {
+	if ((item = strmalloc(item)) == NULL) {
 	    result = no_memory("glob-match");
 	} else {
 	    if (myLen + 2 >= myMax) {
 		myMax = myLen + 2;
-		if (myVec == 0) {
+		if (myVec == NULL) {
 		    myVec = typeallocn(char *, myMax);
 		} else {
 		    myTmp = typereallocn(char *, myVec, myMax);
-		    if (myTmp == 0) {
+		    if (myTmp == NULL) {
 			myVec = glob_free(myVec);
 		    } else {
 			myVec = myTmp;
 		    }
 		}
 	    }
-	    if (myVec == 0) {
+	    if (myVec == NULL) {
 		free(item);
 		result = no_memory("glob-pointers");
 	    } else {
 		myVec[myLen++] = item;
-		myVec[myLen] = 0;
+		myVec[myLen] = NULL;
 	    }
 	}
     }
@@ -312,14 +312,14 @@ glob_match_leaf(char *leaf, char *pattern)
 static char *
 next_leaf(char *path)
 {
-    if (path != 0) {
+    if (path != NULL) {
 	while (*path != EOS) {
 	    if (is_slashc(*path))
 		return path + 1;
 	    path++;
 	}
     }
-    return 0;
+    return NULL;
 }
 
 /*
@@ -355,7 +355,7 @@ wild_leaf(char *pattern)
 	    break;
 	}
     }
-    return string_has_globs(pattern + j) ? pattern + j : 0;
+    return string_has_globs(pattern + j) ? pattern + j : NULL;
 }
 
 #if !SYS_OS2
@@ -418,16 +418,16 @@ expand_leaf(char *path,		/* built-up pathname, top-level */
 	}
     }
 
-    if (next != 0) {
+    if (next != NULL) {
 	save = next[-1];
 	next[-1] = EOS;		/* restrict 'wild[]' to one leaf */
     }
 
     /* Scan the directory, looking for leaves that match the pattern.
      */
-    if ((dp = opendir(SL_TO_BSL(path))) != 0) {
+    if ((dp = opendir(SL_TO_BSL(path))) != NULL) {
 	leaf[-1] = SLASHC;	/* connect the path to the leaf */
-	while ((de = readdir(dp)) != 0) {
+	while ((de = readdir(dp)) != NULL) {
 #if OPT_MSDOS_PATH
 	    (void) strcpy(leaf, de->d_name);
 	    if (!global_g_val(GMDFILENAME_IC))
@@ -448,7 +448,7 @@ expand_leaf(char *path,		/* built-up pathname, top-level */
 		continue;
 	    if (!glob_match_leaf(leaf, wild))
 		continue;
-	    if (next != 0) {	/* there are more leaves */
+	    if (next != NULL) {	/* there are more leaves */
 		if (!string_has_globs(next)) {
 		    s = skip_string(leaf);
 		    *s++ = SLASHC;
@@ -479,7 +479,7 @@ expand_leaf(char *path,		/* built-up pathname, top-level */
 	result = SORTOFTRUE;	/* at least we didn't run out of memory */
     }
 
-    if (next != 0)
+    if (next != NULL)
 	next[-1] = save;
 
     return result;
@@ -654,7 +654,7 @@ glob_from_pipe(const char *pattern)
 #endif
 
     (void) lsprintf(tmp, d, pattern);
-    if ((cf = npopen(tmp, "r")) != 0) {
+    if ((cf = npopen(tmp, "r")) != NULL) {
 	char old[NFILEN + 1];
 
 	*(d = old) = EOS;
@@ -750,7 +750,7 @@ expand_environ(char *pattern)
 #if SYS_MSDOS || SYS_OS2
 		    mkupper(pattern + left);
 #endif
-		    if ((s = getenv(pattern + left)) == 0)
+		    if ((s = getenv(pattern + left)) == NULL)
 			s = "";
 		} else {
 		    s = "";
@@ -937,7 +937,7 @@ glob_expand(char **list_of_items)
 
     myMax = 0;
     myLen = 0;
-    myVec = 0;
+    myVec = NULL;
 
     for (i = 0; i < len; ++i) {
 	char *item = list_of_items[i];
@@ -953,9 +953,9 @@ glob_expand(char **list_of_items)
 	    && globbing_active()
 	    && string_has_wildcards(item)) {
 	    if (!expand_pattern(item))
-		return 0;
+		return NULL;
 	} else if (!record_a_match(item)) {
-	    return 0;
+	    return NULL;
 	}
     }
     return myVec;
@@ -970,7 +970,7 @@ glob_string(char *item)
     char *vec[2];
 
     vec[0] = item;
-    vec[1] = 0;
+    vec[1] = NULL;
 
     return glob_expand(vec);
 }
@@ -986,8 +986,8 @@ int
 glob_length(char **list_of_items)
 {
     int len;
-    if (list_of_items != 0) {
-	for (len = 0; list_of_items[len] != 0; len++) ;
+    if (list_of_items != NULL) {
+	for (len = 0; list_of_items[len] != NULL; len++) ;
     } else
 	len = 0;
     return len;
@@ -1003,13 +1003,13 @@ glob_free(char **list_of_items)
 {
     int len;
     beginDisplay();
-    if (list_of_items != 0) {
-	for (len = 0; list_of_items[len] != 0; len++)
+    if (list_of_items != NULL) {
+	for (len = 0; list_of_items[len] != NULL; len++)
 	    free(list_of_items[len]);
 	free(list_of_items);
     }
     endofDisplay();
-    return 0;
+    return NULL;
 }
 
 #if !SYS_UNIX

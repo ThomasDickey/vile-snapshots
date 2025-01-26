@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Id: basic.c,v 1.180 2022/11/17 22:30:41 tom Exp $
+ * $Id: basic.c,v 1.182 2025/01/26 20:55:32 tom Exp $
  *
  */
 
@@ -487,7 +487,6 @@ int
 gotobos(int f, int n)
 {
     LINE *last = DOT.l;
-    int nn = curwp->w_ntrows;
 
     n = need_at_least(f, n, 1);
 
@@ -495,7 +494,6 @@ gotobos(int f, int n)
     while (--n != 0) {
 	if (is_last_line(DOT, curbp))
 	    break;
-	nn -= line_height(curwp, DOT.l);
 	dot_next_bol();
     }
 
@@ -1423,7 +1421,7 @@ makemarkslist(int value GCC_UNUSED, void *dummy GCC_UNUSED)
 	    done += show_mark(done, bp, wp->w_lastdot, SQUOTE);
 	}
     }
-    if (bp->b_nmmarks != 0) {
+    if (bp->b_nmmarks != NULL) {
 	for (n = 0; n < NMARKS; n++) {
 	    done += show_mark(done, bp, bp->b_nmmarks[n], inx2nmark(n));
 	}
@@ -1531,7 +1529,7 @@ show_mark_is_set(int c)
 {
     int rc = TRUE;
 #if OPT_SHOW_MARKS
-    int ignore = (curbp != 0 && eql_bname(curbp, MARKS_BufName));
+    int ignore = (curbp != NULL && eql_bname(curbp, MARKS_BufName));
     if (isLower(c)) {
 	mlwrite("[Mark '%c' %s]", c, ignore ? "ignored" : "set");
     }
@@ -1840,7 +1838,7 @@ setcursor(int row, int col)
     MARK saveMK;
 
     TRACE((T_CALLED "setcursor(%d,%d)\n", row, col));
-    if ((wp1 = row2window(row)) != 0) {
+    if ((wp1 = row2window(row)) != NULL) {
 	if (!(doingsweep && curwp != wp1)) {
 	    saveMK = MK;
 	    if (set_curwp(wp1)

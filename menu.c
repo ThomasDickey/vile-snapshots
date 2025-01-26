@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Id: menu.c,v 1.81 2013/03/06 11:46:19 tom Exp $
+ * $Id: menu.c,v 1.82 2025/01/26 16:40:42 tom Exp $
  */
 
 /* Vile includes */
@@ -33,9 +33,9 @@ typedef struct _tok_ {
  * state, from successive define-menu-entry calls.
  */
 static int count_entries = 0;
-static void *my_menu_bar = 0;
-static void *parent_menu = 0;
-static MenuToken *all_tokens = 0;
+static void *my_menu_bar = NULL;
+static void *parent_menu = NULL;
+static MenuToken *all_tokens = NULL;
 
 /* Actions of the rc file */
 
@@ -49,7 +49,7 @@ typedef struct {
 static void common_action(char *action);
 static TAct Actions[] =
 {
-    {"nop", 0},
+    {"nop", NULL},
     {"new_xvile", common_action},
     {"edit_rc", common_action},
     {"parse_rc", common_action},
@@ -64,11 +64,11 @@ static TAct Actions[] =
 static MenuToken *
 newToken(void)
 {
-    MenuToken *result = 0;
+    MenuToken *result = NULL;
 
     beginDisplay();
     result = typecalloc(MenuToken);
-    if (result != 0) {
+    if (result != NULL) {
 	result->next = all_tokens;
 	all_tokens = result;
     }
@@ -80,7 +80,7 @@ static void
 free_all_tokens(void)
 {
     beginDisplay();
-    while (all_tokens != 0) {
+    while (all_tokens != NULL) {
 	MenuToken *next = all_tokens->next;
 	free(all_tokens);
 	all_tokens = next;
@@ -94,7 +94,7 @@ init_menus(void)
     free_all_tokens();
 
     count_entries = 0;
-    parent_menu = 0;
+    parent_menu = NULL;
 }
 
 static char *
@@ -103,9 +103,9 @@ menu_filename(void)
     char *result = cfg_locate(menu_file, LOCATE_SOURCE);
 #if SYS_UNIX
     /* just for backward compatibility */
-    if (result == 0 && strcmp(menu_file, "vilemenu.rc")) {
+    if (result == NULL && strcmp(menu_file, "vilemenu.rc")) {
 	static char *param;
-	if (param == 0)
+	if (param == NULL)
 	    param = strmalloc("vilemenu.rc");
 	result = cfg_locate(param, FL_STARTPATH | FL_READABLE);
     }
@@ -122,7 +122,7 @@ startup_filename(void)
 static void
 edit_file(char *fname)
 {
-    if (fname != 0 && *fname != EOS && ffexists(fname)) {
+    if (fname != NULL && *fname != EOS && ffexists(fname)) {
 	splitwind(FALSE, 1);
 	getfile(fname, TRUE);
     } else
@@ -214,7 +214,7 @@ vlmenu_action_func(char *action)
 	    return Actions[i].fact;
     }
 
-    return 0;
+    return NULL;
 }
 
 /************************************************************************/
@@ -246,7 +246,7 @@ vlmenu_is_cmd(char *action)
 	&& !strcmp(tb_values(tok), "cmd"))
 	return result;
 
-    return 0;
+    return NULL;
 }
 
 /*
@@ -269,7 +269,7 @@ parse_menu_entry(MenuToken * token, const char *source, size_t slen)
     buffer[slen] = EOS;
 
     /* Let a tab begin inline comment */
-    if ((ptr_tok = strchr(buffer, '\t')) != 0)
+    if ((ptr_tok = strchr(buffer, '\t')) != NULL)
 	*ptr_tok = EOS;
 
     ptr_tok = strtok(buffer, ":");
@@ -407,7 +407,7 @@ define_menu_entry(MenuToken * token)
 
 	/* SEPARATOR WIDGET */
     case 'S':
-	if (parent_menu == 0)
+	if (parent_menu == NULL)
 	    parent_menu = make_header(my_menu_bar, ++count_entries);
 	gui_add_menu_item(parent_menu, "sep", NULL, token->type);
 	break;
@@ -415,7 +415,7 @@ define_menu_entry(MenuToken * token)
 	/* LIST (BUFFER LIST) */
     case 'L':
 	if (!strcmp(token->action, "list_buff")) {
-	    if (parent_menu == 0)
+	    if (parent_menu == NULL)
 		parent_menu = make_header(my_menu_bar, ++count_entries);
 	    gui_add_list_callback(parent_menu);
 	}
@@ -423,10 +423,10 @@ define_menu_entry(MenuToken * token)
 
 	/* BUTTON WIDGET */
     case 'B':
-	if (parent_menu == 0)
+	if (parent_menu == NULL)
 	    parent_menu = make_header(my_menu_bar, ++count_entries);
 	if (token->macro > 0) {
-	    if ((macro_text = castalloc(char, 50)) != 0) {
+	    if ((macro_text = castalloc(char, 50)) != NULL) {
 		sprintf(macro_text, "execute-macro-%d", token->macro);
 		accel = give_accelerator(macro_text);
 		pm_w = gui_add_menu_item(parent_menu, token->label, accel, token->type);
@@ -446,7 +446,7 @@ static void
 add_menu_separator(void)
 {
     MenuToken *myToken = newToken();
-    if (myToken != 0) {
+    if (myToken != NULL) {
 	myToken->type = 'S';
 	define_menu_entry(myToken);
     }
@@ -523,12 +523,12 @@ get_menu_buffer(void)
 {
     int did_read;
     char *menurc;
-    BUFFER *bp = 0;
+    BUFFER *bp = NULL;
 
-    if ((menurc = menu_filename()) == 0) {
+    if ((menurc = menu_filename()) == NULL) {
 	mlforce("No menu-file found");
-    } else if ((bp = bfind(VILEMENU_BufName, BFEXEC | BFINVS)) != 0) {
-	if ((bp = re_read_in(menurc, bp, &did_read)) != 0) {
+    } else if ((bp = bfind(VILEMENU_BufName, BFEXEC | BFINVS)) != NULL) {
+	if ((bp = re_read_in(menurc, bp, &did_read)) != NULL) {
 	    b_set_invisible(bp);
 	    set_vilemode(bp);
 	}
@@ -584,7 +584,7 @@ do_menu(void *menub)
      * will delay loading the menus.  Otherwise (the old scheme), do it right
      * away.
      */
-    if ((bp = get_menu_buffer()) != 0) {
+    if ((bp = get_menu_buffer()) != NULL) {
 	delay_menus = FALSE;
 	for_each_line(lp, bp) {
 	    if (has_expression(lp)) {

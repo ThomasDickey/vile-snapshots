@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Id: x11menu.c,v 1.23 2021/12/08 21:24:48 tom Exp $
+ * $Id: x11menu.c,v 1.25 2025/01/26 16:54:07 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -156,7 +156,7 @@ gui_make_menu(void *menubar, const char *nom, int the_class GCC_UNUSED)
 #endif /* ATHENA_WIDGETS */
 
     /* remember the widgets we created, so we can destroy them */
-    if ((remember = typecalloc(MY_MENUS)) != 0) {
+    if ((remember = typecalloc(MY_MENUS)) != NULL) {
 	remember->parent = pm;
 	remember->child = cascade;
 	remember->next = my_menus;
@@ -271,7 +271,7 @@ proc_back(Widget w GCC_UNUSED, XtPointer arg, XtPointer call GCC_UNUSED)
 	return;
 #endif
 
-    if ((s = vlmenu_is_cmd(macro_action)) != 0) {
+    if ((s = vlmenu_is_cmd(macro_action)) != NULL) {
 	macro_action = s;
 	exec_flag = FALSE;
     }
@@ -307,7 +307,7 @@ gui_add_func_callback(void *w, void *closure)
 static void
 post_buffer_list(Widget w GCC_UNUSED,
 		 XtPointer client GCC_UNUSED,
-		 XEvent * ev GCC_UNUSED,
+		 XEvent *ev GCC_UNUSED,
 		 Boolean *ok GCC_UNUSED)
 {
     static unsigned in_item_menu_list = 0;	/* number allocated */
@@ -338,21 +338,21 @@ post_buffer_list(Widget w GCC_UNUSED,
 
 	    in_item_menu_list = (in_item_menu_list + 3) * 2;
 
-	    if (pm_buffer != 0)
+	    if (pm_buffer != NULL)
 		pm_buffer = typereallocn(Widget, pm_buffer, in_item_menu_list);
 	    else
 		pm_buffer = typeallocn(Widget, in_item_menu_list);
 
-	    if (pm_buffer == 0) {
+	    if (pm_buffer == NULL) {
 		no_memory("post_buffer_list");
 		return;
 	    }
 
 	    while (m < in_item_menu_list)
-		pm_buffer[m++] = 0;
+		pm_buffer[m++] = NULL;
 	}
 
-	if (pm_buffer[nb_item_menu_list] == 0) {
+	if (pm_buffer[nb_item_menu_list] == NULL) {
 	    pm_buffer[nb_item_menu_list] = (Widget) gui_add_menu_item(pm, string,
 								      temp, 'B');
 	} else {
@@ -399,7 +399,7 @@ post_buffer_list(Widget w GCC_UNUSED,
 void
 gui_add_list_callback(void *pm)
 {
-    if (cascade != 0)
+    if (cascade != NULL)
 	XtAddEventHandler(cascade,
 			  ButtonPressMask,
 			  False,
@@ -416,7 +416,7 @@ gui_hide_menus(int f GCC_UNUSED, int n GCC_UNUSED)
     int rc = FALSE;
     Widget w = x_menu_widget();
 
-    if (w != 0) {
+    if (w != NULL) {
 	XtUnmapWidget(w);
 	rc = TRUE;
     }
@@ -430,7 +430,7 @@ gui_show_menus(int f GCC_UNUSED, int n GCC_UNUSED)
     int rc = FALSE;
     Widget w = x_menu_widget();
 
-    if (w != 0) {
+    if (w != NULL) {
 	XtMapWidget(w);
 	rc = TRUE;
     }
@@ -448,7 +448,7 @@ gui_remove_menus(int f GCC_UNUSED, int n GCC_UNUSED)
     int count = 0;
 
     gui_hide_menus(f, n);
-    while (my_menus != 0) {
+    while (my_menus != NULL) {
 	MY_MENUS *next = my_menus->next;
 
 	XtUnmanageChild(my_menus->parent);

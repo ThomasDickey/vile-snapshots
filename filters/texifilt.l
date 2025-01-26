@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: texifilt.l,v 1.15 2013/12/02 01:32:53 tom Exp $
+ * $Id: texifilt.l,v 1.16 2025/01/26 11:38:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of texinfo input.
  */
@@ -42,7 +42,7 @@ NUMBER		({INTEGER}|{REAL})
 			  if (attr == Comment_attr) {
 			      BEGIN(NOTE);
 			      mark = attr;
-			  } else if (attr != 0) {
+			  } else if (attr != NULL) {
 			      mark = attr;
 			  }
 			  flt_puts("@", 1, mark);

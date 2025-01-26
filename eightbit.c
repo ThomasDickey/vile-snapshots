@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.112 2024/01/18 23:44:41 tom Exp $
+ * $Id: eightbit.c,v 1.114 2025/01/26 17:09:56 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -25,7 +25,7 @@
 
 #include <gnreight.h>
 
-#define StrMalloc(s) ((s) ? strmalloc(s) : 0)
+#define StrMalloc(s) ((s) ? strmalloc(s) : NULL)
 
 #if DISP_TERMCAP || DISP_CURSES || DISP_BORLAND
 #define USE_MBTERM 1
@@ -65,8 +65,8 @@ cmp_rindex(const void *a, const void *b)
     return (int) p->code - (int) q->code;
 }
 
-static const GNREIGHT_ENC *from_encoding = 0;
-static const GNREIGHT_ENC *builtin_locale = 0;
+static const GNREIGHT_ENC *from_encoding = NULL;
+static const GNREIGHT_ENC *builtin_locale = NULL;
 
 #if OPT_ICONV_FUNCS
 #define MY_ICONV_TYPE iconv_t
@@ -90,7 +90,7 @@ close_encoding(void)
     }
 #endif /* OPT_ICONV_FUNCS */
     mb_desc = NO_ICONV;
-    from_encoding = 0;
+    from_encoding = NULL;
 }
 
 static int
@@ -152,7 +152,7 @@ initialize_table_8bit_utf8(void)
 	(void) in_bytes;
 
 	FreeIfNeeded(table_8bit_utf8[n].text);
-	table_8bit_utf8[n].text = 0;
+	table_8bit_utf8[n].text = NULL;
 
 #if OPT_ICONV_FUNCS
 	if (mb_desc == MY_ICONV) {
@@ -239,7 +239,7 @@ vl_8bit_ctype_init(int wide, int ch)
 	/* xdigit is specific to ASCII */
 	if (value & vl_digit)
 	    value |= vl_xdigit;
-	if ((value & vl_alpha) && (strchr("abcdefABCDEF", ch) != 0))
+	if ((value & vl_alpha) && (strchr("abcdefABCDEF", ch) != NULL))
 	    value |= vl_xdigit;
 
 	value &= ~vl_alpha;	/* unused in vile */
@@ -259,16 +259,16 @@ vl_8bit_ctype_init(int wide, int ch)
 int
 vl_8bit_builtin(void)
 {
-    return (builtin_locale != 0);
+    return (builtin_locale != NULL);
 }
 
 char *
 vl_narrowed(const char *wide)
 {
-    char *result = 0;
+    char *result = NULL;
 
     TRACE((T_CALLED "vl_narrowed(%s)\n", NonNull(wide)));
-    if (wide != 0) {
+    if (wide != NULL) {
 	const char *mapping = sys_getenv("VILE_LOCALE_MAPPING");
 	const char *parsed;
 	char *on_left;
@@ -281,20 +281,20 @@ vl_narrowed(const char *wide)
 	 * and assumes that the default locale alias corresponds to the 8-bit
 	 * encoding.  That is true on many systems.
 	 */
-	if (mapping == 0)
+	if (mapping == NULL)
 	    mapping = "/\\.\\(UTF\\|utf\\)[-]\\?8$//";
 
 	parsed = mapping;
 	on_left = regparser(&parsed);
 	on_right = regparser(&parsed);
-	if (on_left != 0
-	    && on_right != 0
+	if (on_left != NULL
+	    && on_right != NULL
 	    && parsed[1] == '\0'
-	    && (exp = regcomp(on_left, strlen(on_left), TRUE)) != 0) {
+	    && (exp = regcomp(on_left, strlen(on_left), TRUE)) != NULL) {
 	    int len = (int) strlen(wide);
 	    int found = 0;
 
-	    if ((result = malloc(strlen(wide) + 2 + strlen(on_right))) != 0) {
+	    if ((result = malloc(strlen(wide) + 2 + strlen(on_right))) != NULL) {
 		strcpy(result, wide);
 		for (n = 0; n < len; ++n) {
 		    found = regexec(exp, result, result + len, n, len, FALSE);
@@ -318,7 +318,7 @@ vl_narrowed(const char *wide)
 		    free(save);
 		} else {
 		    free(result);
-		    result = 0;
+		    result = NULL;
 		}
 	    }
 	    regfree(exp);
@@ -344,11 +344,11 @@ vl_init_8bit(const char *wide, const char *narrow)
     int n;
 
     TRACE((T_CALLED "vl_init_8bit(%s, %s)\n", NonNull(wide), NonNull(narrow)));
-    if (wide == 0 || narrow == 0) {
+    if (wide == NULL || narrow == NULL) {
 	TRACE(("setup POSIX-locale\n"));
 	vl_encoding = enc_POSIX;
-	vl_wide_enc.locale = 0;
-	vl_narrow_enc.locale = 0;
+	vl_wide_enc.locale = NULL;
+	vl_narrow_enc.locale = NULL;
 	vl_get_encoding(&vl_narrow_enc.encoding, narrow);
     } else if (vl_stricmp(wide, narrow)) {
 	TRACE(("setup mixed-locale(%s, %s)\n", wide, narrow));
@@ -370,8 +370,8 @@ vl_init_8bit(const char *wide, const char *narrow)
 	 * If the wide/narrow encodings do not differ, that is probably because
 	 * the narrow encoding is really a wide-encoding.
 	 */
-	if (vl_narrow_enc.encoding != 0
-	    && vl_wide_enc.encoding != 0
+	if (vl_narrow_enc.encoding != NULL
+	    && vl_wide_enc.encoding != NULL
 	    && vl_stricmp(vl_narrow_enc.encoding, vl_wide_enc.encoding)) {
 	    open_encoding(vl_narrow_enc.encoding, vl_wide_enc.encoding);
 	    initialize_table_8bit_utf8();
@@ -380,7 +380,7 @@ vl_init_8bit(const char *wide, const char *narrow)
     } else {
 	TRACE(("setup narrow-locale(%s)\n", narrow));
 	vl_encoding = enc_8BIT;
-	vl_wide_enc.locale = 0;
+	vl_wide_enc.locale = NULL;
 	vl_narrow_enc.locale = StrMalloc(narrow);
 	vl_get_encoding(&vl_narrow_enc.encoding, narrow);
 	if (try_encoding(vl_narrow_enc.encoding, "UTF-8")) {
@@ -400,7 +400,7 @@ vl_init_8bit(const char *wide, const char *narrow)
 	fixup = 128;
     }
     for (n = 0, latin1_codes = 128, fixed_up = 0; n < fixup; ++n) {
-	if (table_8bit_utf8[n].text == 0) {
+	if (table_8bit_utf8[n].text == NULL) {
 	    char temp[10];
 	    int len = vl_conv_to_utf8((UCHAR *) temp, (UINT) n, sizeof(temp));
 
@@ -459,8 +459,8 @@ vl_is_8bit_encoding(const char *value)
     int rc = vl_is_latin1_encoding(value);
     if (!rc) {
 	rc = (isEmpty(value)
-	      || strstr(value, "ASCII") != 0
-	      || strstr(value, "ANSI") != 0
+	      || strstr(value, "ASCII") != NULL
+	      || strstr(value, "ANSI") != NULL
 	      || strncmp(value, "KOI8-R", (size_t) 6) == 0);
     }
     return rc;
@@ -490,13 +490,13 @@ vl_is_utf8_encoding(const char *value)
 
     if (!isEmpty(value)) {
 	char *suffix = strchr(value, '.');
-	if (suffix != 0) {
+	if (suffix != NULL) {
 #ifdef WIN32
 	    if (!strcmp(suffix, ".65000")) {
 		rc = TRUE;
 	    } else
 #endif
-		if (strchr(value + 1, '.') == 0
+		if (strchr(value + 1, '.') == NULL
 		    && vl_is_utf8_encoding(value + 1)) {
 		rc = TRUE;
 	    }
@@ -526,7 +526,7 @@ vl_mb_is_8bit(int code)
 				sizeof(RINDEX_8BIT),
 				cmp_rindex);
 
-    if (p != 0)
+    if (p != NULL)
 	result = ((int) p->code >= 0 && p->code < 256);
 
     return result;
@@ -539,11 +539,11 @@ vl_mb_is_8bit(int code)
 char *
 vl_get_locale(char **target)
 {
-    char *result = setlocale(LC_CTYPE, 0);
+    char *result = setlocale(LC_CTYPE, NULL);
 
-    if (target != 0) {
+    if (target != NULL) {
 	FreeIfNeeded(*target);
-	if (result != 0)
+	if (result != NULL)
 	    result = strmalloc(result);
 	*target = result;
     }
@@ -564,7 +564,7 @@ vl_get_encoding(char **target, const char *locale)
 #ifdef WIN32
     static char cp_value[80];
 #endif
-    char *result = 0;
+    char *result = NULL;
     char *actual = setlocale(LC_CTYPE, locale);
     int can_free = 0;
 
@@ -582,12 +582,12 @@ vl_get_encoding(char **target, const char *locale)
 	beginDisplay();
 	if (vl_is_utf8_encoding(locale)) {
 	    result = utf_eight;
-	} else if (!isEmpty(locale) && (mylocale = strmalloc(locale)) != 0) {
+	} else if (!isEmpty(locale) && (mylocale = strmalloc(locale)) != NULL) {
 	    regexp *exp;
 
 	    exp = regcomp(tb_values(latin1_expr),
 			  (size_t) tb_length0(latin1_expr), TRUE);
-	    if (exp != 0) {
+	    if (exp != NULL) {
 		if (nregexec(exp, mylocale, (char *) 0, 0, -1, FALSE)) {
 		    TRACE(("... found match in $latin1-expr\n"));
 		    result = iso_latin1;
@@ -596,7 +596,7 @@ vl_get_encoding(char **target, const char *locale)
 	    }
 	    free(mylocale);
 
-	    if (result == 0) {
+	    if (result == NULL) {
 		int found = blist_match(&blist_locales, locale);
 		if (found >= 0) {
 		    int find;
@@ -643,9 +643,9 @@ vl_get_encoding(char **target, const char *locale)
 	    }
 	}
     }
-    if (target != 0) {
+    if (target != NULL) {
 	FreeIfNeeded(*target);
-	if (result != 0 && !can_free)
+	if (result != NULL && !can_free)
 	    result = strmalloc(result);
 	*target = result;
     }
@@ -660,7 +660,7 @@ vl_get_encoding(char **target, const char *locale)
 const char *
 vl_mb_to_utf8(int code)
 {
-    const char *result = 0;
+    const char *result = NULL;
     RINDEX_8BIT *p;
     RINDEX_8BIT key;
 
@@ -670,7 +670,7 @@ vl_mb_to_utf8(int code)
 				(size_t) N_chars,
 				sizeof(RINDEX_8BIT),
 				cmp_rindex);
-    if (p != 0 && p->rinx >= 0)
+    if (p != NULL && p->rinx >= 0)
 	result = table_8bit_utf8[p->rinx].text;
 
     return result;
@@ -710,7 +710,7 @@ vl_ucs_to_8bit(int *result, int code)
 				(size_t) N_chars,
 				sizeof(RINDEX_8BIT),
 				cmp_rindex);
-    if (p != 0 && p->rinx >= 0) {
+    if (p != NULL && p->rinx >= 0) {
 	*result = p->rinx;
 	status = TRUE;
     }
@@ -838,14 +838,14 @@ vl_mb_putch(int c)
 	 * If we got no result, then it was not in the cached mapping to 8bit.
 	 * But we can still convert it to UTF-8.
 	 */
-	if (s == 0) {
+	if (s == NULL) {
 	    rc = vl_conv_to_utf8(temp, (UINT) c, sizeof(temp));
 	    if (rc > 0) {
 		temp[rc] = EOS;
 		s = (const char *) temp;
 	    }
 	}
-	if (s != 0) {
+	if (s != NULL) {
 	    while (*s != 0) {
 		save_putch(*s++);
 	    }
@@ -864,7 +864,7 @@ vl_open_mbterm(void)
 {
     TRACE(("vl_open_mbterm\n"));
 
-    if (save_getch == 0) {
+    if (save_getch == NULL) {
 	TRACE(("...using vl_mb_getch(%s)\n", encoding2s(kbd_encoding)));
 	save_getch = term.getch;
 	term.getch = vl_mb_getch;
@@ -884,19 +884,19 @@ vl_open_mbterm(void)
 void
 vl_close_mbterm(void)
 {
-    if (save_getch != 0) {
+    if (save_getch != NULL) {
 	term.getch = save_getch;
-	save_getch = 0;
+	save_getch = NULL;
     }
 
     if (okCTYPE2(vl_wide_enc)) {
-	if (save_putch != 0) {
+	if (save_putch != NULL) {
 	    TRACE(("vl_close_mbterm\n"));
 	    term.putch = save_putch;
 
 	    term.set_enc(enc_POSIX);
 
-	    save_putch = 0;
+	    save_putch = NULL;
 	}
     }
 }
@@ -913,9 +913,9 @@ eightbit_leaks(void)
 #endif
 
     for (n = 0; n < N_chars; ++n) {
-	if (table_8bit_utf8[n].text != 0) {
+	if (table_8bit_utf8[n].text != NULL) {
 	    free(table_8bit_utf8[n].text);
-	    table_8bit_utf8[n].text = 0;
+	    table_8bit_utf8[n].text = NULL;
 	}
     }
     FreeIfNeeded(vl_wide_enc.locale);

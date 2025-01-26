@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: xml-filt.l,v 1.53 2016/12/16 12:00:55 tom Exp $
+ * $Id: xml-filt.l,v 1.55 2025/01/26 17:07:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -244,8 +244,8 @@ show_xml_string(char *text, int len)
 	char *last;
 	int skip;
 
-	if ((first = strstr(text, "${")) == 0 ||
-	    (last = strstr(first, "}")) == 0) {
+	if ((first = strstr(text, "${")) == NULL ||
+	    (last = strstr(first, "}")) == NULL) {
 	    flt_puts(text, len, String_attr);
 	    break;
 	}
@@ -268,7 +268,7 @@ xml_keyword_attr(const char *name)
 {
     const char *attr = get_keyword_attr(name);
 
-    if (attr == 0)
+    if (attr == NULL)
 	attr = Ident_attr;
     return attr;
 }
@@ -400,7 +400,7 @@ xml_command(char *text, int len)
     }
     if (isEmpty(attr)) {
 	char *marker = strchr(text, ':');
-	if (marker != 0 && marker[1] != '\0') {
+	if (marker != NULL && marker[1] != '\0') {
 	    const char *old_table = get_symbol_table();
 	    char new_table[LEN_TABLENAME];
 
@@ -467,7 +467,7 @@ do_filter(FILE *inputs)
     RunLEX();
     flt_bfr_error();
 
-    if (Tags != 0) {
+    if (Tags != NULL) {
 	while (Num_tags > 0) {
 	    --Num_tags;
 	    flt_error("expected tag:%s", Tags[Num_tags].name);
@@ -475,7 +475,7 @@ do_filter(FILE *inputs)
 	}
 #if NO_LEAKS
 	free(Tags);
-	Tags = 0;
+	Tags = NULL;
 #endif
     }
     end_state();

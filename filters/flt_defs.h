@@ -1,5 +1,5 @@
 /*
- * $Id: flt_defs.h,v 1.21 2010/09/08 08:41:49 tom Exp $
+ * $Id: flt_defs.h,v 1.23 2025/01/26 15:00:32 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -27,8 +27,8 @@ extern "C" {
 #define OPT_LOCALE 0
 #endif
 
-#define	NonNull(s)	((s == 0) ? "" : s)
-#define isEmpty(s)	((s) == 0 || *(s) == EOS)
+#define	NonNull(s)	((s == NULL) ? "" : s)
+#define isEmpty(s)	((s) == NULL || *(s) == EOS)
 
 #define EOS        '\0'
 
@@ -37,7 +37,7 @@ extern "C" {
  */
 #include <estruct.h>
 
-#endif /* _estruct_h */
+#endif				/* _estruct_h */
 
 #if OPT_LOCALE
 #include <locale.h>
@@ -46,11 +46,10 @@ extern "C" {
 #include <ctype.h>
 
 #ifndef TRACE
-#define TRACE(params) /* nothing */
+#define TRACE(params)		/* nothing */
 #endif
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* FLT_DEFS_H */
+#endif				/* FLT_DEFS_H */

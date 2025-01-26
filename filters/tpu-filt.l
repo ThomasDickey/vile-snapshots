@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: tpu-filt.l,v 1.3 2020/01/12 19:21:59 tom Exp $
+ * $Id: tpu-filt.l,v 1.4 2025/01/26 11:44:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TPU files.
  */
@@ -39,9 +39,9 @@ DSTRING		\"([^"\r\n]|(""))*\"
 <NORMAL>{INLINECOMMENT}	|
 <NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
 
-<NORMAL>{BINARYNUM}	| 
-<NORMAL>{OCTALNUM}	| 
-<NORMAL>{HEXNUM}	| 
+<NORMAL>{BINARYNUM}	|
+<NORMAL>{OCTALNUM}	|
+<NORMAL>{HEXNUM}	|
 <NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
 
 <NORMAL>{IDENT}		{ WriteToken(ci_keyword_attr(yytext)); }

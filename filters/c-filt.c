@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Id: c-filt.c,v 1.101 2021/03/22 23:24:30 tom Exp $
+ * $Id: c-filt.c,v 1.103 2025/01/26 17:00:27 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -55,10 +55,10 @@ extract_identifier(char *s)
 	s++;
     if (base != s) {
 	need = (size_t) (s - base);
-	if ((name = do_alloc(name, need, &have)) != 0) {
+	if ((name = do_alloc(name, need, &have)) != NULL) {
 	    strncpy(name, base, need);
 	    name[need] = 0;
-	    if ((attr = get_keyword_attr(name)) != 0) {
+	    if ((attr = get_keyword_attr(name)) != NULL) {
 		flt_puts(base, (int) need, attr);
 		found = 1;
 	    }
@@ -68,7 +68,7 @@ extract_identifier(char *s)
 	}
 #if NO_LEAKS
 	free(name);
-	name = 0;
+	name = NULL;
 	have = 0;
 #endif
     }
@@ -149,7 +149,7 @@ write_comment(char *s, int len, int begin)
     char *nested;
     if (begin)
 	t += 2;
-    while ((nested = strstr(t, "/*")) != 0 && (nested - s) < len) {
+    while ((nested = strstr(t, "/*")) != NULL && (nested - s) < len) {
 	flt_puts(s, (int) (nested - s), Comment_attr);
 	flt_error("nested comment");
 	flt_puts(nested, 2, Error_attr);
@@ -429,7 +429,7 @@ write_regexp(char *s)
      * u = unicode
      * y = sticky search, matches starting point.
      */
-    while (*s != '\0' && strchr("gimsuy", *s) != 0) {
+    while (*s != '\0' && strchr("gimsuy", *s) != NULL) {
 	++s;
 	adjust = 1;
     }
@@ -455,9 +455,9 @@ parse_prepro(char *s, int *literal)
     save = *tt;
     *tt = 0;
     isinclude = !strcmp(ss, "include");
-    if (get_keyword_attr(ss) == 0) {
-	char *dst = 0;
-	if (strtol(ss, &dst, 10) != 0 && dst != 0 && *dst == 0) {
+    if (get_keyword_attr(ss) == NULL) {
+	char *dst = NULL;
+	if (strtol(ss, &dst, 10) != 0 && dst != NULL && *dst == 0) {
 	    flt_puts(s, (int) (ss - s), Preproc_attr);
 	    flt_puts(ss, (int) (tt - ss), Number_attr);
 	} else {

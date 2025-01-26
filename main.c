@@ -17,11 +17,11 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2022,2024 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2024,2025 by Paul Fox and Thomas Dickey
  */
 
 /*
- * $Id: main.c,v 1.754 2024/01/20 01:35:45 tom Exp $
+ * $Id: main.c,v 1.757 2025/01/26 17:07:24 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -102,7 +102,7 @@ get_argvalue(char *param, char *argv[], int *argcp)
 	*argcp += 1;
 	param = argv[*argcp];
     }
-    if (param == 0)
+    if (param == NULL)
 	print_usage(BADEXIT);
     return param;
 }
@@ -136,7 +136,7 @@ hide_and_discard(BUFFER **bp)
 {
     if (zotwp(*bp)) {
 	zotbuf(*bp);
-	*bp = 0;
+	*bp = NULL;
     }
 }
 
@@ -202,9 +202,9 @@ run_and_discard(BUFFER **bp)
 static void
 add_cmdarg(BUFFER *bp, const char *cmd, const char *arg)
 {
-    TBUFF *tb = 0;
-    if (tb_scopy(&tb, arg) != 0
-	&& tb_enquote(&tb) != 0) {
+    TBUFF *tb = NULL;
+    if (tb_scopy(&tb, arg) != NULL
+	&& tb_enquote(&tb) != NULL) {
 	b2printf(bp, cmd, tb_values(tb));
     }
     tb_free(&tb);
@@ -266,7 +266,7 @@ static char *
 get_set_locale(const char *value)
 {
     char *result = setlocale(LC_CTYPE, value);
-    if (result != 0)
+    if (result != NULL)
 	result = strmalloc(result);
     return result;
 }
@@ -278,8 +278,8 @@ set_posix_locale(void)
     TRACE(("...reset locale to POSIX!\n"));
     vl_real_enc.locale = get_set_locale("C");
     vl_get_encoding(&vl_real_enc.encoding, vl_real_enc.locale);
-    vl_wide_enc.locale = 0;
-    vl_narrow_enc.locale = 0;
+    vl_wide_enc.locale = NULL;
+    vl_narrow_enc.locale = NULL;
 }
 #endif
 #endif /* OPT_LOCALE */
@@ -299,7 +299,7 @@ filter_to_stdio(FILE *fp)
     TRACE(("\tcurfname:%s\n", curbp->b_fname));
 
 #if OPT_FILTER && OPT_MAJORMODE
-    if (curbp->majr != 0 && flt_lookup(curbp->majr->shortname)) {
+    if (curbp->majr != NULL && flt_lookup(curbp->majr->shortname)) {
 	const CMDFUNC *cmd = &f_operattrdirect;
 	clexec = TRUE;
 	filter_only = TRUE;
@@ -312,7 +312,7 @@ filter_to_stdio(FILE *fp)
 	/*
 	 * Rely upon the macro to construct the proper filter path.
 	 */
-	if (my_macro == 0)
+	if (my_macro == NULL)
 	    my_macro = strmalloc("HighlightFilter");
 
 	/*
@@ -384,7 +384,7 @@ MainProgram(int argc, char *argv[])
     {
 	const char *env = "";
 	char *old_locale = get_set_locale("");
-	char *old_encoding = 0;
+	char *old_encoding = NULL;
 
 	/*
 	 * If the environment specifies a legal locale, old_locale will be
@@ -397,15 +397,15 @@ MainProgram(int argc, char *argv[])
 	 * assumes that the name of the 8-bit locale can be found by stripping
 	 * the "UTF-8" string, and also that both locales are installed.
 	 */
-	if (old_locale != 0
+	if (old_locale != NULL
 	    && vl_is_utf8_encoding(vl_get_encoding(&old_encoding, old_locale))
-	    && (((env = sys_getenv("LC_ALL")) != 0 && *env != 0) ||
-		((env = sys_getenv("LC_CTYPE")) != 0 && *env != 0) ||
-		((env = sys_getenv("LANG")) != 0 && *env != 0))) {
+	    && (((env = sys_getenv("LC_ALL")) != NULL && *env != 0) ||
+		((env = sys_getenv("LC_CTYPE")) != NULL && *env != 0) ||
+		((env = sys_getenv("LANG")) != NULL && *env != 0))) {
 	    char *tmp;
 
 	    TRACE(("Checking for UTF-8 suffix of '%s'\n", env));
-	    if ((tmp = vl_narrowed(env)) != 0) {
+	    if ((tmp = vl_narrowed(env)) != NULL) {
 		vl_init_8bit(env, tmp);
 		env = tmp;
 	    } else {
@@ -453,20 +453,20 @@ MainProgram(int argc, char *argv[])
 		TRACE(("using built-in locale data\n"));
 	    } else if (vl_is_utf8_encoding(old_encoding)) {
 		TRACE(("original encoding is UTF-8\n"));
-		vl_narrow_enc.locale = 0;
+		vl_narrow_enc.locale = NULL;
 	    } else {
 		set_posix_locale();
 	    }
 	} else if (vl_is_utf8_encoding(vl_real_enc.encoding)) {
 	    TRACE(("narrow encoding '%s' is already UTF-8!\n", NonNull(vl_real_enc.encoding)));
-	    vl_narrow_enc.locale = 0;
+	    vl_narrow_enc.locale = NULL;
 	} else if (!vl_is_8bit_encoding(vl_real_enc.encoding)) {
 	    set_posix_locale();
 	}
 #endif
-	if (vl_real_enc.locale == 0)
+	if (vl_real_enc.locale == NULL)
 	    vl_real_enc.locale = strmalloc("built-in");
-	if (vl_real_enc.encoding == 0)
+	if (vl_real_enc.encoding == NULL)
 	    vl_real_enc.encoding = strmalloc(VL_LOC_LATIN1);
 
 	FreeIfNeeded(old_locale);
@@ -556,10 +556,10 @@ MainProgram(int argc, char *argv[])
     /*
      * Create buffers for storing command-line options.
      */
-    if ((init_bp = bfind(VILEINIT_BufName, BFEXEC | BFINVS)) == 0)
+    if ((init_bp = bfind(VILEINIT_BufName, BFEXEC | BFINVS)) == NULL)
 	tidy_exit(BADEXIT);
 
-    if ((opts_bp = bfind(VILEOPTS_BufName, BFEXEC | BFINVS)) == 0)
+    if ((opts_bp = bfind(VILEOPTS_BufName, BFEXEC | BFINVS)) == NULL)
 	tidy_exit(BADEXIT);
 
     /* Parse the passed in parameters */
@@ -643,8 +643,8 @@ MainProgram(int argc, char *argv[])
 		     * If the user has no startup file, make a simple
 		     * one that points to this one.
 		     */
-		    if (cfg_locate(vileinit, LOCATE_SOURCE) != 0
-			&& cfg_locate(startup_file, LOCATE_SOURCE) == 0)
+		    if (cfg_locate(vileinit, LOCATE_SOURCE) != NULL
+			&& cfg_locate(startup_file, LOCATE_SOURCE) == NULL)
 			make_startup_file(vileinit);
 		    add_cmdarg(init_bp, "source %s\n", vileinit);
 		    break;
@@ -711,7 +711,7 @@ MainProgram(int argc, char *argv[])
 
 	    /* must be a filename */
 #if OPT_ENCRYPT
-	    cryptkey = (*startkey != EOS) ? startkey : 0;
+	    cryptkey = (*startkey != EOS) ? startkey : NULL;
 #endif
 	    /* set up a buffer for this file */
 	    bp = getfile2bp(param, FALSE, TRUE);
@@ -724,7 +724,7 @@ MainProgram(int argc, char *argv[])
 		}
 	    }
 #if OPT_ENCRYPT
-	    cryptkey = 0;
+	    cryptkey = NULL;
 #endif
 	}
     }
@@ -766,7 +766,7 @@ MainProgram(int argc, char *argv[])
 #if !SYS_WINNT
 #if !DISP_X11
 #if SYS_UNIX
-	const char *tty = 0;
+	const char *tty = NULL;
 #else
 	FILE *in;
 #endif /* SYS_UNIX */
@@ -781,20 +781,20 @@ MainProgram(int argc, char *argv[])
 	if (!havebp)
 	    havebp = bp;
 	fd = dup(fileno(stdin));
-	ffp = (fd >= 0) ? fdopen(fd, "r") : 0;
+	ffp = (fd >= 0) ? fdopen(fd, "r") : NULL;
 #if !DISP_X11
 # if SYS_UNIX
 # if defined(HAVE_TTYNAME)
 	if (isatty(fileno(stdout)))
 	    tty = ttyname(fileno(stdout));
-	if (tty == 0 && isatty(fileno(stderr)))
+	if (tty == NULL && isatty(fileno(stderr)))
 	    tty = ttyname(fileno(stderr));
 # endif
 # if defined(HAVE_DEV_TTY)
-	if (tty == 0)
+	if (tty == NULL)
 	    tty = "/dev/tty";
 # endif
-	if (tty == 0) {
+	if (tty == NULL) {
 	    fprintf(stderr, "cannot open any terminal\n");
 	    tidy_exit(BADEXIT);
 	}
@@ -805,7 +805,7 @@ MainProgram(int argc, char *argv[])
 	 * properly up to the stdio routines.
 	 */
 	TRACE(("call freopen(%s) for stdin\n", tty));
-	if ((freopen(tty, "r", stdin)) == 0
+	if ((freopen(tty, "r", stdin)) == NULL
 	    || !isatty(fileno(stdin))) {
 	    TRACE(("...failed to reopen stdin\n"));
 	    fprintf(stderr, "cannot open a terminal (%s)\n", tty);
@@ -856,7 +856,7 @@ MainProgram(int argc, char *argv[])
 	    set_local_b_val(bp, MDCRYPT, TRUE);
 	}
 #endif
-	if (ffp != 0) {
+	if (ffp != NULL) {
 	    (void) slowreadf(bp, &nline);
 	    set_rdonly(bp, bp->b_fname, MDREADONLY);
 	    (void) ffclose();
@@ -1254,7 +1254,7 @@ get_executable_dir(void)
 	/* If there are no slashes, we can guess where we came from,
 	 */
 	if ((s = cfg_locate(prog_arg, FL_PATH | FL_EXECABLE | FL_INSECURE))
-	    != 0)
+	    != NULL)
 	    s = strmalloc(s);
     } else {
 	/* if there _are_ slashes, then argv[0] was either
@@ -1262,11 +1262,11 @@ get_executable_dir(void)
 	 */
 	s = strmalloc(lengthen_path(vl_strncpy(temp, prog_arg, sizeof(temp))));
     }
-    if (s == 0)
+    if (s == NULL)
 	return;
 
     t = pathleaf(s);
-    if (t != s && t != 0) {
+    if (t != s && t != NULL) {
 	/*
 	 * On a unix host, 't' points past slash.  On a VMS host,
 	 * 't' points to first char after the last ':' or ']' in
@@ -1342,11 +1342,11 @@ tidy_exit(int code)
 char *
 strmalloc(const char *src)
 {
-    char *dst = 0;
-    if (src != 0) {
+    char *dst = NULL;
+    if (src != NULL) {
 	beginDisplay();
 	dst = castalloc(char, strlen(src) + 1);
-	if (dst != 0)
+	if (dst != NULL)
 	    (void) strcpy(dst, src);
 	endofDisplay();
     }
@@ -1611,7 +1611,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(GVAL_CHK_ACCESS, FL_CDIR);	/* access-check */
 #endif
 #ifdef GVAL_COLOR_SCHEME
-	    setPAT(GVAL_COLOR_SCHEME, 0);	/* default scheme is 0 */
+	    setPAT(GVAL_COLOR_SCHEME, NULL);	/* default scheme is 0 */
 #endif
 #ifdef GVAL_CSUFFIXES
 	    setPAT(GVAL_CSUFFIXES, DFT_CSUFFIX);
@@ -1822,7 +1822,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	case VAL_PATHNAME_EXPR:
 	    set_buf_fname_expr((d == &global_b_values.bv[v_which])
 			       ? curbp
-			       : 0);
+			       : NULL);
 	    break;
 	}
 #endif
@@ -1887,7 +1887,7 @@ static const char *
 default_help_file(void)
 {
     const char *result;
-    if ((result = vile_getenv("VILE_HELP_FILE")) == 0)
+    if ((result = vile_getenv("VILE_HELP_FILE")) == NULL)
 	result = DFT_HELP_FILE;
     return result;
 }
@@ -1896,7 +1896,7 @@ static const char *
 default_libdir_path(void)
 {
     const char *result;
-    if ((result = vile_getenv("VILE_LIBDIR_PATH")) == 0)
+    if ((result = vile_getenv("VILE_LIBDIR_PATH")) == NULL)
 	result = DFT_LIBDIR_PATH;
     return result;
 }
@@ -1926,7 +1926,7 @@ static const char *
 default_startup_file(void)
 {
     const char *result;
-    if ((result = vile_getenv("VILE_STARTUP_FILE")) == 0)
+    if ((result = vile_getenv("VILE_STARTUP_FILE")) == NULL)
 	result = DFT_STARTUP_FILE;
     return result;
 }
@@ -1934,10 +1934,10 @@ default_startup_file(void)
 static char *
 default_startup_path(void)
 {
-    char *result = 0;
+    char *result = NULL;
     char *s;
 
-    if ((s = vile_getenv("VILE_STARTUP_PATH")) != 0) {
+    if ((s = vile_getenv("VILE_STARTUP_PATH")) != NULL) {
 	append_to_path_list(&result, s);
     } else {
 #if SYS_MSDOS || SYS_OS2 || SYS_WINNT
@@ -1979,8 +1979,8 @@ pre_init_ctype(void)
 char *
 init_state_value(int which)
 {
-    const char *value = 0;
-    char *result = 0;
+    const char *value = NULL;
+    char *result = NULL;
 
     switch (which) {
 #if OPT_FINDERR
@@ -2042,7 +2042,7 @@ init_state_value(int which)
 	break;
 #endif
     }
-    return (value != 0) ? strmalloc(value) : result;
+    return (value != NULL) ? strmalloc(value) : result;
 }
 #endif /* OPT_EVAL */
 
@@ -2055,7 +2055,7 @@ len_kbindtbl(void)
 {
     static size_t result = 0;
     if (result == 0)
-	while (kbindtbl[result].k_cmd != 0)
+	while (kbindtbl[result].k_cmd != NULL)
 	    result++;
     return result + 1;
 }
@@ -2071,7 +2071,7 @@ copy_kbindtbl(BINDINGS * dst)
     size_t len = len_kbindtbl();
 
     if (dst->kb_special == kbindtbl) {
-	if ((result = typecallocn(KBIND, len)) == 0) {
+	if ((result = typecallocn(KBIND, len)) == NULL) {
 	    (void) no_memory("copy_kbindtbl");
 	    return;
 	}
@@ -2104,7 +2104,7 @@ state_val_init(void)
      */
     for (i = 0; i < Num_StateVars; i++) {
 	char *s;
-	if ((s = init_state_value(i)) != 0) {
+	if ((s = init_state_value(i)) != NULL) {
 	    set_state_variable(statevars[i], s);
 	    free(s);
 	}
@@ -2193,10 +2193,10 @@ global_val_init(void)
 	const CMDFUNC *cfp;
 
 	sel_bindings.kb_normal[i] = dft_bindings.kb_normal[i];
-	ins_bindings.kb_normal[i] = 0;
+	ins_bindings.kb_normal[i] = NULL;
 	cmd_bindings.kb_normal[i] = dft_bindings.kb_normal[i];
 	if (i < 32
-	    && (cfp = dft_bindings.kb_normal[i]) != 0
+	    && (cfp = dft_bindings.kb_normal[i]) != NULL
 	    && (cfp->c_flags & (GOAL | MOTION)) != 0) {
 	    ins_bindings.kb_normal[i] =
 		cmd_bindings.kb_normal[i] = cfp;
@@ -2287,7 +2287,7 @@ static struct {
     SIGNAL_HANDLER original;
 } my_sighandlers[] = {
 
-    DATA(0, 0),			/* just for VMS */
+    DATA(0, NULL),		/* just for VMS */
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #if defined(SIGINT)
 	DATA(SIGINT, catchintr),
@@ -2900,7 +2900,7 @@ showmemory(int f, int n)
 char *
 strncpy0(char *dest, const char *src, size_t destlen)
 {
-    if (dest != 0 && src != 0 && destlen != 0) {
+    if (dest != NULL && src != NULL && destlen != 0) {
 	(void) strncpy(dest, src, destlen);
 	dest[destlen - 1] = EOS;
     }
@@ -3071,7 +3071,7 @@ cmd_mouse_motion(const CMDFUNC * cfp)
 {
     int result = FALSE;
 #if (OPT_XTERM || DISP_X11)
-    if (cfp != 0
+    if (cfp != NULL
 	&& CMD_U_FUNC(cfp) == mouse_motion)
 	result = TRUE;
 #else
@@ -3086,9 +3086,9 @@ make_startup_file(const char *name)
     FILE *fp;
     char temp[NFILEN];
 
-    if (startup_file != 0
+    if (startup_file != NULL
 	&& strcmp(pathcat(temp, home_dir(), startup_file), startup_file)
-	&& ((fp = fopen(temp, "w")) != 0)) {
+	&& ((fp = fopen(temp, "w")) != NULL)) {
 	fprintf(fp, "; generated by %s -I\n", prog_arg);
 	fprintf(fp, "source %s\n", name);
 	fclose(fp);
@@ -3259,7 +3259,7 @@ free_all_leaks(void)
     FreeAndNull(helpfile);
     FreeAndNull(startup_file);
 #if SYS_UNIX
-    if (exec_pathname != 0
+    if (exec_pathname != NULL
 	&& strcmp(exec_pathname, "."))
 	FreeAndNull(exec_pathname);
 #endif

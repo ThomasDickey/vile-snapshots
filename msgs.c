@@ -4,7 +4,7 @@
  * Support functions for "popup-msgs" mode.
  * Written by T.E.Dickey for vile (august 1994).
  *
- * $Id: msgs.c,v 1.31 2010/09/08 21:11:30 tom Exp $
+ * $Id: msgs.c,v 1.34 2025/01/26 17:08:26 tom Exp $
  */
 #include "estruct.h"
 
@@ -18,9 +18,9 @@
 static BUFFER *
 create_msgs(void)
 {
-    BUFFER *bp = 0;
+    BUFFER *bp = NULL;
 
-    if (wheadp != 0) {		/* we need windows before creating buffers */
+    if (wheadp != NULL) {	/* we need windows before creating buffers */
 	bp = bfind(MESSAGES_BufName, BFINVS);
 
 	if (valid_buffer(bp)) {
@@ -48,7 +48,7 @@ msg_putc(int c)
     register BUFFER *bp;
     register WINDOW *wp;
 
-    if ((bp = create_msgs()) == 0)
+    if ((bp = create_msgs()) == NULL)
 	return TRUE;
 
     savemk = DOT;
@@ -76,11 +76,11 @@ msg_putc(int c)
     if (c == '\n') {
 	static TBUFF *ss;
 	int len = (DOT.o > 0) ? DOT.o : 1;
-	if (tb_init(&ss, EOS) != 0
+	if (tb_init(&ss, EOS) != NULL
 	    && tb_bappend(&ss,
 			  (DOT.o > 0) ? lvalue(DOT.l) : "?",
-			  (size_t) len) != 0
-	    && tb_append(&ss, EOS) != 0) {
+			  (size_t) len) != NULL
+	    && tb_append(&ss, EOS) != NULL) {
 	    TRACE(("msg:%s\n",
 		   visible_buff(tb_values(ss),
 				(int) tb_length(ss) - 1, TRUE)));
@@ -121,12 +121,12 @@ popup_msgs(void)
     register BUFFER *bp;
     WINDOW *wp;
 
-    if ((bp = create_msgs()) == 0)
+    if ((bp = create_msgs()) == NULL)
 	return;
 
     savemk = DOT;
     if (!is_empty_buf(bp)) {
-	if ((curwp == 0) || sgarbf || global_g_val(GMDPOPUP_MSGS) == -TRUE) {
+	if ((curwp == NULL) || sgarbf || global_g_val(GMDPOPUP_MSGS) == -TRUE) {
 	    return;		/* CAN'T popup yet */
 	}
 	if (popupbuff(bp) == FALSE) {

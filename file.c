@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Id: file.c,v 1.465 2022/08/21 15:18:12 tom Exp $
+ * $Id: file.c,v 1.466 2025/01/26 14:10:09 tom Exp $
  */
 
 #include "estruct.h"
@@ -78,7 +78,7 @@ file_modified(char *path)
     struct stat statbuf;
     time_t the_time = 0;
 
-    (void) file_stat(path, 0);
+    (void) file_stat(path, NULL);
     if (file_stat(path, &statbuf) >= 0
 	&& isFileMode(statbuf.st_mode)) {
 #if SYS_VMS
@@ -402,8 +402,8 @@ same_fname(const char *fname, BUFFER *bp, int lengthen)
     int status = FALSE;
     char temp[NFILEN];
 
-    if (fname == 0
-	|| bp->b_fname == 0
+    if (fname == NULL
+	|| bp->b_fname == NULL
 	|| isInternalName(fname)
 	|| isInternalName(bp->b_fname)) {
 	return (status);
@@ -446,7 +446,7 @@ fileuid_get(const char *fname GCC_UNUSED, FUID * fuid GCC_UNUSED)
     struct stat sb;
 
     TRACE(("fileuid_get(%s) discarding cache\n", fname));
-    (void) file_stat(fname, 0);
+    (void) file_stat(fname, NULL);
     memset(fuid, 0, sizeof(*fuid));
     if (file_stat(fname, &sb) == 0) {
 	fuid->ino = sb.st_ino;
@@ -674,7 +674,7 @@ bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl)
 {
     int s;
 
-    if ((s = (bp != 0)) != FALSE) {
+    if ((s = (bp != NULL)) != FALSE) {
 	if (bp->b_active) {
 	    if (ask_rerun) {
 		switch (mlyesno("Old command output -- rerun")) {
@@ -709,20 +709,20 @@ set_files_to_edit(const char *prompt, int appflag)
 
     char fname[NFILEN];
     char *actual;
-    BUFFER *firstbp = 0;
+    BUFFER *firstbp = NULL;
 
     TRACE((T_CALLED "set_files_to_edit(%s, %d)\n", NONNULL(prompt), appflag));
 
     if ((status = mlreply_file(prompt, &lastfileedited,
 			       FILEC_READ | FILEC_EXPAND,
 			       fname)) == TRUE) {
-	while ((actual = filec_expand()) != 0) {
-	    if ((bp = getfile2bp(actual, !clexec, FALSE)) == 0) {
+	while ((actual = filec_expand()) != NULL) {
+	    if ((bp = getfile2bp(actual, !clexec, FALSE)) == NULL) {
 		status = FALSE;
 		break;
 	    }
 	    bp->b_flag |= BFARGS;	/* treat this as an argument */
-	    if (firstbp == 0) {
+	    if (firstbp == NULL) {
 		firstbp = bp;
 		if (!appflag) {
 		    for (bp = bheadp; bp; bp = bp_next) {
@@ -734,7 +734,7 @@ set_files_to_edit(const char *prompt, int appflag)
 		}
 	    }
 	}
-	if (find_bp(firstbp) != 0) {
+	if (find_bp(firstbp) != NULL) {
 	    status = bp2swbuffer(firstbp, FALSE, TRUE);
 	    if (status == ABORT)
 		reset_to_unnamed(firstbp);
@@ -763,7 +763,7 @@ viewfile(int f GCC_UNUSED, int n GCC_UNUSED)
 
     if ((s = mlreply_file("View file: ", &last, FILEC_READ | FILEC_EXPAND,
 			  fname)) == TRUE) {
-	while ((actual = filec_expand()) != 0) {
+	while ((actual = filec_expand()) != NULL) {
 	    if ((s = getfile(actual, FALSE)) != TRUE)
 		break;
 	    /* if we succeed, put it in view mode */
@@ -819,7 +819,7 @@ writelinesmsg(char *fn, int nline, B_COUNT nchar)
 	const char *action;
 	char *aname, tmp[NFILEN], strlines[128], strchars[128];
 	int outlen, lines_len, chars_len;
-	if ((aname = is_appendname(fn)) != 0) {
+	if ((aname = is_appendname(fn)) != NULL) {
 	    fn = aname;
 	    action = "Appended";
 	} else {
@@ -887,10 +887,10 @@ ff_load_directory(char *fname)
 	BUFFER *bp = find_b_file(lengthen_path(vl_strncpy(temp, fname,
 							  sizeof(temp))));
 
-	if (bp == 0)
+	if (bp == NULL)
 	    bp = getfile2bp(temp, FALSE, FALSE);
 
-	if (bp == 0)
+	if (bp == NULL)
 	    return FIOERR;
 
 	ffbuffer = bp;
@@ -1019,7 +1019,7 @@ getfile2bp(const char *fname,	/* file name to find */
 	(void) lengthen_path(vl_strncpy(nfname, fname, sizeof(nfname)));
 	if (is_internalname(nfname)) {
 	    mlforce("[Buffer not found]");
-	    return 0;
+	    return NULL;
 	}
 #ifdef CAN_CHECK_INO
 	if (global_g_val(GMDUNIQ_BUFS)) {
@@ -1062,14 +1062,14 @@ getfile2bp(const char *fname,	/* file name to find */
 	    hst_glue(' ');
 	    s = mlreply("Will use buffer name: ", bname, (int) sizeof(bname));
 	    if (s == ABORT)
-		return 0;
+		return NULL;
 	    if (s == FALSE || bname[0] == EOS)
 		makename(bname, fname);
 	}
 	/* okay, we've got a unique name -- create it */
 	if (bp == NULL && (bp = bfind(bname, 0)) == NULL) {
 	    mlwarn("[Cannot create buffer]");
-	    return 0;
+	    return NULL;
 	}
 	/* switch and read it in. */
 	ch_fname(bp, nfname);
@@ -1106,7 +1106,7 @@ getfile(char *fname,		/* file name to find */
     /* if there are no path delimiters in the name, then the user
        is likely asking for an existing buffer -- try for that
        first */
-    if ((bp = find_b_file(fname)) == 0
+    if ((bp = find_b_file(fname)) == NULL
 	&& ((strlen(fname) > (size_t) NBUFN - 1)	/* too big to be a bname */
 	    ||maybe_pathname(fname)	/* looks a lot like a filename */
 	    ||(bp = find_b_name(fname)) == NULL)) {
@@ -1536,7 +1536,7 @@ quickreadf(BUFFER *bp, int *nlinep)
 		if (lp != bp->b_LINEs)
 		    set_lback(lp, lp - 1);
 		lsetclear(lp);
-		lp->l_nxtundo = 0;
+		lp->l_nxtundo = NULL;
 #if OPT_LINE_ATTRS
 		lp->l_attrs = NULL;
 #endif
@@ -1596,7 +1596,7 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
     ffshadow = file_is_closed;	/* an assumption */
 #endif
 
-    if (bp == 0)		/* doesn't hurt to check */
+    if (bp == NULL)		/* doesn't hurt to check */
 	returnCode(FALSE);
 
     if (*fname == EOS) {
@@ -2160,7 +2160,7 @@ write_encoded_text(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 	    mlforce("Error writing buffer as %s (encoding error)!",
 		    encoding2s(b_val(bp, VAL_FILE_ENCODING)));
 	} else {
-	    rc = ffputline(bp->encode_utf_buf, len, 0);
+	    rc = ffputline(bp->encode_utf_buf, len, NULL);
 	}
     } else {
 	rc = ffputline(buf, nbuf, ending);
@@ -2214,7 +2214,7 @@ write_region(BUFFER *bp, REGION * rp, int encoded, int *nline, B_COUNT * nchar)
 #if OPT_SELECTIONS
 	if (encoded) {
 	    TBUFF *temp;
-	    if ((temp = encode_attributes(lp, bp, rp)) != 0) {
+	    if ((temp = encode_attributes(lp, bp, rp)) != NULL) {
 		text = tb_values(temp);
 		len = (int) tb_length(temp);
 	    }
@@ -2242,7 +2242,7 @@ write_region(BUFFER *bp, REGION * rp, int encoded, int *nline, B_COUNT * nchar)
 
 	if (encoded) {
 	    TBUFF *temp;
-	    if ((temp = encode_attributes(lp, bp, rp)) != 0) {
+	    if ((temp = encode_attributes(lp, bp, rp)) != NULL) {
 		text = tb_values(temp);
 		len = (int) tb_length(temp);
 	    }
@@ -2373,7 +2373,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 	&& whole_file
 	&& eql_bname(bp, UNNAMED_BufName)
 	&& !isShellOrPipe(fn)
-	&& find_b_file(fn) == 0) {
+	&& find_b_file(fn) == NULL) {
 	ch_fname(bp, fn);
 	set_buffer_name(bp);
     }
@@ -2412,12 +2412,12 @@ writereg(REGION * rp,
     if (no_file_name(given_fn)) {
 	status = FALSE;
     } else if (!forced && b_val(bp, MDREADONLY)
-	       && (bp->b_fname == 0 || !strcmp(given_fn, bp->b_fname))) {
+	       && (bp->b_fname == NULL || !strcmp(given_fn, bp->b_fname))) {
 	mlwarn("[Buffer mode is \"readonly\"]");
 	status = FALSE;
     } else {
 	if (isShellOrPipe(given_fn)
-	    && bp->b_fname != 0
+	    && bp->b_fname != NULL
 	    && !strcmp(given_fn, bp->b_fname)
 	    && mlyesno("Are you sure (this was a pipe-read)") != TRUE) {
 	    mlwrite("File not written");
@@ -2676,7 +2676,7 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
 	   NONNULL(fname), belowthisline, (void *) haveffp));
 
     b_clr_invisible(bp);	/* we are not temporary */
-    if (haveffp == 0) {
+    if (haveffp == NULL) {
 	if ((status = ffropen(fname)) == FIOERR)	/* Hard file open */
 	    goto out;
 	else if (status == FIOFNF)	/* File not found */
@@ -2704,7 +2704,7 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
     MK = DOT;
 
     nline = 0;
-    nextp = 0;
+    nextp = NULL;
     while ((status = ffgetline(&nbytes)) <= FIOSUC) {
 #if OPT_DOSFILES
 	if (b_val(bp, MDDOS)
@@ -2720,7 +2720,7 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
 	beginDisplay();
 	if (add_line_at(bp, prevp, fflinebuf, (int) nbytes) != TRUE) {
 	    status = FIOMEM;
-	    newlp = 0;
+	    newlp = NULL;
 	} else {
 	    newlp = lforw(prevp);
 	    if (OkUndo(bp)) {
@@ -2787,7 +2787,7 @@ create_save_dir(char *dirnam)
 #if defined(HAVE_MKDIR) && !SYS_MSDOS && !SYS_OS2
     static const char *tbl[] =
     {
-	0,			/* reserved for $TMPDIR */
+	NULL,			/* reserved for $TMPDIR */
 #if SYS_UNIX
 	"/var/tmp",
 	"/usr/tmp",
@@ -2799,7 +2799,7 @@ create_save_dir(char *dirnam)
     char *np;
     unsigned n;
 
-    if ((np = getenv("TMPDIR")) != 0 &&
+    if ((np = getenv("TMPDIR")) != NULL &&
 	(int) strlen(np) < 32 &&
 	is_directory(np)) {
 	tbl[0] = np;
@@ -2815,7 +2815,7 @@ create_save_dir(char *dirnam)
 
 	    /* on failure, keep going */
 #if defined(HAVE_MKSTEMP) && defined(HAVE_MKDTEMP)
-	    result = (vl_mkdtemp(dirnam) != 0);
+	    result = (vl_mkdtemp(dirnam) != NULL);
 #else
 	    if (mktemp(dirnam) != 0 && *dirnam != '\0') {
 		result = (vl_mkdir(dirnam, 0700) == 0);
@@ -2837,7 +2837,7 @@ static const char *mailcmds[] =
     "/sbin/sendmail",
     "/usr/sbin/sendmail",
     "/bin/mail",
-    0
+    NULL
 };
 #endif
 
@@ -2876,7 +2876,7 @@ imdying(int ACTUAL_SIG_ARGS)
     beginDisplay();
     fflinebuf = my_buffer;
     fflinelen = 0;
-    ffp = 0;
+    ffp = NULL;
     ffd = -1;
 
     /* write all modified buffers to the temp directory */
@@ -2924,13 +2924,13 @@ imdying(int ACTUAL_SIG_ARGS)
 	   it used to be you could rely on /bin/mail being
 	   a simple mailer, but no more.  and sendmail has
 	   been moving around too. */
-	for (mailcmdp = mailcmds; *mailcmdp != 0; mailcmdp++) {
+	for (mailcmdp = mailcmds; *mailcmdp != NULL; mailcmdp++) {
 	    if (file_stat(*mailcmdp, &sb) == 0)
 		break;
 	}
 	if (*mailcmdp &&
-	    ((np = getenv("LOGNAME")) != 0 ||
-	     (np = getenv("USER")) != 0)) {
+	    ((np = getenv("LOGNAME")) != NULL ||
+	     (np = getenv("USER")) != NULL)) {
 	    char *cp;
 	    cp = lsprintf(cmd, "( %s %s; %s; %s; %s %d;",
 			  "echo To:", np,

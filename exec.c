@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Id: exec.c,v 1.367 2020/01/17 23:29:54 tom Exp $
+ * $Id: exec.c,v 1.370 2025/01/26 15:01:34 tom Exp $
  */
 
 #include "estruct.h"
@@ -239,7 +239,7 @@ parse_linespec(const char *s, LINE **markptr)
 	    if (tb_length(searchpat) > 1 &&
 		(gregexp = regcomp(tb_values(searchpat),
 				   tb_length(searchpat) - 1,
-				   b_val(curbp, MDMAGIC))) != 0) {
+				   b_val(curbp, MDMAGIC))) != NULL) {
 
 		scanboundry(TRUE, DOT, last_srch_direc);
 		if (scanner(gregexp,
@@ -281,7 +281,7 @@ parse_linespec(const char *s, LINE **markptr)
      * we'll get a null pointer here.  But there's no reason to flag a bug in
      * swapmark().
      */
-    if (lp == 0 && (s == base)) {
+    if (lp == NULL && (s == base)) {
 	DOT = MK;
     } else {
 	swapmark();
@@ -306,7 +306,7 @@ rangespec(const char *specp,
 
     *flagp = 0;
 
-    if (specp == 0)
+    if (specp == NULL)
 	return -1;
 
     /* ignore command lines that start with a double-quote */
@@ -335,7 +335,7 @@ rangespec(const char *specp,
     } else {
 	scan = parse_linespec(scan, &toline);
 	*flagp |= FROM;
-	if (toline == 0)
+	if (toline == NULL)
 	    toline = DOT.l;
 	fromline = toline;
 	while (*scan == ',') {
@@ -343,7 +343,7 @@ rangespec(const char *specp,
 	    scan++;
 	    scan = parse_linespec(scan, &toline);
 	    *flagp |= TO;
-	    if (toline == 0) {
+	    if (toline == NULL) {
 		TRACE(("...faulty line spec\n"));
 		return -1;
 	    }
@@ -351,7 +351,7 @@ rangespec(const char *specp,
     }
 
     if (is_empty_buf(curbp))
-	fromline = toline = 0;
+	fromline = toline = NULL;
 
     if (scan == specp)
 	*flagp |= DFLALL;
@@ -385,7 +385,7 @@ const char *
 skip_linespecs(const char *buffer, int cpos, int *done)
 {
     const char *src = buffer;
-    const char *before = 0;
+    const char *before = NULL;
 
     TRACE(("skip_linespecs(%d) \"%.*s\"\n", cpos, cpos, buffer));
     if (cpos != 0) {
@@ -509,8 +509,8 @@ resplice_command(TBUFF **lspec, const char *cspec)
     int result = FALSE;
     int end_lspec = 0;
     int end_input = (int) strlen(cspec);
-    LINE *fromline = 0;
-    LINE *toline = 0;
+    LINE *fromline = NULL;
+    LINE *toline = NULL;
     CMDFLAGS lflag = 0;
 
     if (tb_length(*lspec) == 1 && *tb_values(*lspec) == EOS) {
@@ -633,7 +633,7 @@ execute_named_command(int f, int n)
 			c = end_string();
 			if (isPunct(c)
 			    && vl_index(global_g_val_ptr(GVAL_EXPAND_CHARS),
-					c) != 0) {
+					c) != NULL) {
 			    unkeystroke(c);
 			}
 		    }
@@ -672,7 +672,7 @@ execute_named_command(int f, int n)
     }
 
     /* reconstruct command if user edited it */
-    if (repeat_cmd != EOS && fnp != 0 && *fnp == EOS) {
+    if (repeat_cmd != EOS && fnp != NULL && *fnp == EOS) {
 	fnp[0] = repeat_cmd;
 	fnp[1] = EOS;
     }
@@ -734,7 +734,7 @@ execute_named_command(int f, int n)
 	    mlforce("[Can't use address 0 with \"%s\" command]", fnp);
 	    return FALSE;
 	}
-	if (fromline == 0)
+	if (fromline == NULL)
 	    fromline = buf_head(curbp);		/* buffer is empty */
 
 	/*  we're positioned at fromline == curbp->b_linep, so commands
@@ -811,7 +811,7 @@ execute_named_command(int f, int n)
 		mlforce("[Configuration error: DFLNONE]");
 		return FALSE;
 	    }
-	    fromline = toline = 0;
+	    fromline = toline = NULL;
 	    lflag |= (FROM | TO);	/* avoid prompt for line-count */
 	} else
 	    lflag &= ~DFLALL;
@@ -868,20 +868,20 @@ execute_named_command(int f, int n)
     TRACE_KPOS(("kpos save %d.%d\n", line_no(curbp, DOT.l), DOT.o));
 
     if (!(flags & NOMOVE)
-	&& ((toline != 0) || (fromline != 0))) {
+	&& ((toline != NULL) || (fromline != NULL))) {
 	/* assume it's an absolute motion */
 	/* we could probably do better */
 	curwp->w_lastdot = DOT;
     }
-    if ((toline != 0) && (flags & TO)) {
+    if ((toline != NULL) && (flags & TO)) {
 	DOT.l = toline;
 	(void) firstnonwhite(FALSE, 1);
 	(void) setmark();
     }
-    if ((fromline != 0) && (flags & FROM)) {
+    if ((fromline != NULL) && (flags & FROM)) {
 	DOT.l = fromline;
 	(void) firstnonwhite(FALSE, 1);
-	if (toline == 0)
+	if (toline == NULL)
 	    (void) setmark();
     }
     if (!sameline(last_DOT, DOT))
@@ -937,8 +937,8 @@ execute_named_command(int f, int n)
 		(cfp == &f_operrshift || cfp == &f_operlshift)) {
 		flags |= NOMOVE;
 		TRACE_KPOS(("kpos restore bot\n"));
-	    } else if (toline != 0 &&
-		       fromline != 0) {
+	    } else if (toline != NULL &&
+		       fromline != NULL) {
 		int dotline = line_no(curbp, save_DOT.l);
 		if (line_no(curbp, toline) < dotline) {
 		    save_DOT.l = toline;
@@ -1010,7 +1010,7 @@ docmd(char *cline, int execflag, int f, int n)
     int status;			/* return status of function */
     int oldcle;			/* old contents of clexec flag */
     char *oldestr;		/* original exec string */
-    TBUFF *tok = 0;
+    TBUFF *tok = NULL;
     char *token;		/* next token off of command line */
     const CMDFUNC *cfp;
 
@@ -1022,7 +1022,7 @@ docmd(char *cline, int execflag, int f, int n)
     execstr = cline;		/* and change execstr to the new one */
 
     do {
-	if ((token = mac_unquotedarg(&tok)) == 0) {	/* grab first token */
+	if ((token = mac_unquotedarg(&tok)) == NULL) {	/* grab first token */
 	    execstr = oldestr;
 	    returnCode(FALSE);
 	}
@@ -1039,10 +1039,10 @@ docmd(char *cline, int execflag, int f, int n)
      */
     if (toktyp(token) != TOK_LITSTR || isDigit(token[0])) {
 	f = TRUE;
-	n = (int) strtol(tokval(token), 0, 0);
+	n = (int) strtol(tokval(token), NULL, 0);
 
 	/* and now get the command to execute */
-	if ((token = mac_unquotedarg(&tok)) == 0) {
+	if ((token = mac_unquotedarg(&tok)) == NULL) {
 	    execstr = oldestr;
 	    returnCode(FALSE);
 	}
@@ -1184,7 +1184,7 @@ execute(const CMDFUNC * execfunc, int f, int n)
 	    ukb = dotcmdkreg;
     }
 
-    if (curwp->w_tentative_lastdot.l == 0)
+    if (curwp->w_tentative_lastdot.l == NULL)
 	curwp->w_tentative_lastdot = DOT;
 
     status = call_cmdfunc(execfunc, f, n);
@@ -1205,7 +1205,7 @@ execute(const CMDFUNC * execfunc, int f, int n)
 }
 
 /*
- * Chop a token off a string 'src' return a pointer past the token in 'tok'. 
+ * Chop a token off a string 'src' return a pointer past the token in 'tok'.
  * 'eolchar' is the nominal delimiter we expect (perhaps '=' for the "set"
  * command), and 'actual' returns the first character past the token that we
  * actually found.
@@ -1225,9 +1225,9 @@ get_token1(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
 {
     int c, chr;
 
-    if (actual != 0)
+    if (actual != NULL)
 	*actual = EOS;
-    if (src == 0)
+    if (src == NULL)
 	return src;
 
     /* first scan past any whitespace in the source string */
@@ -1244,24 +1244,24 @@ get_token1(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
 	 * Multiple settings on the line may be separated by colons.
 	 */
 	else if (c == ':' && in_modeline) {
-	    if (actual != 0)
+	    if (actual != NULL)
 		*actual = ' ';
 	    src++;
 	    break;
 	} else
 #endif
 	if (c == eolchar) {
-	    if (actual != 0)
+	    if (actual != NULL)
 		*actual = *src;
 	    if (!isBlank(c))
 		src++;
 	    break;
 	} else if (endfunc(tb_values(*tok), tb_length(*tok), c, eolchar)) {
-	    if (actual != 0)
+	    if (actual != NULL)
 		*actual = *src;
 	    break;
 	} else if (isBlank(c)) {
-	    if (actual != 0)
+	    if (actual != NULL)
 		*actual = *src;
 	    break;
 	}
@@ -1292,9 +1292,9 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
     int shell = tb_length(*tok) && isShellOrPipe(tb_values(*tok));
     int first = TRUE;
 
-    if (actual != 0)
+    if (actual != NULL)
 	*actual = EOS;
-    if (src == 0)
+    if (src == NULL)
 	return src;
 
     /* first scan past any whitespace in the source string */
@@ -1392,7 +1392,7 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
 	    if (quotef != EOS) {
 		if (c == quotef) {
 		    src++;
-		    if (actual != 0)
+		    if (actual != NULL)
 			*actual = *src;
 		    break;
 		}
@@ -1402,20 +1402,20 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
 		 * Multiple settings on the line may be separated by colons.
 		 */
 		if (c == ':' && in_modeline) {
-		    if (actual != 0)
+		    if (actual != NULL)
 			*actual = ' ';
 		    src++;
 		    break;
 		} else
 #endif
 		if (c == eolchar) {
-		    if (actual != 0)
+		    if (actual != NULL)
 			*actual = *src;
 		    if (!isBlank(c))
 			src++;
 		    break;
 		} else if (endfunc(tb_values(*tok), tb_length(*tok), c, eolchar)) {
-		    if (actual != 0)
+		    if (actual != NULL)
 			*actual = *src;
 		    break;
 		} else if (c == DQUOTE) {
@@ -1427,7 +1427,7 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
 		     * this function.
 		     */
 		} else if (isBlank(c)) {
-		    if (actual != 0)
+		    if (actual != NULL)
 			*actual = *src;
 		    break;
 		}
@@ -1480,14 +1480,14 @@ macroize(TBUFF **p, TBUFF *src, int skip)
     char *ref;
     char *txt;
 
-    if ((ref = tb_values(src)) != 0) {	/* FIXME */
+    if ((ref = tb_values(src)) != NULL) {	/* FIXME */
 	int multi = !isShellOrPipe(ref);	/* shift command? */
 	int count = 0;
 
-	if (tb_init(p, esc_c) != 0) {
+	if (tb_init(p, esc_c) != NULL) {
 	    size_t n, len = tb_length(src);
 
-	    if ((txt = tb_values(src)) != 0) {
+	    if ((txt = tb_values(src)) != NULL) {
 
 		TRACE(("macroizing %s\n", tb_visible(src)));
 		(void) tb_append(p, DQUOTE);
@@ -1501,7 +1501,7 @@ macroize(TBUFF **p, TBUFF *src, int skip)
 		}
 		(void) tb_append(p, DQUOTE);
 		TRACE(("macroized %s\n", tb_visible(*p)));
-		return (tb_append(p, EOS) != 0);
+		return (tb_append(p, EOS) != NULL);
 	    }
 	}
     }
@@ -1515,7 +1515,7 @@ mac_tokens(void)
     const char *s = execstr;
     unsigned result = 0;
 
-    while (s != 0 && *s != EOS) {
+    while (s != NULL && *s != EOS) {
 	if (isSpace(*s)) {
 	    s = skip_cblanks(s);
 	} else if (*s != EOS) {
@@ -1542,7 +1542,7 @@ mac_token(TBUFF **tok)
     result = (execstr != oldstr);
 
     if (clexec && result) {
-	if (execstr == 0 || *skip_blanks(execstr) == EOS)
+	if (execstr == NULL || *skip_blanks(execstr) == EOS)
 	    set_end_string('\n');
     }
 
@@ -1559,8 +1559,8 @@ mac_tokval(TBUFF **tok)
 	const char *newvalue = tokval(previous);
 	int old_type = toktyp(previous);
 	/* evaluate the token */
-	if (previous != 0
-	    && newvalue != 0
+	if (previous != NULL
+	    && newvalue != NULL
 	    && old_type != TOK_QUOTSTR
 	    && (const char *) previous != newvalue) {
 	    /*
@@ -1568,7 +1568,7 @@ mac_tokval(TBUFF **tok)
 	     * down by one since we're stripping a leading quote.
 	     */
 	    if (((const char *) previous) + 1 == newvalue) {
-		TBUFF *fix = 0;
+		TBUFF *fix = NULL;
 		tb_scopy(&fix, newvalue);
 		tb_free(tok);
 		*tok = fix;
@@ -1580,7 +1580,7 @@ mac_tokval(TBUFF **tok)
 	return (tb_values(*tok));
     }
     tb_free(tok);
-    return (0);
+    return (NULL);
 }
 
 /*
@@ -1623,25 +1623,25 @@ decode_parameter_info(TBUFF *tok, PARAM_INFO * result)
     char *s = vl_strncpy(name, tb_values(tok), sizeof(name));
     int code;
 
-    if ((s = strchr(s, '=')) != 0) {
+    if ((s = strchr(s, '=')) != NULL) {
 	vl_strncpy(text, tokval(s + 1), sizeof(text));
 	*s = EOS;
     } else {
 	text[0] = EOS;
     }
-    if ((s = strchr(name, ':')) != 0)
+    if ((s = strchr(name, ':')) != NULL)
 	*s++ = EOS;
 
     code = choice_to_code(&fsm_paramtypes_blist, name, strlen(name));
     /* split-up to work around gcc bug */
     result->pi_type = (PARAM_TYPES) code;
     if (result->pi_type >= 0) {
-	result->pi_text = *text ? strmalloc(text) : 0;
+	result->pi_text = *text ? strmalloc(text) : NULL;
 #if OPT_ENUM_MODES
-	if (s != 0)
+	if (s != NULL)
 	    result->pi_choice = name_to_choices(s);
 	else
-	    result->pi_choice = 0;
+	    result->pi_choice = NULL;
 #endif
 	return TRUE;
     }
@@ -1658,7 +1658,7 @@ setup_macro_buffer(TBUFF *name, int bufnum, UINT flags)
     unsigned count = 0;
 #endif
 #if OPT_ONLINEHELP
-    TBUFF *helpstring = 0;	/* optional help string */
+    TBUFF *helpstring = NULL;	/* optional help string */
 #endif
     char bname[NBUFN];		/* name of buffer to use */
     BUFFER *bp;
@@ -1712,16 +1712,16 @@ setup_macro_buffer(TBUFF *name, int bufnum, UINT flags)
 #endif
 #if OPT_MACRO_ARGS
 		case TOK_LITSTR:
-		    if (cf->c_args == 0) {
+		    if (cf->c_args == NULL) {
 			cf->c_args = typeallocn(PARAM_INFO, (size_t) limit + 1);
-			if (cf->c_args == 0) {
+			if (cf->c_args == NULL) {
 			    free(cf);
 			    return no_memory("Allocating parameter info");
 			}
 		    }
 		    if (decode_parameter_info(temp, &(cf->c_args[count]))) {
 			cf->c_args[++count].pi_type = PT_UNKNOWN;
-			cf->c_args[count].pi_text = 0;
+			cf->c_args[count].pi_text = NULL;
 			break;
 		    }
 #endif
@@ -1736,7 +1736,7 @@ setup_macro_buffer(TBUFF *name, int bufnum, UINT flags)
 #endif
 
 #if OPT_ONLINEHELP
-	if (helpstring == 0)
+	if (helpstring == NULL)
 	    cf->c_help = strmalloc("User-defined procedure");
 	else
 	    cf->c_help = strmalloc(tb_values(helpstring));
@@ -1769,7 +1769,7 @@ can_store_macro(const char *name)
 }
 
 /*
- * Set up a macro buffer and flag to store all executed command lines there. 
+ * Set up a macro buffer and flag to store all executed command lines there.
  * 'n' is the macro number to use.
  */
 int
@@ -1951,19 +1951,19 @@ push_variable(char *name)
     }
 
     /* Check if we've saved this before */
-    for (p = ifstk.locals; p != 0; p = p->next) {
+    for (p = ifstk.locals; p != NULL; p = p->next) {
 	if (!strcmp(name, p->name))
 	    return TRUE;
     }
 
     /* We've not saved it - do it now */
-    if ((p = typealloc(LOCALS)) == 0) {
+    if ((p = typealloc(LOCALS)) == NULL) {
 	no_memory("push_variable");
 	return FALSE;
     }
     p->next = ifstk.locals;
     p->name = strmalloc(name);
-    p->m_value = 0;
+    p->m_value = NULL;
     p->p_value = tokval(name);
     if (isErrorVal(p->p_value)) {
 	/* special case: so we can delete vars */
@@ -1976,15 +1976,15 @@ push_variable(char *name)
 	/* FIXME: this won't handle embedded nulls */
 	if (find_mode(curbp, (*name == '$') ? (name + 1) : name, -TRUE, &args)
 	    && must_quote_token(p->p_value, strlen(p->p_value))) {
-	    TBUFF *tmp = 0;
+	    TBUFF *tmp = NULL;
 	    append_quoted_token(&tmp, p->p_value, strlen(p->p_value));
 	    tb_append(&tmp, EOS);
-	    if (tb_values(tmp) != 0)
+	    if (tb_values(tmp) != NULL)
 		p->p_value = tb_values(tmp);
 	    free(tmp);
 	} else {
 	    p->m_value = strmalloc(p->p_value);
-	    p->p_value = 0;
+	    p->p_value = NULL;
 	}
     }
 
@@ -2000,7 +2000,7 @@ static void
 pop_variable(void)
 {
     LOCALS *p = ifstk.locals;
-    const char *value = (p->p_value != 0) ? p->p_value : p->m_value;
+    const char *value = (p->p_value != NULL) ? p->p_value : p->m_value;
 
     TRACE((T_CALLED "pop_variable()\n"));
 
@@ -2010,7 +2010,7 @@ pop_variable(void)
 	rmv_tempvar(p->name);
     } else {
 	set_state_variable(p->name, value);
-	if (p->m_value != 0)
+	if (p->m_value != NULL)
 	    free(p->m_value);
     }
     free(p->name);
@@ -2023,7 +2023,7 @@ static void
 push_buffer(IFSTK * save)
 {
     static const IFSTK new_ifstk =
-    {0, 0, FALSE, rgn_EXACT, 0, 0, 0};	/* all 0's */
+    {0, 0, FALSE, rgn_EXACT, NULL, NULL, NULL};		/* all 0's */
 
     *save = ifstk;
     save->shape = regionshape;
@@ -2033,7 +2033,7 @@ push_buffer(IFSTK * save)
     ifstk = new_ifstk;
     havemotion = NULL;
     regionshape = rgn_EXACT;
-    with_prefix = 0;
+    with_prefix = NULL;
 }
 
 static void
@@ -2099,7 +2099,7 @@ navigate_while(LINE **lpp, WHLOOP * whlist)
      *  (i.e. if we're at a break or while, we're sent to the
      *  bottom, if we're at an endwhile, we're sent to the top.)
      */
-    for (wht = whlist; wht != 0; wht = wht->w_next) {
+    for (wht = whlist; wht != NULL; wht = wht->w_next) {
 	if (wht->w_here == *lpp) {
 	    *lpp = wht->w_there;
 	    return TRUE;
@@ -2122,7 +2122,7 @@ begin_directive(char **const cmdpp,
 		LINE **lpp)
 {
     int status = DDIR_COMPLETE;	/* assume directive is self-contained */
-    TBUFF *argtkn = 0;
+    TBUFF *argtkn = NULL;
     char *value;
     char *old_execstr = execstr;
 
@@ -2144,7 +2144,7 @@ begin_directive(char **const cmdpp,
 
     case D_WHILE:
 	if (!ifstk.disabled) {
-	    if ((value = mac_unquotedarg(&argtkn)) == 0) {
+	    if ((value = mac_unquotedarg(&argtkn)) == NULL) {
 		status = DDIR_INCOMPLETE;
 		break;
 	    } else if (scan_bool(value) != TRUE) {
@@ -2175,7 +2175,7 @@ begin_directive(char **const cmdpp,
 	if (!ifstk.disabled) {
 	    ifstk.fired = FALSE;
 	    ifstk.disabled = ifstk.level;
-	    if ((value = mac_unquotedarg(&argtkn)) == 0)
+	    if ((value = mac_unquotedarg(&argtkn)) == NULL)
 		status = DDIR_INCOMPLETE;
 	    else if (scan_bool(value) == TRUE) {
 		ifstk.disabled = 0;
@@ -2191,7 +2191,7 @@ begin_directive(char **const cmdpp,
 	    if (ifstk.fired) {
 		if (!ifstk.disabled)
 		    ifstk.disabled = ifstk.level;
-	    } else if ((value = mac_unquotedarg(&argtkn)) == 0) {
+	    } else if ((value = mac_unquotedarg(&argtkn)) == NULL) {
 		status = DDIR_INCOMPLETE;
 	    } else if (!ifstk.fired
 		       && ifstk.disabled == ifstk.level
@@ -2230,7 +2230,7 @@ begin_directive(char **const cmdpp,
 
     case D_GOTO:
 	if (!ifstk.disabled) {
-	    TBUFF *label = 0;
+	    TBUFF *label = NULL;
 	    LINE *glp;		/* line to goto */
 
 	    /* grab label to jump to */
@@ -2246,7 +2246,7 @@ begin_directive(char **const cmdpp,
 #endif
 	    value = tb_values(label);
 	    glp = label2lp(bp, value);
-	    if (glp == 0) {
+	    if (glp == NULL) {
 		mlforce("[No such label \"%s\"]", value);
 		status = DDIR_FAILED;
 	    } else {
@@ -2302,7 +2302,7 @@ begin_directive(char **const cmdpp,
 
     case D_TRACE:
 	if (!ifstk.disabled) {
-	    if ((value = mac_unquotedarg(&argtkn)) == 0) {
+	    if ((value = mac_unquotedarg(&argtkn)) == NULL) {
 		mlforce("[Trace is %s]", tracemacros ? "on" : "off");
 	    } else {
 		tracemacros = scan_bool(value);
@@ -2320,14 +2320,14 @@ alloc_WHLOOP(WHLOOP * whp, DIRECTIVE dirnum, LINE *lp)
 {
     WHLOOP *nwhp;
 
-    if ((nwhp = typealloc(WHLOOP)) == 0) {
+    if ((nwhp = typealloc(WHLOOP)) == NULL) {
 	mlforce("[Out of memory during '%s' scan]",
 		directive_name(dirnum));
 	free_all_whiles(whp);
-	return 0;
+	return NULL;
     }
     nwhp->w_here = lp;
-    nwhp->w_there = 0;
+    nwhp->w_there = NULL;
     nwhp->w_type = dirnum;
     nwhp->w_next = whp;
     return nwhp;
@@ -2339,12 +2339,12 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
     int status = TRUE;
     LINE *lp;
     char *cmdp;
-    WHLOOP *twhp, *whp = 0;
+    WHLOOP *twhp, *whp = NULL;
     DIRECTIVE dirnum;
 
     /* create the WHILE blocks */
     bp->b_dot.o = 0;
-    *result = 0;
+    *result = NULL;
     for_each_line(lp, bp) {
 	int i;
 
@@ -2367,12 +2367,12 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
 	    dirnum == D_BREAK ||
 	    dirnum == D_ENDWHILE) {
 
-	    if ((whp = alloc_WHLOOP(whp, dirnum, lp)) == 0) {
+	    if ((whp = alloc_WHLOOP(whp, dirnum, lp)) == NULL) {
 		status = FALSE;
 		break;
 	    }
 
-	    twhp = 0;
+	    twhp = NULL;
 	    if (dirnum == D_ENDWHILE) {
 		/* walk back, filling in unfilled
 		 * 'there' pointers on the breaks,
@@ -2485,15 +2485,15 @@ compute_indent(char *cmd, size_t length, int *indent, int *indstate)
     static BUFFER *save;
 
     /* reset caller's indent-state if we switched to a new macro */
-    if (macrobuffer == 0
+    if (macrobuffer == NULL
 	|| macrobuffer != save) {
 	save = macrobuffer;
-	if (indent != 0) {
+	if (indent != NULL) {
 	    *indent = 0;
 	    *indstate = 0;
 	}
     }
-    if (cmd != 0
+    if (cmd != NULL
 	&& length != 0) {
 	DIRECTIVE dirnum;
 	char *base = cmd;
@@ -2524,7 +2524,7 @@ compute_indent(char *cmd, size_t length, int *indent, int *indstate)
 	    break;
 	}
 	*indstate = next;
-	if (indent != 0) {
+	if (indent != NULL) {
 	    if ((*indent += here) < 0)
 		*indent = 0;
 	}
@@ -2544,10 +2544,10 @@ add_indent(char *dst, int indent)
 static void
 handle_endm(void)
 {
-    if (macrobuffer != 0) {
+    if (macrobuffer != NULL) {
 	macrobuffer->b_dot.l = lforw(buf_head(macrobuffer));
 	macrobuffer->b_dot.o = 0;
-	macrobuffer = 0;
+	macrobuffer = NULL;
 #if !SMALLER
 	compute_indent((char *) 0, (size_t) 0, (int *) 0, (int *) 0);
 #endif
@@ -2563,7 +2563,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
     size_t linlen;
     DIRECTIVE dirnum;
     WINDOW *wp;
-    char *linebuf = 0;		/* buffer holding copy of line executing */
+    char *linebuf = NULL;	/* buffer holding copy of line executing */
     char *cmdp;			/* text to execute */
     int save_clhide = clhide;
     int save_no_errs = no_errs;
@@ -2573,7 +2573,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
     int indstate = 0;
 #endif
 
-    static BUFFER *dobuferrbp = 0;
+    static BUFFER *dobuferrbp = NULL;
 
     (void) whlist;
 
@@ -2595,7 +2595,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 
 	if (glue) {
 	    safe_castrealloc(char, linebuf, (size_t) glue + linlen + 1);
-	    if (linebuf == 0) {
+	    if (linebuf == NULL) {
 		status = no_memory("during macro execution");
 		break;
 	    }
@@ -2607,7 +2607,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	    compute_indent(lvalue(lp), linlen, &indent, &indstate);
 #endif
 	    linebuf = cmdp = castalloc(char, (size_t) indent + linlen + 1);
-	    if (linebuf == 0) {
+	    if (linebuf == NULL) {
 		status = no_memory("during macro execution");
 		break;
 	    }
@@ -2698,7 +2698,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 
 	    /* service the ~endm directive here */
 	    if (dirnum == D_ENDM && !ifstk.disabled) {
-		if (macrobuffer == 0) {
+		if (macrobuffer == NULL) {
 		    mlforce("[No macro definition in progress]");
 		    status = FALSE;
 		    break;
@@ -2711,7 +2711,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	}
 
 	/* if macro store is on, just salt this away */
-	if (macrobuffer != 0) {
+	if (macrobuffer != NULL) {
 	    /* allocate the space for the line */
 	    if (addline(macrobuffer, linebuf, -1) == FALSE) {
 		mlforce("[Out of memory while storing macro]");
@@ -2773,7 +2773,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	    if (tb_length(with_prefix)) {
 		char *temp = typeallocn(char, tb_length(with_prefix)
 					+ strlen(cmdp) + 2);
-		if (temp == 0) {
+		if (temp == NULL) {
 		    status = no_memory("performing ~with");
 		    break;
 		}
@@ -2836,7 +2836,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 int
 dobuf(BUFFER *bp, int limit, int real_cmd_count)
 {
-    TBUFF *macro_result = 0;
+    TBUFF *macro_result = NULL;
     int status = FALSE;
     WHLOOP *whlist;
     int save_vl_msgs;
@@ -2845,7 +2845,7 @@ dobuf(BUFFER *bp, int limit, int real_cmd_count)
 
     static int dobufnesting;	/* flag to prevent runaway recursion */
 
-    if (bp != 0) {
+    if (bp != NULL) {
 	TRACE((T_CALLED "dobuf(%s, %d)\n", bp->b_bname, limit));
 	beginDisplay();
 	if (++dobufnesting < 9) {
@@ -2888,7 +2888,7 @@ dobuf(BUFFER *bp, int limit, int real_cmd_count)
 		 * If the caller set $return, use that value.
 		 */
 #if OPT_EVAL
-		if (this_macro_result != 0)
+		if (this_macro_result != NULL)
 		    tb_copy(&macro_result, this_macro_result);
 #endif
 
@@ -2910,7 +2910,7 @@ dobuf(BUFFER *bp, int limit, int real_cmd_count)
 	 */
 #if OPT_EVAL
 	tb_free(&last_macro_result);
-	if (macro_result != 0) {
+	if (macro_result != NULL) {
 	    last_macro_result = macro_result;
 	} else {
 	    switch (status) {
@@ -3002,7 +3002,7 @@ get_b_lineno(BUFFER *bp)
     /* try to save the original location, so we can restore it */
     if (curwp->w_bufp == bp)
 	result = line_no(bp, curwp->w_dot.l);
-    else if ((wp = bp2any_wp(bp)) != 0)
+    else if ((wp = bp2any_wp(bp)) != NULL)
 	result = line_no(bp, wp->w_dot.l);
     else
 	result = line_no(bp, bp->b_dot.l);
@@ -3051,8 +3051,8 @@ dofile(char *fname)
      * Check first for the name, assuming it's a filename.  If we don't
      * find an existing buffer with that filename, create a buffer.
      */
-    if ((bp = find_b_file(fname)) == 0) {
-	if ((bp = make_bp(fname, 0)) == 0)
+    if ((bp = find_b_file(fname)) == NULL) {
+	if ((bp = make_bp(fname, 0)) == NULL)
 	    returnCode(FALSE);
 	clobber = TRUE;
     }

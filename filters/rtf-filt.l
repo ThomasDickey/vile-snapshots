@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Id: rtf-filt.l,v 1.11 2013/12/02 01:32:53 tom Exp $
+ * $Id: rtf-filt.l,v 1.12 2025/01/26 11:36:23 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of RTF (rich text format)
  * input text.
@@ -39,7 +39,7 @@ NUMBER		{INTEGER}
 static const char *
 control_attr(char *text, int length)
 {
-    const char *attr = 0;
+    const char *attr = NULL;
 
     if (length > 1) {
 	char save = 0;
@@ -51,7 +51,7 @@ control_attr(char *text, int length)
 	attr = get_keyword_attr(text + 1);
 	text[length] = save;
     }
-    if (attr == 0) {
+    if (attr == NULL) {
 	attr = Error_attr;
 	flt_error("Unknown control word: %s", text);
     }

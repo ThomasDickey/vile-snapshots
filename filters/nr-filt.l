@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Id: nr-filt.l,v 1.35 2018/11/03 00:00:04 tom Exp $
+ * $Id: nr-filt.l,v 1.36 2025/01/26 11:08:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -50,7 +50,7 @@ font_len(char *text, int size)
 		if (size >= 5)
 		    result = 5;
 	    } else {
-		if (strchr("BIRP1234", text[2]) != 0) {
+		if (strchr("BIRP1234", text[2]) != NULL) {
 		    result = 3;
 		}
 	    }

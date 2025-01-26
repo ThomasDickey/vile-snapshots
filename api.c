@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Id: api.c,v 1.55 2022/12/26 18:26:56 tom Exp $
+ * $Id: api.c,v 1.56 2025/01/26 16:31:43 tom Exp $
  */
 
 #include "estruct.h"
@@ -138,7 +138,7 @@ lreplace(char *s, int len)
 
 	nlen = (size_t) roundlenup(len);
 	ntext = castalloc(char, nlen);
-	if (ntext == 0)
+	if (ntext == NULL)
 	    return FALSE;
 	if (lvalue(lp))
 	    ltextfree(lp, curbp);
@@ -184,8 +184,8 @@ lreplace(char *s, int len)
 void
 api_setup_fake_win(VileBuf * vbp, int do_delete)
 {
-    if (vbp != 0) {
-	if (curwp_visible == 0)
+    if (vbp != NULL) {
+	if (curwp_visible == NULL)
 	    curwp_visible = curwp;
 
 	if (vbp->fwp) {
@@ -517,7 +517,7 @@ api_fscreen(char *name)
     if (bp)
 	return api_bp2vbp(bp);
     else
-	return 0;
+	return NULL;
 }
 
 int
@@ -626,8 +626,8 @@ api_edit(char *fname, VileBuf ** retvbpp)
 	bp->b_active = TRUE;
     } else {
 	bp = getfile2bp(fname, FALSE, FALSE);
-	if (bp == 0) {
-	    *retvbpp = 0;
+	if (bp == NULL) {
+	    *retvbpp = NULL;
 	    return 1;
 	}
     }
@@ -765,7 +765,7 @@ api_command_cleanup(void)
 {
     BUFFER *bp;
 
-    if (curwp_visible == 0)
+    if (curwp_visible == NULL)
 	curwp_visible = curwp;
 
     /* Propgate dot to the visible windows and do any deferred deletes */
@@ -775,7 +775,7 @@ api_command_cleanup(void)
 
     while ((bp = pop_fake_win(curwp_visible, (BUFFER *) 0)) != NULL) {
 	if (bp2vbp(bp) != NULL) {
-	    bp2vbp(bp)->fwp = 0;
+	    bp2vbp(bp)->fwp = NULL;
 	    bp2vbp(bp)->dot_inited = 0;		/* for next time */
 	    bp2vbp(bp)->dot_changed = 0;	/* ditto */
 	    if (bp2vbp(bp)->changed) {
@@ -791,7 +791,7 @@ api_command_cleanup(void)
 	}
     }
 
-    curwp_visible = 0;
+    curwp_visible = NULL;
 
     /* Not needed? */
     if (curbp != curwp->w_bufp)
@@ -810,7 +810,7 @@ api_free_private(void *vsp)
     VileBuf *vbp = (VileBuf *) vsp;
 
     if (vbp) {
-	vbp->bp->b_api_private = 0;
+	vbp->bp->b_api_private = NULL;
 #if OPT_PERL && !NO_LEAKS
 	perl_free_handle(vbp->perl_handle);
 #endif
@@ -827,9 +827,9 @@ api_bp2vbp(BUFFER *bp)
     VileBuf *vbp;
 
     vbp = bp2vbp(bp);
-    if (vbp == 0) {
+    if (vbp == NULL) {
 	vbp = typecalloc(VileBuf);
-	if (vbp != 0) {
+	if (vbp != NULL) {
 	    bp->b_api_private = vbp;
 	    vbp->bp = bp;
 	    vbp->regionshape = rgn_FULLLINE;

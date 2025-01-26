@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: bat-filt.l,v 1.37 2016/12/11 16:04:15 tom Exp $
+ * $Id: bat-filt.l,v 1.38 2025/01/26 11:05:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -65,7 +65,7 @@ IDENT2		({PARAM}|{VARIABLE})
 				   * is not echoed.  So we highlight it as
 				   * part of the name.
 				   */
-				  if (type != 0)
+				  if (type != NULL)
 				      *type = '\0';
 				  attr = get_keyword_attr(temp);
 				  if (!strcmp(temp, "echo")) {
@@ -73,12 +73,12 @@ IDENT2		({PARAM}|{VARIABLE})
 					echoing = 1;
 				  } else if (!strcmp(temp, "goto")) {
 					BEGIN(LABEL);
-				  } else if (attr != 0 && Comment_attr == attr) {
+				  } else if (attr != NULL && Comment_attr == attr) {
 					BEGIN(COMMENT);
 				  } else if (!strcmp(temp, "set")) {
 					setting = 1;
 				  }
-				  if (type != 0 && echoing) {
+				  if (type != NULL && echoing) {
 				      int len = (int) (type - temp) + 1;
 
 				      flt_puts(yytext, len, attr);

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: sql-filt.l,v 1.51 2013/12/02 01:33:56 tom Exp $
+ * $Id: sql-filt.l,v 1.52 2025/01/26 11:38:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -74,12 +74,12 @@ HOSTVAR		":"{IDENT}
 			    if (attr == Comment_attr) {
 				WriteToken(attr);
 				new_state(INLINE_CMT);
-			    } else if (attr == 0) {
+			    } else if (attr == NULL) {
 				new_state(BODY);
 				if (set_symbol_table("sqlplus")) {
 				    attr = get_keyword_attr(text);
 				    WriteToken(attr);
-				    if (attr != 0
+				    if (attr != NULL
 					&& is_oneliner(text)) {
 					begin_oneliner();
 					/* FIXME:  a few commands have keywords,
@@ -231,8 +231,8 @@ is_oneliner(const char *name)
 {
     const char *flags = ci_keyword_flag(name);
     int result = 0;
-    if (flags != 0) {
-	result = (strchr(flags, '1') != 0);
+    if (flags != NULL) {
+	result = (strchr(flags, '1') != NULL);
     }
     return result;
 }

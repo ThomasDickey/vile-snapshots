@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Id: window.c,v 1.134 2022/12/05 23:08:38 tom Exp $
+ * $Id: window.c,v 1.137 2025/01/26 17:08:26 tom Exp $
  */
 
 #include	"estruct.h"
@@ -24,9 +24,9 @@ unlink_window(WINDOW *thewp)
 {
     WINDOW *p, *q;
 
-    for (p = wheadp, q = 0; p != 0; q = p, p = p->w_wndp)
+    for (p = wheadp, q = NULL; p != NULL; q = p, p = p->w_wndp)
 	if (p == thewp) {
-	    if (q != 0)
+	    if (q != NULL)
 		q->w_wndp = p->w_wndp;
 	    else
 		wheadp = p->w_wndp;
@@ -50,10 +50,10 @@ alloc_WINDOW(void)
 static void
 free_WINDOW(WINDOW *wp)
 {
-    if (wp != 0) {
+    if (wp != NULL) {
 	beginDisplay();
 	if (wp == wminip)
-	    wminip = 0;
+	    wminip = NULL;
 	free(wp);
 	endofDisplay();
     }
@@ -65,7 +65,7 @@ free_WINDOW(WINDOW *wp)
 int
 set_curwp(WINDOW *wp)
 {
-    if (wp == 0)
+    if (wp == NULL)
 	return (FALSE);
     if (wp == curwp)
 	return (TRUE);
@@ -189,7 +189,7 @@ nextwind(int f, int n)
 	if (n > 0 && n <= nwindows) {
 	    wp = wheadp;
 	    while (--n != 0) {
-		if (wp == 0) {
+		if (wp == NULL) {
 		    mlforce("[Window number out of range]");
 		    return (FALSE);
 		}
@@ -498,7 +498,7 @@ delwp(WINDOW *thewp)
     }
 
     /* find receiving window and give up our space */
-    if (thewp->w_wndp != 0
+    if (thewp->w_wndp != NULL
 	&& (thewp == wheadp
 	    || ((thewp->w_split_hist & 1) == 0)
 	    || !visible)) {
@@ -563,14 +563,14 @@ copy_traits(W_TRAITS * dst, W_TRAITS * src)
 W_VALUES *
 save_window_modes(BUFFER *bp)
 {
-    W_VALUES *result = 0;
+    W_VALUES *result = NULL;
     WINDOW *wp;
     UINT n;
 
     if (bp->b_nwnd != 0) {
 	beginDisplay();
 	result = typecallocn(W_VALUES, (size_t) bp->b_nwnd);
-	if (result != 0) {
+	if (result != NULL) {
 	    n = 0;
 	    for_each_window(wp) {
 		if (wp->w_bufp == bp) {
@@ -588,7 +588,7 @@ save_window_modes(BUFFER *bp)
 void
 restore_window_modes(BUFFER *bp, W_VALUES * saved)
 {
-    if (saved != 0) {
+    if (saved != NULL) {
 	WINDOW *wp;
 	UINT n = 0;
 
@@ -606,7 +606,7 @@ restore_window_modes(BUFFER *bp, W_VALUES * saved)
 }
 
 /*
- * Split the current window.  A window smaller than 3 lines cannot be split. 
+ * Split the current window.  A window smaller than 3 lines cannot be split.
  * An argument of 1 forces the cursor into the upper window, an argument of two
  * forces the cursor to the lower window.  The only other error that is
  * possible is a "malloc" failure allocating the structure for the new window.
@@ -985,7 +985,7 @@ shrinkwrap(void)
 	for (wp = wheadp;
 	     wp->w_wndp != curwp && wp->w_wndp != NULL;
 	     wp = wp->w_wndp) ;
-	if (wp->w_wndp != 0) {
+	if (wp->w_wndp != NULL) {
 	    curwp = wp;
 	    nrows = curwp->w_ntrows + curwp->w_wndp->w_ntrows - 1;
 	    /* don't take more than 3/4 of its rows */
@@ -1300,10 +1300,10 @@ winit(int screen)
 WINDOW *
 push_fake_win(BUFFER *bp)
 {
-    WINDOW *oldwp = 0;
+    WINDOW *oldwp = NULL;
     WINDOW *wp;
 
-    if (valid_buffer(bp) && wheadp != 0) {
+    if (valid_buffer(bp) && wheadp != NULL) {
 	if ((wp = alloc_WINDOW()) != NULL) {
 	    oldwp = curwp;
 	    curwp = wp;
@@ -1346,9 +1346,9 @@ pop_fake_win(WINDOW *oldwp, BUFFER *oldbp)
     BUFFER *bp;
 
     curwp = oldwp;
-    if (find_bp(oldbp) != 0)
+    if (find_bp(oldbp) != NULL)
 	curbp = oldbp;
-    else if (find_bp(oldwp->w_bufp) != 0)
+    else if (find_bp(oldwp->w_bufp) != NULL)
 	curbp = oldwp->w_bufp;
 
     wp = wheadp;
@@ -1429,7 +1429,7 @@ wp_leaks(void)
     WINDOW *wp;
 
     beginDisplay();
-    while ((wp = wheadp) != 0) {
+    while ((wp = wheadp) != NULL) {
 	wp = wp->w_wndp;
 	free_WINDOW(wheadp);
 	if (wp != wheadp)

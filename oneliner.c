@@ -1,10 +1,11 @@
 /*
  *	A few functions that used to operate on single whole lines, mostly
  *	here to support the globals() function.  They now work on regions.
+ *	Copyright (c) 1996-2019,2025 by Thomas E. Dickey
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Id: oneliner.c,v 1.127 2019/12/19 09:32:10 tom Exp $
+ * $Id: oneliner.c,v 1.129 2025/01/26 17:16:19 tom Exp $
  */
 
 #include	"estruct.h"
@@ -193,7 +194,7 @@ substreg1(int needpats, int use_opts, int is_globalsub)
 
 	if (gregexp) {
 	    FreeIfNeeded(substexp);
-	    if ((substexp = castalloc(regexp, (size_t) (gregexp->size))) == 0) {
+	    if ((substexp = castalloc(regexp, (size_t) (gregexp->size))) == NULL) {
 		no_memory("substreg1");
 		return FALSE;
 	    }
@@ -201,7 +202,7 @@ substreg1(int needpats, int use_opts, int is_globalsub)
 			  (size_t) gregexp->size);
 	}
 
-	newpattern = 0;
+	newpattern = NULL;
 	tb_init(&newpattern, EOS);
 	status = readpattern("replacement string: ",
 			     &newpattern, (regexp **) 0, c, FALSE);
@@ -321,7 +322,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
     int matched_at_eol = FALSE;
     int yes, c, skipped;
 
-    assert(curwp != 0);
+    assert(curwp != NULL);
 
     TRACE((T_CALLED
 	   "substline(exp=%p, nth_occur=%d, printit=%d, globally=%d, confirmp=%p) bol:%d\n",
@@ -333,7 +334,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 	returnCode(FALSE);
     }
 
-    if (curwp == 0)
+    if (curwp == NULL)
 	returnCode(FALSE);
 
     ic = window_b_val(curwp, MDIGNCASE);

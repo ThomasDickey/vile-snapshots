@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11.c,v 1.434 2023/01/15 14:37:33 tom Exp $
+ * $Id: x11.c,v 1.436 2025/01/26 21:38:08 tom Exp $
  */
 
 /*
@@ -1090,7 +1090,7 @@ gui_update_scrollbar(WINDOW *uwp)
 	    break;
 	i++;
     }
-    if (wp == 0)
+    if (wp == NULL)
 	return;
     if (i >= cur_win->nscrollbars || (wp->w_flag & WFSBAR)) {
 	/*
@@ -1670,7 +1670,7 @@ SamePixel(Pixel a, Pixel b)
 
     if (a != b) {
 	result = False;
-	if (cur_win->top_widget != 0) {
+	if (cur_win->top_widget != NULL) {
 #ifdef XRENDERFONT
 	    XftColor a_color;
 	    XftColor b_color;
@@ -1777,7 +1777,7 @@ initColorGC(TextWindow win, ColorGC * data, Pixel new_fg, Pixel new_bg)
 static void
 freeColorGC(ColorGC * target)
 {
-    if (target->gc != 0) {
+    if (target->gc != NULL) {
 	XFreeGC(dpy, target->gc);
 	memset(target, 0, sizeof(*target));
     }
@@ -1808,7 +1808,7 @@ makeColorGC(TextWindow win, ColorGC * target)
 
     (void) win;
 
-    if (target->gc == 0) {
+    if (target->gc == NULL) {
 	target->gc = XCreateGC(dpy, DefaultRootWindow(dpy), target->gcmask, &target->gcvals);
 	changed = 1;
     } else if (target->state < sgMADE) {
@@ -1854,8 +1854,8 @@ color_cursor(TextWindow win)
     initColorGC(win, &cur_win->cc_info, cur_win->fg, cur_win->bg);
     initColorGC(win, &cur_win->rc_info, cur_win->fg, cur_win->bg);
 
-    if (win->cc_info.gc == 0
-	|| win->rc_info.gc == 0) {
+    if (win->cc_info.gc == NULL
+	|| win->rc_info.gc == NULL) {
 	freeColorGC(&win->cc_info);
 	freeColorGC(&win->rc_info);
 	monochrome_cursor(win);
@@ -1981,7 +1981,7 @@ getVisualDepth(void)
 							    XDefaultScreen(dpy)));
     visInfoPtr = XGetVisualInfo(dpy, (long) VisualIDMask,
 				&myTemplate, &numFound);
-    if (visInfoPtr != 0) {
+    if (visInfoPtr != NULL) {
 	if (numFound != 0) {
 	    result = visInfoPtr->depth;
 	}
@@ -1996,7 +1996,7 @@ x_find_icon(char **work, int *state, const char *suffix)
 {
     const char *filename = cur_win->iconname;
     const char *prefix = "";
-    char *result = 0;
+    char *result = NULL;
     size_t length;
 
     switch (*state) {
@@ -2024,10 +2024,10 @@ x_find_icon(char **work, int *state, const char *suffix)
     if (*state >= 0) {
 	if (*work) {
 	    free(*work);
-	    *work = 0;
+	    *work = NULL;
 	}
 	length = 3 + strlen(prefix) + strlen(filename) + strlen(suffix);
-	if ((result = malloc(length)) != 0) {
+	if ((result = malloc(length)) != NULL) {
 	    sprintf(result, "%s%s%s", prefix, filename, suffix);
 	    *work = result;
 	}
@@ -2042,7 +2042,7 @@ x_load_icon(void)
 {
     Pixmap myIcon = 0;
     Pixmap myMask = 0;
-    char *workname = 0;
+    char *workname = NULL;
 
     TRACE((T_CALLED "x_load_icon\n"));
     /*
@@ -2066,7 +2066,7 @@ x_load_icon(void)
 #ifdef HAVE_LIBXPM
 	if (XpmCreatePixmapFromData(dpy,
 				    DefaultRootWindow(dpy),
-				    vile, &myIcon, &myMask, 0) != 0) {
+				    vile, &myIcon, &myMask, NULL) != 0) {
 	    myIcon = 0;
 	    myMask = 0;
 	}
@@ -2083,7 +2083,7 @@ x_load_icon(void)
     if (!isEmpty(cur_win->iconname)) {
 	int state = 0;
 #ifdef HAVE_LIBXPM
-	while (x_find_icon(&workname, &state, ".xpm") != 0) {
+	while (x_find_icon(&workname, &state, ".xpm") != NULL) {
 	    Pixmap resIcon = 0;
 	    Pixmap shapemask = 0;
 	    XpmAttributes attributes;
@@ -2143,7 +2143,7 @@ x_load_icon(void)
 	}
     }
 
-    if (workname != 0)
+    if (workname != NULL)
 	free(workname);
 
     returnVoid();
@@ -3244,8 +3244,8 @@ x_set_fontname(TextWindow tw, const char *fname)
 {
     char *newfont;
 
-    if (fname != 0
-	&& (newfont = strmalloc(fname)) != 0) {
+    if (fname != NULL
+	&& (newfont = strmalloc(fname)) != NULL) {
 	FreeIfNeeded(tw->fontname);
 	tw->fontname = newfont;
     }
@@ -3299,7 +3299,7 @@ x_setfont(const char *fname)
 	oldw = (Dimension) x_width(cur_win);
 	oldh = (Dimension) x_height(cur_win);
 	code = 0;
-	if ((pfont = xvileQueryFont(dpy, cur_win, fname)) != 0) {
+	if ((pfont = xvileQueryFont(dpy, cur_win, fname)) != NULL) {
 #ifndef XRENDERFONT
 	    XSetFont(dpy, GetColorGC(cur_win, tt_info), pfont->fid);
 	    XSetFont(dpy, GetColorGC(cur_win, rt_info), pfont->fid);
@@ -3404,7 +3404,7 @@ CloseInputMethod(void)
 {
     if (cur_win->xim) {
 	XCloseIM(cur_win->xim);
-	cur_win->xim = 0;
+	cur_win->xim = NULL;
 	TRACE(("freed cur_win->xim\n"));
     }
 }
@@ -3421,7 +3421,7 @@ x_close(void)
 #if NO_LEAKS
 	XtDestroyWidget(cur_win->top_widget);
 #endif
-	cur_win->top_widget = 0;
+	cur_win->top_widget = NULL;
 	CloseInputMethod();
 	XtCloseDisplay(dpy);	/* need this if $xshell left subprocesses */
     }
@@ -3862,7 +3862,7 @@ add2paste(TBUFF **p, int c)
 	       !(isPrint(c) || PastingUTF8(*p, c))) {
 	(void) tb_append(p, quotec);
     }
-    result = (tb_append(p, c) != 0);
+    result = (tb_append(p, c) != NULL);
     TRACE2(("...added %d:%s\n", tb_length(*p), tb_visible(*p)));
     return result;
 }
@@ -3883,7 +3883,7 @@ static int
 copy_paste(TBUFF **p, char *value, size_t length)
 {
     WINDOW *wp = row2window(ttrow);
-    BUFFER *bp = valid_window(wp) ? wp->w_bufp : 0;
+    BUFFER *bp = valid_window(wp) ? wp->w_bufp : NULL;
     int status;
 
     if (valid_buffer(bp) && b_val(bp, MDVIEW))
@@ -4003,7 +4003,7 @@ x_get_selection(Widget w GCC_UNUSED,
 	   *format,
 	   length ? *length : 0));
 
-    if (length != 0 && value != NULL) {
+    if (length != NULL && value != NULL) {
 	if (*format != 8) {
 	    kbd_alarm();	/* can't handle incoming data */
 	} else if (*target == XA_STRING || *target == GetAtom(TEXT)) {
@@ -4055,7 +4055,7 @@ x_get_selection(Widget w GCC_UNUSED,
 	    kbd_alarm();	/* can't handle incoming data */
 	}
 	XtFree((char *) list);
-    } else if (cldat != 0) {
+    } else if (cldat != NULL) {
 	if (list->targets[0] != None) {
 	    Atom newTarget = list->targets[0];
 
@@ -4077,7 +4077,7 @@ x_paste_selection(Atom selection)
 {
     if (cur_win->have_selection && IsPrimary(selection)) {
 	/* local transfer */
-	UCHAR *data = 0;
+	UCHAR *data = NULL;
 	size_t len_st = 0;
 	ULONG len_ul;
 
@@ -4110,8 +4110,8 @@ x_paste_selection(Atom selection)
 static Boolean
 x_get_selected_text(UCHAR ** datp, size_t *lenp)
 {
-    UCHAR *data = 0;
-    UCHAR *dp = 0;
+    UCHAR *data = NULL;
+    UCHAR *dp = NULL;
     size_t length;
     KILL *kp;			/* pointer into kill register */
 
@@ -4125,8 +4125,8 @@ x_get_selected_text(UCHAR ** datp, size_t *lenp)
 	length += KbSize(SEL_KREG, kp);
     if (length == 0
 	|| (dp = data = (UCHAR *) XtMalloc((Cardinal) (length
-						       * sizeof(UCHAR)))) == 0
-	|| (kp = kbs[SEL_KREG].kbufh) == 0)
+						       * sizeof(UCHAR)))) == NULL
+	|| (kp = kbs[SEL_KREG].kbufh) == NULL)
 	return False;
 
     while (kp != NULL) {
@@ -4144,8 +4144,8 @@ x_get_selected_text(UCHAR ** datp, size_t *lenp)
 static Boolean
 x_get_clipboard_text(UCHAR ** datp, size_t *lenp)
 {
-    UCHAR *data = 0;
-    UCHAR *dp = 0;
+    UCHAR *data = NULL;
+    UCHAR *dp = NULL;
     size_t length;
     KILL *kp;			/* pointer into kill register */
 
@@ -4153,8 +4153,8 @@ x_get_clipboard_text(UCHAR ** datp, size_t *lenp)
 	length += KbSize(CLIP_KREG, kp);
     if (length == 0
 	|| (dp = data = (UCHAR *) XtMalloc((Cardinal) (length
-						       * sizeof(UCHAR)))) == 0
-	|| (kp = kbs[CLIP_KREG].kbufh) == 0)
+						       * sizeof(UCHAR)))) == NULL
+	|| (kp = kbs[CLIP_KREG].kbufh) == NULL)
 	return False;
 
     while (kp != NULL) {
@@ -4418,7 +4418,7 @@ multi_click(TextWindow tw, int nr, int nc)
 
     tw->numclicks++;
 
-    if ((wp = row2window(nr)) != 0 && nr == mode_row(wp)) {
+    if ((wp = row2window(nr)) != NULL && nr == mode_row(wp)) {
 	set_curwp(wp);
 	sel_release();
 	(void) update(TRUE);
@@ -4519,7 +4519,7 @@ start_selection(TextWindow tw, XButtonPressedEvent * ev, int nr, int nc)
 	tw->numclicks = 1;
 	tw->was_on_msgline = onMsgRow(tw);
 
-	if ((wp = row2window(nr)) != 0) {
+	if ((wp = row2window(nr)) != NULL) {
 	    set_curwp(wp);
 	}
 	tw->prevDOT = DOT;
@@ -4536,7 +4536,7 @@ start_selection(TextWindow tw, XButtonPressedEvent * ev, int nr, int nc)
 	 */
 	if (reading_msg_line) {
 	    /* EMPTY */ ;
-	} else if (wp != 0 && nr == mode_row(wp)) {
+	} else if (wp != NULL && nr == mode_row(wp)) {
 	    (void) update(TRUE);
 	} else if (setcursor(nr, nc)) {
 	    if (!cur_win->persistent_selections) {
@@ -4723,7 +4723,7 @@ x_process_event(Widget w GCC_UNUSED,
 	    x_paste_selection(XA_PRIMARY);
 	    break;
 	case Button3:		/* end/extend selection */
-	    if (((wp = row2window(nr)) != 0) && sel_buffer() == wp->w_bufp)
+	    if (((wp = row2window(nr)) != NULL) && sel_buffer() == wp->w_bufp)
 		(void) set_curwp(wp);
 	    if (ev->xbutton.state & ControlMask)
 		(void) sel_setshape(rgn_RECTANGLE);
@@ -5927,7 +5927,7 @@ x_get_icon_name(void)
 void
 x_set_window_name(const char *name)
 {
-    if (name != 0 && strcmp(name, x_get_window_name())) {
+    if (name != NULL && strcmp(name, x_get_window_name())) {
 #ifdef USE_SET_WM_NAME
 	XTextProperty Prop;
 
@@ -5956,7 +5956,7 @@ x_get_window_name(void)
     result = x_window_name;
 #else
     result = "";
-    if (cur_win->top_widget != 0) {
+    if (cur_win->top_widget != NULL) {
 	XtVaGetValues(cur_win->top_widget, XtNtitle, &result, NULL);
     }
 #endif
@@ -6009,7 +6009,7 @@ x_unwatchfd(int fd GCC_UNUSED, long id)
 static XtIntervalId x_autocolor_timeout_id;
 
 static void
-x_start_autocolor_timer()
+x_start_autocolor_timer(void)
 {
     int millisecs = global_b_val(VAL_AUTOCOLOR);
     x_stop_autocolor_timer();
@@ -6021,7 +6021,7 @@ x_start_autocolor_timer()
 }
 
 static void
-x_stop_autocolor_timer()
+x_stop_autocolor_timer(void)
 {
     if (x_autocolor_timeout_id != 0)
 	XtRemoveTimeOut(x_autocolor_timeout_id);
@@ -6068,9 +6068,9 @@ gui_isprint(int ch)
 	}
 #else
 	static XCharStruct dft, *tmp = &dft;
-	XCharStruct *pc = 0;
+	XCharStruct *pc = NULL;
 
-	if (pf->per_char != 0
+	if (pf->per_char != NULL
 	    && !pf->all_chars_exist) {
 
 	    if (pf->max_byte1 == 0) {
@@ -6078,13 +6078,13 @@ gui_isprint(int ch)
 		    result = FALSE;
 		} else {
 		    CI_GET_CHAR_INFO_1D(pf, (unsigned) ch, tmp, pc);
-		    if (pc == 0 || CI_NONEXISTCHAR(pc)) {
+		    if (pc == NULL || CI_NONEXISTCHAR(pc)) {
 			result = FALSE;
 		    }
 		}
 	    } else {
 		CI_GET_CHAR_INFO_2D(pf, CharOf((ch >> 8)), CharOf(ch), tmp, pc);
-		if (pc == 0 || CI_NONEXISTCHAR(pc)) {
+		if (pc == NULL || CI_NONEXISTCHAR(pc)) {
 		    result = FALSE;
 		}
 	    }
@@ -6164,7 +6164,7 @@ xim_real_init(void)
 {
     unsigned i, j;
     char *p, *s, *t, *ns, *end, buf[32];
-    char *save_ctype = 0;
+    char *save_ctype = NULL;
     XIMStyle input_style = 0;
     XIMStyles *xim_styles = NULL;
     Bool found;
@@ -6212,7 +6212,7 @@ xim_real_init(void)
 		    s++;
 		if (!*s)
 		    break;
-		if ((ns = end = strchr(s, ',')) == 0)
+		if ((ns = end = strchr(s, ',')) == NULL)
 		    end = s + strlen(s);
 		while ((end != s) && isSpace(CharOf(end[-1])))
 		    end--;
@@ -6221,11 +6221,11 @@ xim_real_init(void)
 		    strcpy(t, "@im=");
 		    strncat(t, s, (size_t) (end - s));
 
-		    if ((p = XSetLocaleModifiers(t)) != 0 && *p
+		    if ((p = XSetLocaleModifiers(t)) != NULL && *p
 			&& (cur_win->xim = XOpenIM(XtDisplay(cur_win->screen),
 						   NULL,
 						   NULL,
-						   NULL)) != 0)
+						   NULL)) != NULL)
 			break;
 
 		}
@@ -6262,7 +6262,7 @@ xim_real_init(void)
 	    s++;
 	if (!*s)
 	    break;
-	if ((ns = end = strchr(s, ',')) != 0)
+	if ((ns = end = strchr(s, ',')) != NULL)
 	    ns++;
 	else
 	    end = s + strlen(s);
@@ -6388,7 +6388,7 @@ xim_real_init(void)
     }
 #endif
 
-    if (save_ctype != 0)
+    if (save_ctype != NULL)
 	setlocale(LC_CTYPE, save_ctype);
 
     returnVoid();
@@ -6424,7 +6424,7 @@ x_move(int row, int col)
 static const char *
 ae_names(XVileAtom n)
 {
-    const char *result = 0;
+    const char *result = NULL;
 
 #define DATA(name) case ae ## name: result = #name; break
     switch (n) {

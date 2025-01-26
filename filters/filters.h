@@ -1,5 +1,5 @@
 /*
- * $Id: filters.h,v 1.146 2023/01/13 09:23:02 tom Exp $
+ * $Id: filters.h,v 1.149 2025/01/26 17:04:12 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -132,7 +132,7 @@ typedef struct {
 #ifndef YY_CURRENT_BUFFER_LVALUE
 #define YY_CURRENT_BUFFER_LVALUE YY_CURRENT_BUFFER
 #endif
-#define USE_LEXFREE { yy_delete_buffer(YY_CURRENT_BUFFER); YY_CURRENT_BUFFER_LVALUE = 0; yy_init = 1; }
+#define USE_LEXFREE { yy_delete_buffer(YY_CURRENT_BUFFER); YY_CURRENT_BUFFER_LVALUE = NULL; yy_init = 1; }
 #else
 #define USE_LEXFREE if (yytext) { free(yytext); yytext = 0; yytextsz = 0; }
 #endif
@@ -179,16 +179,16 @@ static void do_filter(FILE *Input); \
 DCL_LEXFREE \
 FILTER_DEF filter_def = { #name, 1, init_filter, do_filter, options REF_LEXFREE }
 
-#define DefineFilter(name) DefineOptFilter(name,0)
+#define DefineFilter(name) DefineOptFilter(name,NULL)
 
 #if NO_LEAKS
 #define LoadableFilter(name) \
 	extern FILTER_DEF define_##name; \
-	FILTER_DEF define_##name = { #name, 0, 0, 0, 0, 0 }
+	FILTER_DEF define_##name = { #name, 0, NULL, NULL, NULL, NULL }
 #else
 #define LoadableFilter(name) \
 	extern FILTER_DEF define_##name; \
-	FILTER_DEF define_##name = { #name, 0, 0, 0, 0 }
+	FILTER_DEF define_##name = { #name, 0, NULL, NULL, NULL }
 #endif
 
 #if defined(FLEX_SCANNER)

@@ -1,5 +1,5 @@
 /*
- * $Id: vl_ctype.c,v 1.21 2013/03/10 20:27:22 tom Exp $
+ * $Id: vl_ctype.c,v 1.23 2025/01/26 14:35:39 tom Exp $
  *
  * On Linux, the normal/wide ctypes give comparable results in the range 0-255,
  * reflecting the fact that codes 128-255 in Unicode are the "same" as
@@ -260,7 +260,7 @@ vl_ctype_init(int print_lo, int print_hi)
     }
 
 #if OPT_LOCALE
-    if (save_ctype != 0)
+    if (save_ctype != NULL)
 	(void) setlocale(LC_CTYPE, save_ctype);
 #endif
 
@@ -270,7 +270,7 @@ vl_ctype_init(int print_lo, int print_hi)
 /*
  * Return the character-type bits for the given character.  There are several
  * cases.
- * 
+ *
  * vile supports a 256-entry table for "character classes", which are used
  * mainly to support systems with single-byte encodings.  Some of those (no all
  * older systems) may have incorrect character types; that is the reason for
@@ -409,14 +409,14 @@ vl_ctype_set(int ch, CHARTYPE cclass)
 {
     TRACE(("vl_ctype_set %d:%#lx\n", ch, (ULONG) cclass));
 
-    if (ctype_sets == 0) {
+    if (ctype_sets == NULL) {
 	ctype_sets = typecallocn(CHARTYPE, (size_t) N_chars);
     }
-    if (ctype_sets != 0) {
+    if (ctype_sets != NULL) {
 	ctype_sets[ch] |= cclass;
 	addVlCTYPE(ch, cclass);
     }
-    if (ctype_clrs != 0) {
+    if (ctype_clrs != NULL) {
 	ctype_clrs[ch] &= ~cclass;
     }
 }
@@ -426,14 +426,14 @@ vl_ctype_clr(int ch, CHARTYPE cclass)
 {
     TRACE(("vl_ctype_clr %d:%#lx\n", ch, (ULONG) cclass));
 
-    if (ctype_clrs == 0) {
+    if (ctype_clrs == NULL) {
 	ctype_clrs = typecallocn(CHARTYPE, (size_t) N_chars);
     }
-    if (ctype_clrs != 0) {
+    if (ctype_clrs != NULL) {
 	ctype_clrs[ch] |= cclass;
 	clrVlCTYPE(ch, cclass);
     }
-    if (ctype_sets != 0) {
+    if (ctype_sets != NULL) {
 	ctype_sets[ch] &= ~cclass;
     }
 }

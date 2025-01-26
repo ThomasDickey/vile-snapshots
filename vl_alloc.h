@@ -1,7 +1,7 @@
 /*
- * $Id: vl_alloc.h,v 1.11 2024/03/23 20:25:29 tom Exp $
+ * $Id: vl_alloc.h,v 1.14 2025/01/26 14:21:55 tom Exp $
  *
- * Copyright 2005-2018,2024 Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005-2024,2025 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -45,8 +45,8 @@
 #define safe_castrealloc(type,ptr,nbytes) \
 	{ \
 	    type *safe_ptr = castrealloc(type,ptr,nbytes); \
-	    if (safe_ptr == 0) { \
-		ptr = 0; \
+	    if (safe_ptr == NULL) { \
+		ptr = NULL; \
 	    } \
 	    ptr = safe_ptr; \
 	}
@@ -54,13 +54,13 @@
 #define safe_typereallocn(type,ptr,ntypes) \
 	{ \
 	    type *safe_ptr = typereallocn(type,ptr,ntypes); \
-	    if (safe_ptr == 0) { \
+	    if (safe_ptr == NULL) { \
 		free(ptr); \
 	    } \
 	    ptr = safe_ptr; \
 	}
 
-#define	FreeAndNull(p)	do { if ((p) != 0) { free(p); p = 0; } } while (0)
-#define	FreeIfNeeded(p)	do { if ((p) != 0) free(p); } while (0)
+#define	FreeAndNull(p)	do { if ((p) != NULL) { free(p); p = NULL; } } while (0)
+#define	FreeIfNeeded(p)	do { if ((p) != NULL) free(p); } while (0)
 
 #endif /* VL_ALLOC_H_incl */

@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Id: filec.c,v 1.136 2018/10/21 18:19:38 tom Exp $
+ * $Id: filec.c,v 1.138 2025/01/26 14:11:02 tom Exp $
  */
 
 #include "estruct.h"
@@ -126,7 +126,7 @@ pathcmp(const LINE *lp, const char *text)
     const char *l, *t;
     int lc, tc;
 
-    if (lp == 0
+    if (lp == NULL
 	|| llength(lp) <= 0)	/* (This happens on the first insertion) */
 	return -1;
 
@@ -170,7 +170,7 @@ makeString(BUFFER *bp, LINE *lp, char *text, size_t len)
 
     beginDisplay();
     if ((np = lalloc((int) len + extra, bp)) == NULL) {
-	lp = 0;
+	lp = NULL;
     } else {
 #if !OPT_MSDOS_PATH
 	/*
@@ -209,7 +209,7 @@ bs_init(const char *name)
 {
     BUFFER *bp;
 
-    if ((bp = bfind(name, BFINVS)) != 0) {
+    if ((bp = bfind(name, BFINVS)) != NULL) {
 	b_clr_scratch(bp);	/* make it nonvolatile */
 	(void) bclear(bp);
 	bp->b_active = TRUE;
@@ -225,7 +225,7 @@ bs_init(const char *name)
  * fname - pathname to find
  * len   - ...its length
  * bp    - buffer to search
- * lpp	 - in/out line pointer, for iteration 
+ * lpp	 - in/out line pointer, for iteration
  */
 static int
 bs_find(char *fname, size_t len, BUFFER *bp, LINE **lpp)
@@ -610,14 +610,14 @@ fill_directory_buffer(BUFFER *bp, char *path, size_t dots GCC_UNUSED)
      * open-directory operation to allow for runtime libraries that
      * don't allow using UNIX-style '/' pathnames.
      */
-    if ((dp = opendir(SL_TO_BSL(path))) != 0) {
+    if ((dp = opendir(SL_TO_BSL(path))) != NULL) {
 	s = path;
 #if !OPT_VMS_PATH
 	s += force_slash(path);
 #endif
 
 	leaf = s;
-	while ((de = readdir(dp)) != 0) {
+	while ((de = readdir(dp)) != NULL) {
 #if SYS_UNIX || SYS_VMS || SYS_WINNT
 # if USE_D_NAMLEN
 	    (void) strncpy(leaf, de->d_name, (size_t) (de->d_namlen));
@@ -707,7 +707,7 @@ fillMyBuff(BUFFER *bp, char *name)
 	 * directory name, this chunk of logic returns a '1' to tell
 	 * our caller that it's time to add a slash.
 	 */
-	for (n = 0; (s = environ[n]) != 0; n++) {
+	for (n = 0; (s = environ[n]) != NULL; n++) {
 	    if (!strncmp(s, name + 1, len)
 		&& s[len] == '=') {
 		return already_scanned(bp, name) ? 1 : 0;
@@ -727,7 +727,7 @@ fillMyBuff(BUFFER *bp, char *name)
 	 * Copy all of the environment-variable names, prefixed with
 	 * the '$' that indicates what they are.
 	 */
-	for (n = 0; environ[n] != 0; n++) {
+	for (n = 0; environ[n] != NULL; n++) {
 	    char *d = path;
 
 	    s = environ[n];
@@ -840,14 +840,14 @@ makeMyList(BUFFER *bp, char *name)
     need = (size_t) bp->b_linecount + 2;
     if (bp->b_index_size < need) {
 	bp->b_index_size = need * 2;
-	if (bp->b_index_list == 0) {
+	if (bp->b_index_list == NULL) {
 	    bp->b_index_list = typeallocn(char *, bp->b_index_size);
 	} else {
 	    safe_typereallocn(char *, bp->b_index_list, bp->b_index_size);
 	}
     }
 
-    if (bp->b_index_list != 0) {
+    if (bp->b_index_list != NULL) {
 	n = 0;
 	for_each_line(lp, bp) {
 	    /* exclude listings of subdirectories below
@@ -857,7 +857,7 @@ makeMyList(BUFFER *bp, char *name)
 		    || slashocc[1] == EOS))
 		bp->b_index_list[n++] = lvalue(lp);
 	}
-	bp->b_index_list[n] = 0;
+	bp->b_index_list[n] = NULL;
     } else {
 	bp->b_index_size = 0;
     }
@@ -898,7 +898,7 @@ force_output(int c, char *buf, size_t *pos)
 void
 init_filec(const char *buffer_name)
 {
-    MyBuff = 0;
+    MyBuff = NULL;
     MyName = buffer_name;
 }
 
@@ -926,7 +926,7 @@ path_completion(DONE_ARGS)
 	   flags, c, (int) *pos, visible_buff(buf, (int) *pos, TRUE)));
     (void) flags;
 
-    if (buf == 0)
+    if (buf == NULL)
 	return FALSE;
 
     ignore = (*buf != EOS && isInternalName(buf));
@@ -947,9 +947,9 @@ path_completion(DONE_ARGS)
 	size_t newlen;
 
 	/* initialize only on demand */
-	if (MyBuff == 0) {
-	    if (MyName == 0
-		|| (MyBuff = bs_init(MyName)) == 0)
+	if (MyBuff == NULL) {
+	    if (MyName == NULL
+		|| (MyBuff = bs_init(MyName)) == NULL)
 		return FALSE;
 	}
 
@@ -1048,7 +1048,7 @@ path_completion(DONE_ARGS)
 	}
 #endif
 
-	if ((s = is_appendname(buf)) == 0)
+	if ((s = is_appendname(buf)) == NULL)
 	    s = buf;
 	if ((*s == EOS) || trailing_slash(s)) {
 	    if (*path == EOS)
@@ -1175,7 +1175,7 @@ strip_non_graphics(char *path)
 
 /*
  * Prompt for a file name, allowing completion via tab and '?'
- * 
+ *
  * flag - +1 to read, -1 to write, 0 don't care
  */
 int
@@ -1186,7 +1186,7 @@ mlreply_file(const char *prompt, TBUFF **buffer, UINT flag, char *result)
     char Reply[NFILEN];
     int (*complete) (DONE_ARGS) = no_completion;
     int had_fname = (valid_buffer(curbp)
-		     && curbp->b_fname != 0
+		     && curbp->b_fname != NULL
 		     && curbp->b_fname[0] != EOS);
     int do_prompt = (clexec || isnamedcmd || (flag & FILEC_PROMPT));
     int ok_expand = ((flag & FILEC_EXPAND) != 0);
@@ -1201,7 +1201,7 @@ mlreply_file(const char *prompt, TBUFF **buffer, UINT flag, char *result)
 #endif
 
     /* use the current filename if none given */
-    if (buffer == 0) {
+    if (buffer == NULL) {
 	(void) tb_scopy(buffer = &last,
 			had_fname && is_pathname(curbp->b_fname)
 			? shorten_path(vl_strncpy(Reply,
@@ -1215,8 +1215,8 @@ mlreply_file(const char *prompt, TBUFF **buffer, UINT flag, char *result)
 	char *t1 = tb_values(*buffer);
 	char *t2 = is_appendname(t1);
 
-	if (t1 != 0)
-	    (void) vl_strncpy(Reply, (t2 != 0) ? t2 : t1, sizeof(Reply));
+	if (t1 != NULL)
+	    (void) vl_strncpy(Reply, (t2 != NULL) ? t2 : t1, sizeof(Reply));
 	else
 	    *Reply = EOS;
 
@@ -1261,14 +1261,14 @@ mlreply_file(const char *prompt, TBUFF **buffer, UINT flag, char *result)
     } else if (!screen_to_bname(Reply, sizeof(Reply))) {
 	return FALSE;
     }
-    if (flag >= FILEC_UNKNOWN && is_appendname(Reply) != 0) {
+    if (flag >= FILEC_UNKNOWN && is_appendname(Reply) != NULL) {
 	mlforce("[file is not a legal input]");
 	return FALSE;
     }
 
     free_expansion();
     if (ok_expand) {
-	if ((MyGlob = glob_string(Reply)) == 0
+	if ((MyGlob = glob_string(Reply)) == NULL
 	    || (status = glob_length(MyGlob)) == 0) {
 	    mlforce("[No files found] %s", Reply);
 	    return FALSE;
@@ -1321,13 +1321,13 @@ mlreply_dir(const char *prompt, TBUFF **buffer, char *result)
     }
 #endif
     /* use the current directory if none given */
-    if (buffer == 0) {
+    if (buffer == NULL) {
 	(void) tb_scopy(buffer = &last,
 			vl_strncpy(Reply, current_directory(TRUE), sizeof(Reply)));
     }
 
     if (clexec || isnamedcmd) {
-	if (tb_values(*buffer) != 0)
+	if (tb_values(*buffer) != NULL)
 	    (void) vl_strncpy(Reply, tb_values(*buffer), sizeof(Reply));
 	else
 	    *Reply = EOS;
@@ -1357,10 +1357,10 @@ mlreply_dir(const char *prompt, TBUFF **buffer, char *result)
 char *
 filec_expand(void)
 {
-    if (MyGlob != 0) {
-	if (MyGlob[++in_glob] != 0)
+    if (MyGlob != NULL) {
+	if (MyGlob[++in_glob] != NULL)
 	    return MyGlob[in_glob];
 	free_expansion();
     }
-    return 0;
+    return NULL;
 }

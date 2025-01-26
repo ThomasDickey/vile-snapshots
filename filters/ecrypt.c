@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Paul Fox.
  *
- * $Id: ecrypt.c,v 1.28 2015/09/06 21:34:39 tom Exp $
+ * $Id: ecrypt.c,v 1.29 2025/01/26 10:43:31 tom Exp $
  *
  */
 
@@ -222,7 +222,7 @@ filecrypt(FILE *ifp, char *key, char *options, const char *seedValue)
     char buf[BUFSIZ];
     char real_key[KEY_LIMIT];
     char temp_key[KEY_LIMIT];
-    char *temp = 0;
+    char *temp = NULL;
     int ch = EOF, c0;
 
     if (UnixCrypt) {
@@ -332,7 +332,7 @@ static void
 do_filename(const char *prog, const char *name, char *key, char *options, const char *seed)
 {
     FILE *fp = fopen(name, "r");
-    if (fp == 0)
+    if (fp == NULL)
 	failed(name);
     do_stream(prog, fp, key, options, seed);
     (void) fclose(fp);
@@ -361,7 +361,7 @@ main(int argc, char **argv)
 		case 'k':
 		    if (*param == 0)
 			param = argv[++n];
-		    if (param == 0) {
+		    if (param == NULL) {
 			usage(prog);
 		    } else if (strlen(param) > KEY_LIMIT - 1) {
 			fprintf(stderr, "%s: excessive key length\n", prog);
@@ -382,7 +382,7 @@ main(int argc, char **argv)
 		case 's':
 		    if (*param == 0)
 			param = argv[++n];
-		    if (param == 0)
+		    if (param == NULL)
 			usage(prog);
 		    seed = param;
 		    param = empty;

@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Id: rpm-filt.l,v 1.41 2016/12/12 09:53:49 tom Exp $
+ * $Id: rpm-filt.l,v 1.42 2025/01/26 11:36:23 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -18,7 +18,7 @@
 
 DefineFilter(rpm);
 
-#define isQuote(ch) (ch != 0 && strchr("\\'\"", ch) != 0)
+#define isQuote(ch) (ch != 0 && strchr("\\'\"", ch) != NULL)
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -94,7 +94,7 @@ SECTION		%{IDENT}
 			  yytext[len] = 0;
 			  attr = my_keyword_attr(yytext, len);
 			  yytext[len] = (char) save;
-			  if (cur_state == sTEXT && (attr == 0 || *attr == 0)) {
+			  if (cur_state == sTEXT && (attr == NULL || *attr == 0)) {
 			      WriteToken(String_attr);
 			  } else {
 			      WriteToken3(attr, len);
@@ -192,7 +192,7 @@ SECTION		%{IDENT}
 			    }
 			    save_here(yytext, yyleng);
 			    push_state(HEREDOC);
-			    if (strchr(yytext, '\n') != 0) {
+			    if (strchr(yytext, '\n') != NULL) {
 				flt_error("unexpected end of line");
 				BeginQuote(HEREDOC, Error_attr);
 			    } else {
@@ -253,18 +253,18 @@ begin_section(char *name, int len)
 {
     const char *flags = ci_keyword_flag(name);
 
-    if (flags == 0)
+    if (flags == NULL)
 	flags = "";
 
-    if (keyword_attr(name) == 0 && FLT_STATE == sTEXT) {
+    if (keyword_attr(name) == NULL && FLT_STATE == sTEXT) {
 	flt_error("unexpected keyword in text: %s", name);
 	flt_bfr_embed(name, len, Error_attr);
     } else {
 	WriteToken(my_keyword_attr(name, len));
-	if (strchr(flags, 'o') != 0) {
+	if (strchr(flags, 'o') != NULL) {
 	    push_state(ONELINE);
 	    flt_bfr_begin(String_attr);
-	} else if (strchr(flags, 'q') != 0) {
+	} else if (strchr(flags, 'q') != NULL) {
 	    new_state(sTEXT);
 	} else {
 	    new_state(NORMAL);
@@ -276,14 +276,14 @@ static const char *
 meta_variable(char *name, int len)
 {
     const char *attr = my_keyword_attr(name, len);
-    return (attr != 0) ? attr : Ident_attr;
+    return (attr != NULL) ? attr : Ident_attr;
 }
 
 static const char *
 my_keyword_attr(char *name, int len)
 {
     const char *attr = get_keyword_attr(name);
-    if (attr == 0) {
+    if (attr == NULL) {
 	int try = len;
 	char save;
 	const char *flags;
@@ -297,13 +297,13 @@ my_keyword_attr(char *name, int len)
 	    attr = get_keyword_attr(name);
 	    flags = ci_keyword_flag(name);
 	    name[try] = save;
-	    if (attr != 0) {
-		if (flags != 0) {
-		    if (strchr(flags, 'n') == 0) {
-			attr = 0;
+	    if (attr != NULL) {
+		if (flags != NULL) {
+		    if (strchr(flags, 'n') == NULL) {
+			attr = NULL;
 		    }
 		} else {
-		    attr = 0;
+		    attr = NULL;
 		}
 	    }
 	} else if (*name == '%') {
@@ -323,15 +323,15 @@ save_here(char *text, int length)
     char *s;
 
     here_exp = 1;
-    if ((here_tag = do_alloc(here_tag, (size_t) length, &here_len)) != 0) {
+    if ((here_tag = do_alloc(here_tag, (size_t) length, &here_len)) != NULL) {
 	s = here_tag;
 	while (length--) {
 	    if (isQuote(*text)) {
 		here_exp = 0;
-	    } else if (strchr(" \t", *text) != 0) {
+	    } else if (strchr(" \t", *text) != NULL) {
 		if (s != here_tag)
 		    break;
-	    } else if (strchr("<->", *text) == 0) {
+	    } else if (strchr("<->", *text) == NULL) {
 		*s++ = *text;
 	    }
 	    text++;
@@ -364,7 +364,7 @@ got_here(char *text, int length)
 		    flt_bfr_embed(text + j, 1, Error_attr);
 		}
 	    } else {
-		if (here_tag != 0 && (text[j] != here_tag[k++]))
+		if (here_tag != NULL && (text[j] != here_tag[k++]))
 		    return 0;
 		if (pass)
 		    flt_bfr_append(text + j, 1);

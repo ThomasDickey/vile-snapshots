@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: ti-filt.l,v 1.30 2017/04/16 10:32:09 tom Exp $
+ * $Id: ti-filt.l,v 1.31 2025/01/26 11:38:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -87,7 +87,7 @@ static const char *
 check_name(const char *name)
 {
     const char *attr = get_keyword_attr(name);
-    if (attr == 0)
+    if (attr == NULL)
 	attr = "";
     if (strcmp(attr, Keyword_attr))
 	attr = Action_attr;

@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.81 2024/01/17 23:23:14 tom Exp $
+ * $Id: charsets.c,v 1.82 2025/01/26 14:39:37 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -53,7 +53,7 @@ allow_decoder(BUFFER *bp, size_t need)
 	bp->decode_utf_len = (need + 1) * 2;
 	safe_typereallocn(UINT, bp->decode_utf_buf, bp->decode_utf_len);
     }
-    return (bp->decode_utf_buf != 0);
+    return (bp->decode_utf_buf != NULL);
 }
 
 static int
@@ -63,7 +63,7 @@ allow_encoder(BUFFER *bp, size_t need)
 	bp->encode_utf_len = (need + 1) * 2;
 	safe_typereallocn(char, bp->encode_utf_buf, bp->encode_utf_len);
     }
-    return (bp->encode_utf_buf != 0);
+    return (bp->encode_utf_buf != NULL);
 }
 
 int
@@ -91,7 +91,7 @@ vl_conv_to_utf8(UCHAR * target, UINT source, B_COUNT limit)
 	rc = 0;
     }
 
-    if (target != 0) {
+    if (target != NULL) {
 	switch (rc) {
 	case 1:
 	    target[0] = (UCHAR) CH(0);
@@ -199,7 +199,7 @@ vl_conv_to_utf32(UINT * target, const char *source, B_COUNT limit)
 	rc = 0;
     }
 
-    if (target != 0) {
+    if (target != NULL) {
 	UINT mask = 0;
 	int j;
 	int shift = 0;
@@ -247,7 +247,7 @@ vl_conv_to_utf32(UINT * target, const char *source, B_COUNT limit)
 static const BOM_TABLE *
 find_mark_info(BOM_CODES code)
 {
-    const BOM_TABLE *result = 0;
+    const BOM_TABLE *result = NULL;
     unsigned n;
 
     for (n = 0; n < TABLESIZE(bom_table); ++n) {
@@ -350,11 +350,11 @@ find_mark_info2(BUFFER *bp)
 {
     const BOM_TABLE *mp = find_mark_info(get_bom(bp));
 
-    if ((mp != 0) &&
+    if ((mp != NULL) &&
 	(mp->size == 0) &&
 	(b_val(bp, VAL_FILE_ENCODING) > enc_UTF8)) {
 	mp = find_mark_info(inferred_bom(bp, mp));
-    } else if (mp == 0 &&
+    } else if (mp == NULL &&
 	       (b_val(bp, VAL_FILE_ENCODING) > enc_UTF8)) {
 	mp = find_mark_info(inferred_bom2(bp, (BOM_CODES) b_val(bp, VAL_BYTEORDER_MARK)));
     }
@@ -381,7 +381,7 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
     int rc = 0;
     const BOM_TABLE *mp = find_mark_info2(bp);
 
-    if (mp != 0 && mp->size > 1) {
+    if (mp != NULL && mp->size > 1) {
 	size_t j = 0;
 	size_t k = 0;
 	size_t need = (size_t) nbuf + strlen(ending);
@@ -482,7 +482,7 @@ load_as_utf8(BUFFER *bp, LINE *lp)
     int rc = FALSE;
     const BOM_TABLE *mp = find_mark_info2(bp);
 
-    if (mp != 0 && mp->size > 1) {
+    if (mp != NULL && mp->size > 1) {
 	int pass;
 	size_t j, k;
 	size_t need = (size_t) llength(lp);
@@ -535,12 +535,12 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 		used = k;
 
 		for (pass = 1; pass <= 2; ++pass) {
-		    UCHAR *buffer = (pass == 1) ? 0 : (UCHAR *) lvalue(lp);
+		    UCHAR *buffer = (pass == 1) ? NULL : (UCHAR *) lvalue(lp);
 		    for (j = k = 0; j < used; ++j) {
 			int nn = vl_conv_to_utf8(buffer,
 						 bp->decode_utf_buf[j],
 						 (B_COUNT) (used + 1 - j));
-			if (buffer != 0)
+			if (buffer != NULL)
 			    buffer += nn;
 			k += (UINT) nn;
 		    }
@@ -591,7 +591,7 @@ remove_crlf_nulls(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
     UCHAR mark_lf[4];
     size_t marklen = 0;
 
-    if (mp != 0) {
+    if (mp != NULL) {
 	memset(mark_cr, 0, sizeof(mark_cr));
 	memset(mark_lf, 0, sizeof(mark_lf));
 
@@ -710,7 +710,7 @@ set_encoding_from_bom(BUFFER *bp, BOM_CODES bom_value)
     int result;
 
     if (bom_value > bom_NONE
-	&& (mp = find_mark_info(bom_value)) != 0) {
+	&& (mp = find_mark_info(bom_value)) != NULL) {
 
 	switch (mp->code) {
 	case bom_UTF8:
@@ -765,7 +765,7 @@ aligned_charset(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
     const BOM_TABLE *mp = find_mark_info(get_bom(bp));
 
     (void) buffer;
-    if (mp != 0 && mp->size > 1) {
+    if (mp != NULL && mp->size > 1) {
 	rc = !(*length % mp->size);
     }
     return rc;
@@ -814,7 +814,7 @@ decode_bom(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
 
     if (b_val(bp, VAL_BYTEORDER_MARK) > bom_NONE
 	&& (mp = find_mark_info((BOM_CODES) b_val(bp,
-						  VAL_BYTEORDER_MARK))) != 0
+						  VAL_BYTEORDER_MARK))) != NULL
 	&& line_has_mark(mp, buffer, *length)) {
 	for (n = 0; n < *length - mp->size; ++n) {
 	    buffer[n] = buffer[n + mp->size];
@@ -965,7 +965,7 @@ write_bom(BUFFER *bp)
     const BOM_TABLE *mp;
     int status = FIOSUC;
 
-    if ((mp = find_mark_info((BOM_CODES) b_val(bp, VAL_BYTEORDER_MARK))) != 0) {
+    if ((mp = find_mark_info((BOM_CODES) b_val(bp, VAL_BYTEORDER_MARK))) != NULL) {
 	status = ffputline((const char *) mp->mark, (int) mp->size, NULL);
     }
     return status;

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: hs-filt.l,v 1.29 2016/12/15 02:04:57 tom Exp $
+ * $Id: hs-filt.l,v 1.30 2025/01/26 11:05:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Haskell
  * input text.
@@ -72,7 +72,7 @@ NUMBER		{OCTAL}|{HEXADECIMAL}|{INTEGER}|{REAL}
 <PREPRO>{IDENT}		{ const char *attr;
 			  set_symbol_table("cpre");
 			  attr = get_keyword_attr(yytext);
-			  if (attr == 0)
+			  if (attr == NULL)
 			      attr = Error_attr;
 			  flt_bfr_embed(yytext, yyleng, attr);
 			  set_symbol_table(default_table);

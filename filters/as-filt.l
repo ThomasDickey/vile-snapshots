@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: as-filt.l,v 1.15 2020/05/10 20:28:46 tom Exp $
+ * $Id: as-filt.l,v 1.16 2025/01/26 11:05:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of assembler files.
  */
@@ -71,7 +71,7 @@ static const char *
 expect_attr(char *name)
 {
     const char *attr = get_keyword_attr(name);
-    if (attr == 0) {
+    if (attr == NULL) {
 	attr = Error_attr;
 	flt_error("unexpected token");
     }

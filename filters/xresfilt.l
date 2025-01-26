@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: xresfilt.l,v 1.31 2013/12/02 01:32:53 tom Exp $
+ * $Id: xresfilt.l,v 1.32 2025/01/26 11:40:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -98,7 +98,7 @@ preprocessor(char *text, int size)
 {
     char *s = skip_blanks(text);
     char *t;
-    const char *attr = 0;
+    const char *attr = NULL;
     int save;
 
     if (set_symbol_table("cpre")) {
@@ -110,7 +110,7 @@ preprocessor(char *text, int size)
 	*t = (char) save;
 	set_symbol_table(default_table);
     }
-    if (attr != 0) {
+    if (attr != NULL) {
 	flt_puts(text, size, Preproc_attr);
 	return 1;
     }
@@ -130,7 +130,7 @@ static void
 quoted_name(char *text, int length)
 {
     const char *attr = get_keyword_attr(lowercase_of(text));
-    if (attr != 0)
+    if (attr != NULL)
 	flt_bfr_embed(text, length, attr);
     else
 	flt_bfr_append(text, length);

@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Id: history.c,v 1.94 2022/08/21 16:46:05 tom Exp $
+ * $Id: history.c,v 1.96 2025/01/26 15:01:35 tom Exp $
  *
  */
 
@@ -91,7 +91,7 @@ stopMyBuff(void)
 {
     BUFFER *bp;
 
-    if ((bp = find_b_name(HISTORY_BufName)) != 0)
+    if ((bp = find_b_name(HISTORY_BufName)) != NULL)
 	(void) zotbuf(bp);
 
     tb_free(&MyText);
@@ -103,8 +103,8 @@ makeMyBuff(void)
     BUFFER *bp;
 
     if (!global_g_val(GMDHISTORY)) {
-	bp = 0;
-    } else if ((bp = make_ro_bp(HISTORY_BufName, BFINVS)) == 0) {
+	bp = NULL;
+    } else if ((bp = make_ro_bp(HISTORY_BufName, BFINVS)) == NULL) {
 	stopMyBuff();
     } else {
 	set_vilemode(bp);
@@ -138,7 +138,7 @@ static int
 willExtend(const char *src, int srclen)
 {
     if ((tb_length(MyText) == 0)
-	&& src != 0
+	&& src != NULL
 	&& (srclen > 0)) {
 	return (src[0] == SHPIPE_LEFT[0]) || isRepeatable(src[0]);
     }
@@ -153,7 +153,7 @@ willExtend(const char *src, int srclen)
 static int
 sameLine(LINE *lp, char *src, int srclen)
 {
-    if (lp == 0 || !lisreal(lp) || src == 0 || srclen <= 0)
+    if (lp == NULL || !lisreal(lp) || src == NULL || srclen <= 0)
 	return 0;
     else {
 	int dstlen = llength(lp);
@@ -249,11 +249,11 @@ needQuotes(TBUFF *src)
 static char *
 stripQuotes(char *src, int len, int eolchar, int *actual)
 {
-    char *dst = 0;
+    char *dst = NULL;
 
     if (len > 0) {
 	TRACE(("stripQuotes(%.*s)\n", len, src));
-	if ((dst = typeallocn(char, (size_t) len + 1)) != 0) {
+	if ((dst = typeallocn(char, (size_t) len + 1)) != NULL) {
 	    int j, k;
 	    int quoted = FALSE;
 	    int escaped = FALSE;
@@ -384,14 +384,14 @@ hst_append_s(char *cmd, int glue, int can_extend)
 void
 hst_remove(const char *cmd)
 {
-    if (MyLevel == 1 && cmd != 0 && *cmd != EOS) {
-	TBUFF *temp = 0;
+    if (MyLevel == 1 && cmd != NULL && *cmd != EOS) {
+	TBUFF *temp = NULL;
 	size_t len = tb_length(tb_scopy(&temp, cmd)) - 1;
 
 	TRACE(("hst_remove(%s)\n", cmd));
 	while (*cmd++)
 	    tb_unput(MyText);
-	if ((temp = kbd_kill_response(temp, &len, killc)) != 0)
+	if ((temp = kbd_kill_response(temp, &len, killc)) != NULL)
 	    tb_free(&temp);
     }
 }
@@ -415,10 +415,10 @@ hst_flush(void)
 	return;
 
     if ((tb_length(MyText) != 0)
-	&& ((bp = makeMyBuff()) != 0)) {
+	&& ((bp = makeMyBuff()) != NULL)) {
 
 	/* suppress if this is the same as previous line */
-	if (((lp = lback(buf_head(bp))) != 0)
+	if (((lp = lback(buf_head(bp))) != NULL)
 	    && (lp != buf_head(bp))
 	    && (sameLine(lp, tb_args(MyText)) == 0)) {
 	    (void) tb_init(&MyText, esc_c);
@@ -459,7 +459,7 @@ showhistory(int f GCC_UNUSED, int n GCC_UNUSED)
     if (!global_g_val(GMDHISTORY)) {
 	mlforce("history mode is not set");
 	return FALSE;
-    } else if (bp == 0 || popupbuff(bp) == FALSE) {
+    } else if (bp == NULL || popupbuff(bp) == FALSE) {
 	return no_memory("show-history");
     }
     return TRUE;
@@ -477,20 +477,20 @@ hst_find(HST * parm, BUFFER *bp, LINE *lp, int direction)
     LINE *base = buf_head(bp);
     LINE *lp0 = lp;
 
-    if ((lp0 == 0)
+    if ((lp0 == NULL)
 	|| ((lp == base) && (direction > 0))) {
-	return 0;
+	return NULL;
     }
 
     for_ever {
 	if (direction > 0) {
 	    if (lp == lback(base))	/* cannot wrap-around */
-		return 0;
+		return NULL;
 	    lp = lforw(lp);
 	} else
 	    lp = lback(lp);
 	if (lp == base)
-	    return 0;		/* empty or no matches */
+	    return NULL;	/* empty or no matches */
 
 	if (!lisreal(lp)
 	    || ((size_t) llength(lp) <= (tb_length(MyText)
@@ -548,7 +548,7 @@ hst_display(HST * parm, char *src, int srclen)
     wminip->w_dot.o = llength(wminip->w_dot.l);
     kbd_kill_response(*(parm->buffer), parm->position, killc);
 
-    if (src != 0 && srclen != 0) {
+    if (src != NULL && srclen != 0) {
 	char *stripped;
 	int offset = (int) tb_length(MyText) + willGlue();
 	int n = endOfParm(parm, src, offset, srclen) - offset;
@@ -580,7 +580,7 @@ hst_display(HST * parm, char *src, int srclen)
 						     (size_t) n,
 						     parm->eolchar, parm->options);
 #if HST_QUOTES
-	if (stripped != 0 && stripped != src)
+	if (stripped != NULL && stripped != src)
 	    free(stripped);
 #endif
     }
@@ -617,14 +617,14 @@ static LINE *
 hst_scroll(LINE *lp1, HST * parm)
 {
     BUFFER *bp = makeMyBuff();
-    LINE *result = 0;
+    LINE *result = NULL;
 
-    if (bp != 0) {
+    if (bp != NULL) {
 	LINE *lp0 = buf_head(bp);
 	LINE *lp2 = hst_find(parm, bp, lp1, h_direction);
 
 	if (lp1 != lp2) {
-	    if (lp2 == 0) {
+	    if (lp2 == NULL) {
 		if (h_direction + h_distance == 0) {
 		    lp1 = lp0;
 		    h_distance = 0;
@@ -672,10 +672,10 @@ edithistory(TBUFF **buffer,
 	    return FALSE;
     }
 
-    if ((bp = makeMyBuff()) == 0)	/* something is very wrong */
+    if ((bp = makeMyBuff()) == NULL)	/* something is very wrong */
 	return FALSE;
 
-    if ((lp1 = buf_head(bp)) == 0)
+    if ((lp1 = buf_head(bp)) == NULL)
 	return FALSE;
 
     /* slightly better than global data... */
@@ -702,7 +702,7 @@ edithistory(TBUFF **buffer,
 	 * history.
 	 */
 	h_direction = 0;	/* ...unless we find scrolling-command */
-	if ((p = DefaultKeyBinding(c)) != 0) {
+	if ((p = DefaultKeyBinding(c)) != NULL) {
 	    if (CMD_U_FUNC(p) == backline)
 		h_direction = -1;
 	    else if (CMD_U_FUNC(p) == forwline)
@@ -714,7 +714,7 @@ edithistory(TBUFF **buffer,
 
 	} else if ((h_direction != 0) && !isGraph(c)) {
 
-	    if ((lp2 = hst_scroll(lp1, &param)) != 0)
+	    if ((lp2 = hst_scroll(lp1, &param)) != NULL)
 		lp1 = lp2;
 	    else		/* cannot scroll */
 		kbd_alarm();

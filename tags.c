@@ -5,9 +5,9 @@
  *	the cursor.
  *	written for vile.
  *
- * Copyright (c) 1990, 1995-2018,2019 by Paul Fox and Thomas E. Dickey
+ * Copyright (c) 1990, 1995-2019,2025 by Paul Fox and Thomas E. Dickey
  *
- * $Id: tags.c,v 1.155 2019/12/19 09:37:58 bod Exp $
+ * $Id: tags.c,v 1.156 2025/01/26 14:48:55 tom Exp $
  */
 #include "estruct.h"
 #include "edef.h"
@@ -191,7 +191,7 @@ xcg_tags(BI_NODE * a, BI_NODE * b)
     b->value = temp;
 }
 
-#define BI_DATA0 {{0}, 0, {0}}
+#define BI_DATA0 {{NULL}, 0, {NULL}}
 #define BI_TREE0 0, 0, BI_DATA0
 static BI_TREE tags_tree =
 {new_tags, old_tags, dpy_tags, xcg_tags, BI_TREE0};
@@ -842,7 +842,7 @@ tag_search(char *tag, int taglen, int initial)
 	 */
 	if (!initial
 	    && untaghead != NULL
-	    && untaghead->u_stklink != 0) {
+	    && untaghead->u_stklink != NULL) {
 	    UNTAG *p;
 	    p = untaghead;
 	    untaghead = p->u_stklink;

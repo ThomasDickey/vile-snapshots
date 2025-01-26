@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: dcl-filt.l,v 1.27 2013/12/02 01:32:54 tom Exp $
+ * $Id: dcl-filt.l,v 1.28 2025/01/26 11:05:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *
@@ -36,7 +36,7 @@ static char *Ident2_attr;
 static char *Number_attr;
 static char *String_attr;
 
-static const char *look_for = 0;
+static const char *look_for = NULL;
 
 static void handle_ident(char *text, int length);
 static void handle_newline(void);
@@ -107,7 +107,7 @@ static void
 handle_newline(void)
 {
     flt_putc('\n');
-    if (look_for != 0) {
+    if (look_for != NULL) {
 	BEGIN(LITERAL);
     }
 }
@@ -134,7 +134,7 @@ handle_literal(char *text, int length)
 	if (dollars) {
 	    const char *temp = lowercase_of(text);
 	    if (!strcmp(temp, look_for)) {
-		look_for = 0;
+		look_for = NULL;
 		attr = get_keyword_attr(temp);
 		BEGIN(NORMAL);
 	    }
@@ -161,7 +161,7 @@ do_filter(FILE *inputs)
     Number_attr = class_attr(NAME_NUMBER);
     String_attr = class_attr(NAME_LITERAL);
 
-    look_for = 0;
+    look_for = NULL;
     BEGIN(NORMAL);
     RunLEX();
 }

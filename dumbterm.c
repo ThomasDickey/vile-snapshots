@@ -1,6 +1,6 @@
 /*	Dumb terminal driver, for I/O before we get into screen mode.
  *
- * $Id: dumbterm.c,v 1.27 2009/12/09 01:28:19 tom Exp $
+ * $Id: dumbterm.c,v 1.28 2025/01/26 13:56:30 tom Exp $
  *
  */
 
@@ -149,8 +149,8 @@ TERM dumb_term =
     80,
     dumb_set_encoding,
     dumb_get_encoding,
-    0,				/* use this to put us into raw mode */
-    0,				/* ...and this, just in case we exit */
+    NULL,			/* use this to put us into raw mode */
+    NULL,			/* ...and this, just in case we exit */
     dumb_kopen,
     dumb_kclose,
     nullterm_clean,

@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Id: version.c,v 1.79 2013/03/06 00:49:46 tom Exp $
+ * $Id: version.c,v 1.80 2025/01/26 14:34:21 tom Exp $
  *
  */
 
@@ -116,7 +116,7 @@ print_usage(int code)
 	unsigned j;
 	for (j = 0; j < TABLESIZE(options); j++) {
 	    char *colon = strrchr(options[j], ':');
-	    if (colon != 0 && colon[1] == EOS) {
+	    if (colon != NULL && colon[1] == EOS) {
 		(void) fprintf(stderr, "%s\n", options[j]);
 	    } else {
 		(void) fprintf(stderr, "\t%s\n", options[j]);

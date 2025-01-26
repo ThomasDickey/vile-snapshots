@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Id: termio.c,v 1.225 2020/03/29 21:44:26 tom Exp $
+ * $Id: termio.c,v 1.226 2025/01/26 14:33:43 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1251,10 +1251,10 @@ open_terminal(TERM * termp)
 	 * If the open and/or close slots are empty, fill them in with
 	 * the screen driver's functions.
 	 */
-	if (termp->open == 0)
+	if (termp->open == NULL)
 	    termp->open = term.open;
 
-	if (termp->close == 0)
+	if (termp->close == NULL)
 	    termp->close = term.close;
 
 	/*

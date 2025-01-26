@@ -1,7 +1,7 @@
 /*
  * Convert attributed text to html.
  *
- * $Id: atr2html.c,v 1.12 2019/04/06 00:58:00 tom Exp $
+ * $Id: atr2html.c,v 1.13 2025/01/26 10:43:31 tom Exp $
  */
 #include <unfilter.h>
 
@@ -72,7 +72,7 @@ write_unfilter(FILE *dst, int ch, int attrib GCC_UNUSED)
     static const char *tabstrip = NBSP NBSP NBSP NBSP NBSP NBSP NBSP NBSP;
     int next_adjust;
     int tabs_adjust = 0;
-    const char *alias = 0;
+    const char *alias = NULL;
     char buffer[8];
 
     (void) attrib;
@@ -114,7 +114,7 @@ write_unfilter(FILE *dst, int ch, int attrib GCC_UNUSED)
 	}
 	break;
     }
-    if (alias != 0) {
+    if (alias != NULL) {
 	vl_fputs(alias, dst);
     } else {
 	vl_putc(ch, dst);

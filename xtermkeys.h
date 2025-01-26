@@ -1,11 +1,11 @@
 /*
- * $Id: xtermkeys.h,v 1.19 2010/09/06 15:46:27 tom Exp $
+ * $Id: xtermkeys.h,v 1.20 2025/01/26 11:54:25 tom Exp $
  *
  * Function-key definitions and modifiers used for xterm.  This is a header
  * file to simplify sharing between the termcap/curses drivers.
  */
 
-#define DATA(tc,ti,code) { CAPNAME(tc,ti), code, 0 }
+#define DATA(tc,ti,code) { CAPNAME(tc,ti), code, NULL }
 /* *INDENT-OFF* */
 static struct {
     const char *capname;
@@ -154,7 +154,7 @@ is_csi(const char *string)
 static int
 has_param(const char *string)
 {
-    return (strchr(string, ';') != 0);
+    return (strchr(string, ';') != NULL);
 }
 
 static int
@@ -183,7 +183,7 @@ format_modified(char *target, const char *source, int length, int which)
 static void
 add_modified_key(const char *source, int len, int code, int modify)
 {
-    if (source != 0 && len > 0) {
+    if (source != NULL && len > 0) {
 	if (modify < 0) {
 	    delfromsysmap(source, len);
 	} else {
@@ -229,7 +229,7 @@ replace_nulls(char *target, const char *source)
 
     (void) strcpy(target, source);
 #define TCAP_NULL 0200
-    if (strchr(source, TCAP_NULL) != 0) {
+    if (strchr(source, TCAP_NULL) != NULL) {
 	for (j = 0; j < len; j++)
 	    if (CharOf(target[j]) == TCAP_NULL)
 		target[j] = '\0';
@@ -251,7 +251,7 @@ add_shifted_key(unsigned i, int modify)
 	if (!strcmp(keyseqs[i].capname, shifted_keys[j].normal)) {
 	    for (k = 0; k < TABLESIZE(keyseqs); k++) {
 		if (!strcmp(keyseqs[k].capname, shifted_keys[j].shifted)) {
-		    if (keyseqs[k].result != 0) {
+		    if (keyseqs[k].result != NULL) {
 			len = replace_nulls(temp, keyseqs[k].result);
 			add_modified_key(temp, len,
 					 keyseqs[i].code |

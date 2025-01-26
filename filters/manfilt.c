@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Id: manfilt.c,v 1.77 2024/01/21 11:01:18 tom Exp $
+ * $Id: manfilt.c,v 1.79 2025/01/26 17:00:27 tom Exp $
  *
  */
 
@@ -86,7 +86,7 @@ extern char *realloc(char *ptr, size_t size);
 #endif
 
 #define backspace() \
-		if (cur_line != 0 \
+		if (cur_line != NULL \
 		 && cur_line->l_this > 0) \
 		    cur_line->l_this -= 1;
 
@@ -339,7 +339,7 @@ static CHARCELL *
 allocate_cell(void)
 {
     CHARCELL *p = typecallocn(CHARCELL, 1);
-    if (p == 0)
+    if (p == NULL)
 	failed("allocate_cell");
     return p;
 }
@@ -352,10 +352,10 @@ allocate_line(void)
 {
     LINEDATA *p = typecallocn(LINEDATA, 1);
 
-    if (p == 0)
+    if (p == NULL)
 	failed("allocate_line");
 
-    if (all_lines == 0)
+    if (all_lines == NULL)
 	all_lines = p;
 
     if (total_lines++ > MAX_LINES)
@@ -376,16 +376,16 @@ extend_line(size_t want)
     if (want >= have) {
 	CHARCELL *c = cur_line->l_cell;
 	want += 80;
-	if (c == 0) {
+	if (c == NULL) {
 	    c = typecallocn(CHARCELL, want);
 	} else {
 	    c = typereallocn(CHARCELL, c, want);
 	}
-	if (c == 0) {
+	if (c == NULL) {
 	    failed("extend_line");
 	} else {
 	    while (have < want) {
-		c[have].link = 0;
+		c[have].link = NULL;
 		c[have].c_attrs = ATR_NORMAL;
 		c[have].c_value = SPACE;
 		c[have].c_level = 0;
@@ -411,7 +411,7 @@ put_cell(int c, int level, int ident, int attrs)
     size_t len;
     CHARCELL *p, *q;
 
-    if (cur_line == 0)
+    if (cur_line == NULL)
 	cur_line = allocate_line();
 
     len = cur_line->l_used;
@@ -423,7 +423,7 @@ put_cell(int c, int level, int ident, int attrs)
 
     if (len > col) {		/* some type of overstrike */
 	if (c == UNDERLINE) {
-	    while ((q = p->link) != 0)
+	    while ((q = p->link) != NULL)
 		p = q;
 	    q = allocate_cell();
 	    p->link = q;
@@ -452,9 +452,9 @@ static void
 erase_cell(int col)
 {
     CHARCELL *p = &(cur_line->l_cell[col]);
-    if (p != 0) {
+    if (p != NULL) {
 	/* *INDENT-EQLS* */
-	p->link     = 0;
+	p->link     = NULL;
 	p->c_value  = SPACE;
 	p->c_level  = 0;
 	p->c_ident  = CS_NORMAL;
@@ -481,7 +481,7 @@ ansi_CUF(int code)
     if (code > 0) {
 	size_t col;
 
-	if (cur_line == 0)
+	if (cur_line == NULL)
 	    cur_line = allocate_line();
 
 	col = cur_line->l_this + (size_t) code;
@@ -501,7 +501,7 @@ ansi_DCH(int code)
     size_t src;
 
     if (code > 0) {
-	if (cur_line == 0)
+	if (cur_line == NULL)
 	    cur_line = allocate_line();
 	for (dst = cur_line->l_this; dst < cur_line->l_used; ++dst) {
 	    src = dst + (size_t) code;
@@ -520,7 +520,7 @@ ansi_EL(int code)
 {
     size_t col;
 
-    if (cur_line == 0)
+    if (cur_line == NULL)
 	cur_line = allocate_line();
 
     switch (code) {
@@ -545,7 +545,7 @@ ansi_ICH(int code)
     if (code > 0) {
 	size_t last;
 
-	if (cur_line == 0)
+	if (cur_line == NULL)
 	    cur_line = allocate_line();
 
 	last = cur_line->l_last - 1;
@@ -568,7 +568,7 @@ ansi_HPA(int code)
     if (code > 0) {
 	size_t col;
 
-	if (cur_line == 0)
+	if (cur_line == NULL)
 	    cur_line = allocate_line();
 
 	col = (size_t) code - 1;
@@ -763,8 +763,8 @@ prev_line(void)
     /*
      * We can't go back to lines that were already flushed and discarded.
      */
-    assert(cur_line != 0);
-    if (cur_line->l_prev == 0)
+    assert(cur_line != NULL);
+    if (cur_line->l_prev == NULL)
 	return;
 
     old_line = cur_line;
@@ -781,10 +781,10 @@ next_line(void)
 {
     LINEDATA *old_line;
 
-    if (cur_line == 0)
+    if (cur_line == NULL)
 	cur_line = allocate_line();
 
-    if (cur_line->l_next == 0)
+    if (cur_line->l_next == NULL)
 	cur_line->l_next = allocate_line();
 
     old_line = cur_line;
@@ -824,11 +824,11 @@ cell_code(LINEDATA * line, size_t col)
     int code = ATR_NORMAL;
     CHARCELL *p = &(line->l_cell[col]);
 
-    if (p != 0) {
+    if (p != NULL) {
 	CHARCELL *q;
 	code = p->c_attrs;
 
-	while ((q = p->link) != 0) {
+	while ((q = p->link) != NULL) {
 	    if (q->c_value == UNDERLINE
 		&& q->c_value != p->c_value) {
 		code |= ATR_UNDER;
@@ -843,18 +843,18 @@ cell_code(LINEDATA * line, size_t col)
 static void
 free_line(LINEDATA * l)
 {
-    if (l != 0) {
-	if (l->l_cell != 0)
+    if (l != NULL) {
+	if (l->l_cell != NULL)
 	    free(l->l_cell);
-	if (l->l_prev != 0) {
+	if (l->l_prev != NULL) {
 	    if (l->l_prev->l_next == l)
-		l->l_prev->l_next = 0;
-	    l->l_prev = 0;
+		l->l_prev->l_next = NULL;
+	    l->l_prev = NULL;
 	}
-	if (l->l_next != 0) {
+	if (l->l_next != NULL) {
 	    if (l->l_next->l_prev == l)
-		l->l_next->l_prev = 0;
-	    l->l_next = 0;
+		l->l_next->l_prev = NULL;
+	    l->l_next = NULL;
 	}
 	free(l);
 	total_lines--;
@@ -876,7 +876,7 @@ flush_line(void)
     LINEDATA *l = all_lines;
     CHARCELL *p;
 
-    if (l != 0 && l->l_next != 0) {
+    if (l != NULL && l->l_next != NULL) {
 	all_lines = l->l_next;
 	if (cur_line == l)
 	    cur_line = all_lines;
@@ -911,7 +911,7 @@ flush_line(void)
 	    }
 	    my_putc((int) l->l_cell[col].c_value);
 
-	    while ((p = l->l_cell[col].link) != 0) {
+	    while ((p = l->l_cell[col].link) != NULL) {
 		l->l_cell[col].link = p->link;
 		free(p);
 	    }
@@ -940,7 +940,7 @@ ManFilter(FILE *ifp)
 	    break;
 
 	case '\r':
-	    if (cur_line != 0)
+	    if (cur_line != NULL)
 		cur_line->l_this = 0;
 	    break;
 
@@ -1021,7 +1021,7 @@ ManFilter(FILE *ifp)
 	}
     }
 
-    while (all_lines != 0) {
+    while (all_lines != NULL) {
 	long save = total_lines;
 	flush_line();
 	if (save == total_lines)
@@ -1044,14 +1044,14 @@ main(int argc, char **argv)
     {
 	char *env;
 
-	if (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
-	    ((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
-	    ((env = getenv("LANG")) != 0 && *env != 0)) {
+	if (((env = getenv("LC_ALL")) != NULL && *env != 0) ||
+	    ((env = getenv("LC_CTYPE")) != NULL && *env != 0) ||
+	    ((env = getenv("LANG")) != NULL && *env != 0)) {
 
-	    if (strstr(env, ".UTF-8") != 0
-		|| strstr(env, ".utf-8") != 0
-		|| strstr(env, ".UTF8") != 0
-		|| strstr(env, ".utf8") != 0) {
+	    if (strstr(env, ".UTF-8") != NULL
+		|| strstr(env, ".utf-8") != NULL
+		|| strstr(env, ".UTF8") != NULL
+		|| strstr(env, ".utf8") != NULL) {
 		my_getc = utf8_getc;
 		my_putc = utf8_putc;
 	    }
@@ -1068,7 +1068,7 @@ main(int argc, char **argv)
 		    opt_8bit = 1;
 	    } else {
 		fp = fopen(argv[n], "r");
-		if (fp == 0)
+		if (fp == NULL)
 		    failed(argv[n]);
 		ManFilter(fp);
 		(void) fclose(fp);

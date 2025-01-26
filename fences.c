@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Id: fences.c,v 1.98 2023/01/15 13:26:03 tom Exp $
+ * $Id: fences.c,v 1.99 2025/01/26 11:43:27 tom Exp $
  */
 
 #include	"estruct.h"
@@ -735,7 +735,7 @@ fmatch(int rch)
 	     */
 	    (void) winvile_cursor_state(TRUE, FALSE);
 #endif
-	    /* 
+	    /*
 	     * The idea is to leave the cursor there for about a
 	     * quarter of a second.
 	     */

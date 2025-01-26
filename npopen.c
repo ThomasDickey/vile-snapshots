@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Id: npopen.c,v 1.102 2013/03/08 09:58:49 tom Exp $
+ * $Id: npopen.c,v 1.103 2025/01/26 14:38:58 tom Exp $
  *
  */
 
@@ -50,7 +50,7 @@ static void exec_sh_c(char *cmd);
 FILE *
 npopen(char *cmd, const char *type)
 {
-    FILE *ff = 0;
+    FILE *ff = NULL;
 
     if (*type != 'r' && *type != 'w')
 	return NULL;
@@ -149,7 +149,7 @@ npclose(FILE *fp)
 {
     int child;
 
-    if (fp != 0) {
+    if (fp != NULL) {
 	(void) fclose(fp);
 
 	if (pipe_pid == pipe_pid2)

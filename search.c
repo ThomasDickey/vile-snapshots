@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Id: search.c,v 1.158 2020/01/12 18:06:55 tom Exp $
+ * $Id: search.c,v 1.160 2025/01/26 17:08:26 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -69,7 +69,7 @@ fsearch(int f, int n, int marking, int fromscreen)
     int didwrap;
     int ic;
 
-    assert(curwp != 0);
+    assert(curwp != NULL);
 
     if (f && n < 0)
 	return rsearch(f, -n, FALSE, FALSE);
@@ -93,7 +93,7 @@ fsearch(int f, int n, int marking, int fromscreen)
 	    return status;
     }
 
-    if (curwp == 0)
+    if (curwp == NULL)
 	return FALSE;
 
     curpos = DOT;
@@ -166,7 +166,7 @@ forwhunt(int f, int n)
     int didwrap;
     int ic;
 
-    assert(curwp != 0);
+    assert(curwp != NULL);
 
     wrapok = window_b_val(curwp, MDWRAPSCAN);
 
@@ -182,7 +182,7 @@ forwhunt(int f, int n)
 	return FALSE;
     }
 
-    if (curwp == 0)
+    if (curwp == NULL)
 	return FALSE;
 
     /* find n'th occurrence of pattern
@@ -248,7 +248,7 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
     int didwrap;
     int ic;
 
-    assert(curwp != 0);
+    assert(curwp != NULL);
 
     if (f && n < 0)		/* reverse direction */
 	return fsearch(f, -n, FALSE, fromscreen);
@@ -268,7 +268,7 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
     if (status != TRUE)
 	return status;
 
-    if (curwp == 0)
+    if (curwp == NULL)
 	return FALSE;
 
     curpos = DOT;
@@ -318,7 +318,7 @@ backhunt(int f, int n)
     int didwrap;
     int ic;
 
-    assert(curwp != 0);
+    assert(curwp != NULL);
 
     wrapok = window_b_val(curwp, MDWRAPSCAN);
 
@@ -334,7 +334,7 @@ backhunt(int f, int n)
 	return FALSE;
     }
 
-    if (curwp == 0)
+    if (curwp == NULL)
 	return FALSE;
 
     /* find n'th occurrence of pattern
@@ -505,7 +505,7 @@ scanner(
 
 	    if (direct == REVERSE) {	/* find the last one */
 		int end = FALSE;
-		char *tst = 0;
+		char *tst = NULL;
 
 		last++;
 		while (testit(curpos.l, exp, &end, srchlim, ic)) {
@@ -577,7 +577,7 @@ scanner(
 
 #if OPT_HILITEMATCH
 static int hilite_suppressed;
-static TBUFF *savepat = 0;
+static TBUFF *savepat = NULL;
 static int save_igncase;
 static int save_magic;
 static BUFFER *save_curbp;
@@ -662,7 +662,7 @@ attrib_matches(void)
     VIDEO_ATTR vattr;
     int ic;
 
-    assert(curwp != 0);
+    assert(curwp != NULL);
 
     if (tb_length(searchpat) == 0 || gregexp == NULL)
 	return;
@@ -684,7 +684,7 @@ attrib_matches(void)
 
     (void) clear_match_attrs(TRUE, 1);
 
-    if (curwp == 0)
+    if (curwp == NULL)
 	return;
 
     origdot = DOT;
@@ -748,7 +748,7 @@ int
 scrsearchpat(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     int status;
-    TBUFF *temp = 0;
+    TBUFF *temp = NULL;
 
     status = readpattern("", &searchpat, &gregexp, EOS, TRUE);
     temp = tb_visbuf(tb_values(searchpat), tb_length(searchpat));
@@ -782,8 +782,8 @@ readpattern(const char *prompt,
 
     if (fromscreen) {
 	if ((status = screen_to_ident(temp, sizeof(temp))) == TRUE) {
-	    if (tb_init(apat, EOS) == 0
-		|| tb_bappend(apat, temp, strlen(temp)) == 0) {
+	    if (tb_init(apat, EOS) == NULL
+		|| tb_bappend(apat, temp, strlen(temp)) == NULL) {
 		status = FALSE;
 	    }
 	}
@@ -799,7 +799,7 @@ readpattern(const char *prompt,
 	 * kbd_reply() expects a trailing null, to simplify calls from
 	 * kbd_string().
 	 */
-	if (tb_values(*apat) != 0)
+	if (tb_values(*apat) != NULL)
 	    tb_append(apat, EOS);
 	status = kbd_reply(prompt, apat,
 			   eol_history, c,

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright 2010-2018,2019 by Thomas E. Dickey.  All Rights Reserved.        *
+ * Copyright 2010-2019,2025 by Thomas E. Dickey.  All Rights Reserved.        *
  *                                                                            *
  * Permission to use, copy, modify, and distribute this software and its      *
  * documentation for any purpose and without fee is hereby granted, provided  *
@@ -22,7 +22,7 @@
  *                                                                            *
  ******************************************************************************/
 /* vile:cmode cts=8
- * $XTermId: gnreight.h,v 1.25 2019/02/09 20:32:11 tom Exp $
+ * $XTermId: gnreight.h,v 1.26 2025/01/26 14:47:22 tom Exp $
  *
  * This is a generated set of single-byte encodings,
  * using all available locales in libc6 2.28-6 - T.E.Dickey
@@ -19325,7 +19325,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "WINDOWS-874",                 &encode_874 },
     { "WINSAMI2",                    &encode_WIN_SAMI_2 },
     { "WS2",                         &encode_WIN_SAMI_2 },
-    { 0, 0 }
+    { NULL, NULL }
 };
 
 /* Sorted aliases */
@@ -19697,7 +19697,7 @@ static const GNREIGHT_INX all_locales[] = {
     { "yi_US.cp1255",                &encode_CP1255 },
     { "zu_ZA",                       &encode_ISO_8859_1 },
     { "zu_ZA.iso88591",              &encode_ISO_8859_1 },
-    { 0, 0 }
+    { NULL, NULL }
 };
 /* *INDENT-ON* */
 

@@ -13,7 +13,7 @@ DEFINE_GUID(CLSID_DSAddIn,
 /////////////////////////////////////////////////////////////////////////////
 // CDSAddIn
 
-class CDSAddIn : 
+class CDSAddIn :
 	public IDSAddIn,
 	public CComObjectRoot,
 	public CComCoClass<CDSAddIn, &CLSID_DSAddIn>

@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Id: word.c,v 1.109 2019/12/19 09:32:10 bod Exp $
+ * $Id: word.c,v 1.110 2025/01/26 14:35:39 tom Exp $
  */
 
 #include	"estruct.h"
@@ -717,11 +717,11 @@ int
 formatregion(void)
 {
     int s = FALSE;
-    TBUFF *wp = 0;		/* word buffer */
-    TBUFF *cp = 0;		/* comment-prefix buffer */
+    TBUFF *wp = NULL;		/* word buffer */
+    TBUFF *cp = NULL;		/* comment-prefix buffer */
 
-    if ((wp = tb_init(&wp, EOS)) != 0
-	&& (wp = tb_init(&wp, EOS)) != 0) {
+    if ((wp = tb_init(&wp, EOS)) != NULL
+	&& (wp = tb_init(&wp, EOS)) != NULL) {
 	s = do_formatting(&wp, &cp);
 	tb_free(&wp);
 	tb_free(&cp);

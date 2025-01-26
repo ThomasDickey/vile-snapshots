@@ -1,5 +1,5 @@
 /*
- * $Id: m4-filt.c,v 1.44 2013/12/02 01:33:56 tom Exp $
+ * $Id: m4-filt.c,v 1.46 2025/01/26 17:00:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -95,10 +95,10 @@ SkipBlanks(char *src)
 static void
 free_quote(Quote * q)
 {
-    if (q->text != 0) {
+    if (q->text != NULL) {
 	free(q->text);
 	q->used = 0;
-	q->text = 0;
+	q->text = NULL;
     }
 }
 #endif
@@ -110,7 +110,7 @@ new_quote(Quote * q, const char *s)
 
     q->used = strlen(s);
     q->text = do_alloc(q->text, q->used, &(q->have));
-    if (q->text != 0)
+    if (q->text != NULL)
 	strcpy(q->text, s);
 }
 
@@ -118,8 +118,8 @@ static unsigned
 count_of(char **args)
 {
     unsigned count = 0;
-    if (args != 0) {
-	while (*args != 0) {
+    if (args != NULL) {
+	while (*args != NULL) {
 	    args++;
 	    count++;
 	}
@@ -130,7 +130,7 @@ count_of(char **args)
 static void
 ChangeQuote(char **args)
 {
-    if (args != 0) {
+    if (args != NULL) {
 	new_quote(&leftquote, count_of(args) > 0 ? args[0] : L_QUOTE);
 	new_quote(&rightquote, count_of(args) > 1 ? args[1] : R_QUOTE);
     }
@@ -139,7 +139,7 @@ ChangeQuote(char **args)
 static void
 ChangeComment(char **args)
 {
-    if (args != 0) {
+    if (args != NULL) {
 	new_quote(&leftcmt, count_of(args) > 0 ? args[0] : L_CMT);
 	new_quote(&rightcmt, count_of(args) > 1 ? args[1] : R_CMT);
     }
@@ -166,10 +166,10 @@ parse_arglist(char *name, char *s, char ***args, int *parens)
 	    *args = type_alloc(char *, (char *) 0,
 			       sizeof(**args) * (count + 4),
 			       &used);
-	    if (*args == 0)
-		return 0;
+	    if (*args == NULL)
+		return NULL;
 	    (*args)[count++] = strmalloc(name);
-	    (*args)[count] = 0;
+	    (*args)[count] = NULL;
 	    t++;
 	} else {
 	    processing = 0;
@@ -190,8 +190,8 @@ parse_arglist(char *name, char *s, char ***args, int *parens)
 		size_t need = (size_t) (t - r);
 
 		v = typeallocn(char, 1 + need);
-		if (v == 0)
-		    return 0;
+		if (v == NULL)
+		    return NULL;
 		if (t != r)
 		    strncpy(v, r, need);
 		v[t - r] = 0;
@@ -199,13 +199,13 @@ parse_arglist(char *name, char *s, char ***args, int *parens)
 				     (char *) (*args),
 				   sizeof(**args) * (count + 2),
 				   &used);
-		if (*args == 0) {
+		if (*args == NULL) {
 		    free(v);
-		    return 0;
+		    return NULL;
 		}
 		(*args)[count++] = v;
 	    }
-	    (*args)[count] = 0;
+	    (*args)[count] = NULL;
 	    if (isQuote(t, leftquote)) {
 		t += leftquote.used;
 		quoted = 1;
@@ -231,7 +231,7 @@ parse_arglist(char *name, char *s, char ***args, int *parens)
 static void
 free_arglist(char **args)
 {
-    if (args != 0) {
+    if (args != NULL) {
 	char **save = args;
 	while (*args)
 	    free(*args++);
@@ -251,7 +251,7 @@ our_directive(char *name)
 	    "changecom", ChangeComment
 	},
     };
-    const Funcs *result = 0;
+    const Funcs *result = NULL;
     size_t n;
 
     for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
@@ -268,13 +268,13 @@ handle_directive(char ***args, int *parens)
 {
     const Funcs *ptr;
 
-    if (*args != 0 && *parens == 0) {
-	if ((ptr = our_directive((*args)[0])) != 0) {
+    if (*args != NULL && *parens == 0) {
+	if ((ptr = our_directive((*args)[0])) != NULL) {
 	    ptr->func(*args + 1);
 	}
 	free_arglist(*args);
 	*parens = 0;
-	*args = 0;
+	*args = NULL;
     }
 }
 
@@ -285,7 +285,7 @@ handle_directive(char ***args, int *parens)
 static char *
 parse_directive(char *name, char *s, char ***args, int *parens)
 {
-    if (our_directive(name) != 0) {
+    if (our_directive(name) != NULL) {
 	s = parse_arglist(name, s, args, parens);
 	handle_directive(args, parens);
     }
@@ -316,7 +316,7 @@ extract_identifier(char *s, char ***args, int *parens)
     if (base != s) {
 	extra = (unsigned) (s - base);
 	need = has_cpp + extra;
-	if ((name = do_alloc(name, need, &have)) != 0) {
+	if ((name = do_alloc(name, need, &have)) != NULL) {
 	    if (has_cpp) {
 		name[0] = '#';
 	    }
@@ -326,7 +326,7 @@ extract_identifier(char *s, char ***args, int *parens)
 		/* FIXME: GNU m4 may accept an argument list here */
 		s += strlen(s);
 		flt_puts(show, (int) (s - show), Comment_attr);
-	    } else if ((attr = get_keyword_attr(name)) != 0) {
+	    } else if ((attr = get_keyword_attr(name)) != NULL) {
 		flt_puts(show, (int) (s - show), attr);
 	    } else {
 		flt_puts(show, (int) (s - show), Ident_attr);
@@ -337,7 +337,7 @@ extract_identifier(char *s, char ***args, int *parens)
 	}
 #if NO_LEAKS
 	free(name);
-	name = 0;
+	name = NULL;
 	have = 0;
 #endif
     }
@@ -416,14 +416,14 @@ write_literal(char *s, int *literal)
 
     char *result = s;
 
-    if (s != 0) {
+    if (s != NULL) {
 	size_t c_length = (unsigned) has_endofliteral(s, literal);
 	size_t need = c_length;
 
 	if (*literal == 0) {
 	    if (need > rightquote.used) {
 		need -= rightquote.used;
-		if ((buffer = do_alloc(buffer, used + need + 1, &have)) != 0) {
+		if ((buffer = do_alloc(buffer, used + need + 1, &have)) != NULL) {
 		    strncpy(buffer + used, s, need);
 		    used += need;
 		} else {
@@ -436,7 +436,7 @@ write_literal(char *s, int *literal)
 	    }
 	    write_quote(rightquote);
 	} else {
-	    if ((buffer = do_alloc(buffer, used + need + 1, &have)) != 0) {
+	    if ((buffer = do_alloc(buffer, used + need + 1, &have)) != NULL) {
 		strncpy(buffer + used, s, need);
 		used += need;
 	    } else {
@@ -449,9 +449,9 @@ write_literal(char *s, int *literal)
 	used = 0;
     }
 #if NO_LEAKS
-    if (used == 0 && have != 0 && buffer != 0) {
+    if (used == 0 && have != 0 && buffer != NULL) {
 	free(buffer);
-	buffer = 0;
+	buffer = NULL;
 	have = 0;
     }
 #endif
@@ -500,14 +500,14 @@ do_filter(FILE *input GCC_UNUSED)
     Literal_attr = class_attr(NAME_LITERAL);
     Number_attr = class_attr(NAME_NUMBER);
 
-    args = 0;
+    args = NULL;
     literal = 0;
     comment = 0;
     parens = 0;
 
     while (flt_gets(&line, &used) != NULL) {
 	s = line;
-	while (s != 0 && *s != '\0') {
+	while (s != NULL && *s != '\0') {
 	    if (parens != 0) {
 		s = parse_directive(args[0], s, &args, &parens);
 	    } else if (literal) {
@@ -550,7 +550,7 @@ do_filter(FILE *input GCC_UNUSED)
     }
     if (literal) {
 	flt_error("missing right-quote");
-	(void) write_literal(0, &literal);
+	(void) write_literal(NULL, &literal);
     }
     FreeAndNull(line);
     used = 0;

@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Id: htmlfilt.l,v 1.125 2013/12/02 01:33:56 tom Exp $
+ * $Id: htmlfilt.l,v 1.126 2025/01/26 11:05:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -122,7 +122,7 @@ typedef enum {
 #define DBG_HTML(msg)		/* nothing */
 #endif
 
-#define isQuote(ch) (ch != 0 && strchr("'", ch) != 0)
+#define isQuote(ch) (ch != 0 && strchr("'", ch) != NULL)
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -219,7 +219,7 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 
 <INITIAL,HTMLCODE,HTMLNOTE,HTMLQUO1,HTMLQUO2>"<%"([@!=#]|"--")? {
 			  flt_bfr_finish();
-			  if (dft_language != 0) {
+			  if (dft_language != NULL) {
 			      WriteToken3(Action_attr, 2);
 			      switch (yytext[2]) {
 			      case '-':
@@ -421,14 +421,14 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 <JS_CODE>"<!--"([^\r\n]*"-->")?	{ WriteToken(Comment_attr); }
 <JS_CODE>"//"[^\r\n]*	{
 			  char *last = strstr(yytext, "-->");
-			  char *next = 0;
-			  if (last != 0) {
+			  char *next = NULL;
+			  if (last != NULL) {
 			      last += 3;
 			      if (*last != '\0') {
 				  next = strdup(last);
 			      }
 			  }
-			  if (next != 0) {
+			  if (next != NULL) {
 			      int used = (int) (last - (char *) yytext);
 			      WriteToken3(Comment_attr, used);
 			      used = (int) strlen(next);
@@ -537,7 +537,7 @@ html_command(const char *text)
     const char *temp = (exact
 			? theText
 			: lowercase_of(theText));
-    const char *attr = 0;
+    const char *attr = NULL;
     int change = 0;
 
     in_tag = 0;
@@ -646,7 +646,7 @@ html_quotes(char *text, int len, int state, int which)
 	CODE_SYMS check;
 
 	temp = do_alloc(temp, need, &used);
-	if (temp != 0) {
+	if (temp != NULL) {
 	    if (which == 0) {
 		*temp = 0;
 		strcat(temp, text);
@@ -725,7 +725,7 @@ may_resume_html(char *text)
     char *next;
     int save;
 
-    if (left != 0) {
+    if (left != NULL) {
 	flt_puts(text, (int) (left - text), "");
 	flt_puts(left, 1, Keyword_attr);
 	next = ++left;
@@ -816,7 +816,7 @@ css_units(char *text, int length)
 	    flt_setup_symbols(SYMS_CSS);
 	    /* units are normally loaded as part of css.key */
 	    flt_setup_symbols(SYMS_CSS_UNITS);
-	    if ((attr = ci_keyword_attr(text + digits)) == 0)
+	    if ((attr = ci_keyword_attr(text + digits)) == NULL)
 		attr = Error_attr;
 	    flt_puts(text + digits, length - digits, attr);
 	    set_symbol_table(SYMS_CSS);
@@ -841,7 +841,7 @@ got_here(char *text, int length)
 		if (pass)
 		    flt_bfr_append(text + j, 1);
 	    } else {
-		if (here_tag != 0 && (text[j] != here_tag[k++]))
+		if (here_tag != NULL && (text[j] != here_tag[k++]))
 		    return 0;
 		if (pass)
 		    flt_bfr_append(text + j, 1);
@@ -857,15 +857,15 @@ save_here(char *text, int length)
     char *s;
 
     here_exp = 1;
-    if ((here_tag = do_alloc(here_tag, (size_t) length, &here_len)) != 0) {
+    if ((here_tag = do_alloc(here_tag, (size_t) length, &here_len)) != NULL) {
 	s = here_tag;
 	while (length--) {
 	    if (isQuote(*text)) {
 		here_exp = 0;
-	    } else if (strchr(" \t", *text) != 0) {
+	    } else if (strchr(" \t", *text) != NULL) {
 		if (s != here_tag)
 		    break;
-	    } else if (strchr("<", *text) == 0) {
+	    } else if (strchr("<", *text) == NULL) {
 		*s++ = *text;
 	    }
 	    text++;
@@ -899,7 +899,7 @@ language2code(const char *name)
 {
     CODE_SYMS result = CODE_NONE;
 
-    if (name != 0) {
+    if (name != NULL) {
 	char *name2 = strmalloc(name);
 	const char *lowered = lowercase_of(name2);
 	size_t len = strlen(lowered);
@@ -937,9 +937,9 @@ language2code(const char *name)
 static const char *
 language2keys(const char *name)
 {
-    const char *result = 0;
+    const char *result = NULL;
 
-    if (name != 0) {
+    if (name != NULL) {
 	switch (language2code(name)) {
 	case CODE_NONE:
 	    break;
@@ -1016,7 +1016,7 @@ setup_language(const char *name)
 {
     const char *keys = language2keys(name);
 
-    if (keys != 0 && !set_symbol_table(keys)) {
+    if (keys != NULL && !set_symbol_table(keys)) {
 	use_language = keys;
 	flt_setup_symbols(keys);
 	set_symbol_table(default_table);
@@ -1028,7 +1028,7 @@ language_code(void)
 {
     int result = ANY_MODE;
 
-    if (use_language != 0) {
+    if (use_language != NULL) {
 	if (*use_language == 'v') {	/* vbs = vbscript */
 	    result = ASP_CODE;	/* Basic-syntax */
 	} else if (*use_language == 'p') {
@@ -1043,7 +1043,7 @@ language_code(void)
 static void
 using_language(void)
 {
-    if (use_language != 0) {
+    if (use_language != NULL) {
 	DBG_HTML("using_language:");
 	DBG_HTML(use_language);
 	set_symbol_table(use_language);
@@ -1055,9 +1055,9 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    dft_language = 0;
+    dft_language = NULL;
     got_language = 0;
-    use_language = 0;
+    use_language = NULL;
 
     in_tag = 0;
     got_tag = 0;

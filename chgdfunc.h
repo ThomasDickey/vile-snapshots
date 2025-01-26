@@ -2,7 +2,7 @@
  * Prototypes for functions in the mode-tables (must be declared before the
  * point at which proto.h is included).
  *
- * $Id: chgdfunc.h,v 1.24 2008/11/08 13:40:12 tom Exp $
+ * $Id: chgdfunc.h,v 1.25 2025/01/26 11:43:46 tom Exp $
  */
 extern int chgd_autobuf  (CHGD_ARGS);
 extern int chgd_buffer   (CHGD_ARGS);
@@ -32,7 +32,7 @@ extern int chgd_color    (CHGD_ARGS);
 extern int chgd_scheme   (CHGD_ARGS);
 #endif
 
-#if OPT_CURTOKENS   
+#if OPT_CURTOKENS
 extern int chgd_curtokens(CHGD_ARGS);
 #endif
 

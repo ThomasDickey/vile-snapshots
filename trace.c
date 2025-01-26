@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Id: trace.c,v 1.124 2024/01/17 23:56:35 tom Exp $
+ * $Id: trace.c,v 1.125 2025/01/26 17:09:56 tom Exp $
  */
 
 #include <estruct.h>
@@ -278,14 +278,14 @@ Trace(const char *fmt, ...)
 	    }
 	    vfprintf(fp, fmt, ap);
 	    (void) fflush(fp);
-	} else if (fp != 0) {
+	} else if (fp != NULL) {
 	    fprintf(fp, "%s", alloc_indent(trace_depth, '|'));
 	    fprintf(fp, T_RETURN "(close)\n");
 	    (void) fclose(fp);
 	    (void) fflush(stdout);
 	    (void) fflush(stderr);
 	    trace_depth = 0;
-	    fp = 0;
+	    fp = NULL;
 	}
 
 	va_end(ap);
@@ -344,12 +344,12 @@ alloc_visible(size_t need)
     if (need > used_visible) {
 	used_visible = need;
 
-	if (visible_result == 0)
+	if (visible_result == NULL)
 	    visible_result = typeallocn(char, need);
 	else
 	    safe_typereallocn(char, visible_result, need);
 
-	if (visible_result != 0)
+	if (visible_result != NULL)
 	    memset(visible_result, 0, need);
     }
     return visible_result;
@@ -358,7 +358,7 @@ alloc_visible(size_t need)
 static char *
 my_vischr(char *buffer, int ch)
 {
-    if (buffer != 0) {
+    if (buffer != NULL) {
 	if (ch == 127) {
 	    strcpy(buffer, "^?");
 	} else if (ch < 32) {
@@ -382,7 +382,7 @@ my_vischr(char *buffer, int ch)
 static char *
 my_visattr(char *buffer, int ch)
 {
-    if (buffer != 0) {
+    if (buffer != NULL) {
 	if (ch & (VACOLOR | VASPCOL)) {
 	    *buffer = 'C';
 	} else if (ch & (int) VASEL) {
@@ -407,7 +407,7 @@ alloc_indent(int level, int marker)
 #define indent_gap 2
 
     static char dummy[indent_gap + 1] = "? ";
-    char *result = 0;
+    char *result = NULL;
 
     if (level > 1) {
 	unsigned need = (unsigned) (1 + (level * indent_gap));
@@ -415,7 +415,7 @@ alloc_indent(int level, int marker)
 	if (need > used_indent) {
 	    used_indent = need;
 
-	    if (visible_indent == 0) {
+	    if (visible_indent == NULL) {
 		visible_indent = typeallocn(char, need);
 	    } else {
 		safe_typereallocn(char, visible_indent, need);
@@ -424,7 +424,7 @@ alloc_indent(int level, int marker)
 	result = visible_indent;
     }
 
-    if (result != 0) {
+    if (result != NULL) {
 	int n;
 	*result = EOS;
 	for (n = 0; n < level; ++n)
@@ -445,12 +445,12 @@ visible_buff(const char *buffer, int length, int eos)
     char *result;
 
     beginDisplay();
-    if (buffer == 0) {
+    if (buffer == NULL) {
 	buffer = "";
 	length = 0;
     }
 
-    if ((result = alloc_visible(need)) != 0) {
+    if ((result = alloc_visible(need)) != NULL) {
 	for (j = 0; j < length; j++) {
 	    int c = CharOf(buffer[j]);
 	    if (eos && !c) {
@@ -481,13 +481,13 @@ visible_video_text(const VIDEO_TEXT * buffer, int length)
 	mask = ~mask;
 
     beginDisplay();
-    if (buffer == 0) {
+    if (buffer == NULL) {
 	static const VIDEO_TEXT dummy[1];
 	buffer = dummy;
 	length = 0;
     }
 
-    if ((result = alloc_visible(need)) != 0) {
+    if ((result = alloc_visible(need)) != NULL) {
 	for (j = 0; j < length; j++) {
 	    int c = buffer[j] & mask;
 	    char *dst = result + k;
@@ -509,14 +509,14 @@ visible_video_attr(const VIDEO_ATTR * buffer, int length)
     char *result;
 
     beginDisplay();
-    if (buffer == 0) {
+    if (buffer == NULL) {
 	static const VIDEO_ATTR dummy[] =
 	{0};
 	buffer = dummy;
 	length = 0;
     }
 
-    if ((result = alloc_visible(need)) != 0) {
+    if ((result = alloc_visible(need)) != NULL) {
 	for (j = 0; j < length; j++) {
 	    int c = buffer[j] & ((1 << (8 * sizeof(VIDEO_ATTR))) - 1);
 	    char *dst = result + k;
@@ -535,7 +535,7 @@ visible_video_attr(const VIDEO_ATTR * buffer, int length)
 char *
 str_visible(const char *s)
 {
-    if (s == 0)
+    if (s == NULL)
 	return null_string;
     return visible_buff(s, (int) strlen(s), FALSE);
 }
@@ -546,7 +546,7 @@ str_visible(const char *s)
 char *
 str_visible0(const char *s)
 {
-    if (s == 0)
+    if (s == NULL)
 	return null_string;
     return visible_buff(s, (int) strlen(s), TRUE);
 }
@@ -565,12 +565,12 @@ itb_visible(ITBUFF * p)
     size_t used;
     size_t len, n;
     char temp[80];
-    char *result = 0;
+    char *result = NULL;
 
     beginDisplay();
     vec = itb_values(p);
     len = itb_length(p);
-    if (vec != 0 && len != 0) {
+    if (vec != NULL && len != 0) {
 	used = 0;
 	for (pass = 0; pass < 2; ++pass) {
 	    for (n = 0; n < len; ++n) {
@@ -585,14 +585,14 @@ itb_visible(ITBUFF * p)
 		used += strlen(temp);
 	    }
 	    if (!pass) {
-		if ((result = alloc_visible(1 + used)) == 0) {
+		if ((result = alloc_visible(1 + used)) == NULL) {
 		    break;
 		}
 		*result = EOS;
 	    }
 	}
     } else {
-	if ((result = alloc_visible(1)) != 0)
+	if ((result = alloc_visible(1)) != NULL)
 	    *result = EOS;
     }
     endofDisplay();
@@ -602,7 +602,7 @@ itb_visible(ITBUFF * p)
 char *
 lp_visible(LINE *p)
 {
-    if (p == 0)
+    if (p == NULL)
 	return empty_string;
     return visible_buff(lvalue(p), llength(p), FALSE);
 }
@@ -902,9 +902,9 @@ check_back(LINE *lp)
 void
 trace_line(LINE *lp, BUFFER *bp)
 {
-    if (lp == 0) {
+    if (lp == NULL) {
 	Trace("? null LINE pointer\n");
-    } else if (bp == 0) {
+    } else if (bp == NULL) {
 	Trace("? null BUFFER pointer\n");
     } else {
 	const char *a = check_forw(lp) ? "" : "?";
@@ -1025,7 +1025,7 @@ void
 trace_attribs(BUFFER *bp, char *fn, int ln)
 {
     AREGION *arp;
-    for (arp = bp->b_attribs; arp != 0; arp = arp->ar_next) {
+    for (arp = bp->b_attribs; arp != NULL; arp = arp->ar_next) {
 	Trace("%s@%d r_attr_id %d\n", fn, ln, arp->ar_region.r_attr_id);
 	trace_region(&(arp->ar_region), bp);
     }
@@ -1035,7 +1035,7 @@ void
 trace_buffer(BUFFER *bp)
 {
     LINE *lp;
-    if (bp != 0) {
+    if (bp != NULL) {
 	Trace("trace_buffer(%s)%s %s dot=%p%s fn=%s\n",
 	      bp->b_bname,
 	      (bp == bminip ? " MINI" : ""),
@@ -1068,8 +1068,8 @@ trace_window(WINDOW *wp)
     int got_dot = FALSE;
     int had_line = FALSE;
 
-    if (wp == 0
-	|| wp->w_bufp == 0)
+    if (wp == NULL
+	|| wp->w_bufp == NULL)
 	return;
 
     Trace("trace_window(%s)%s top=%d, rows=%d, head=%p, line=%p dot=%p%s\n",
@@ -1088,7 +1088,7 @@ trace_window(WINDOW *wp)
 
     for (lp = wp->w_line.l; lp != win_head(wp); lp = lforw(lp)) {
 	trace_line(lp, wp->w_bufp);
-	if (lp == 0)
+	if (lp == NULL)
 	    break;
 	if (lp == wp->w_dot.l)
 	    got_dot = TRUE;

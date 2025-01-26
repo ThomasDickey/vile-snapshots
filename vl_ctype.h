@@ -1,9 +1,9 @@
 /*
- * $Id: vl_ctype.h,v 1.40 2013/04/08 00:22:25 tom Exp $
+ * $Id: vl_ctype.h,v 1.42 2025/01/26 15:04:32 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
- * Copyright 2005-2010,2013 Thomas E. Dickey
+ * Copyright 2005-2013,2025 Thomas E. Dickey
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -34,7 +34,7 @@
 #define VL_CTYPE_H_incl 1
 
 #ifndef SMALLER
-#define	SMALLER	0	/* strip some fluff -- not a lot smaller, but some */
+#define	SMALLER	0		/* strip some fluff -- not a lot smaller, but some */
 #endif
 
 #ifndef OPT_VILE_CTYPE
@@ -42,7 +42,7 @@
 #endif
 
 #ifndef OPT_MULTIBYTE
-#define OPT_MULTIBYTE !SMALLER		/* multibyte characters */
+#define OPT_MULTIBYTE !SMALLER	/* multibyte characters */
 #endif
 
 #ifndef OPT_WIDE_CTYPES
@@ -56,7 +56,7 @@
 #endif
 
 #ifndef N_chars
-#define N_chars    256			/* must be a power-of-2		*/
+#define N_chars    256		/* must be a power-of-2         */
 #endif
 
 #define EOS        '\0'
@@ -92,31 +92,31 @@
 #define chrBIT(n) ((CHARTYPE)(1L<<(n)))
 
 typedef enum {
-	vl_ALPHA = 0
-	, vl_UPPER
-	, vl_LOWER
-	, vl_DIGIT
-	, vl_SPACE
-	, vl_CNTRL
-	, vl_PRINT
-	, vl_PUNCT
-	/* first 8 comprise a byte in gnreight.h */
-	, vl_BSPACE
-	, vl_IDENT
-	, vl_PATHN
-	, vl_WILD
-	, vl_LINESPEC
-	, vl_FENCE
-	, vl_NONSPACE
-	, vl_QIDENT
+    vl_ALPHA = 0
+    ,vl_UPPER
+    ,vl_LOWER
+    ,vl_DIGIT
+    ,vl_SPACE
+    ,vl_CNTRL
+    ,vl_PRINT
+    ,vl_PUNCT
+    /* first 8 comprise a byte in gnreight.h */
+    ,vl_BSPACE
+    ,vl_IDENT
+    ,vl_PATHN
+    ,vl_WILD
+    ,vl_LINESPEC
+    ,vl_FENCE
+    ,vl_NONSPACE
+    ,vl_QIDENT
 #if OPT_WIDE_CTYPES
-	, vl_SCRTCH
-	, vl_SHPIPE
-	, vl_XDIGIT
+    ,vl_SCRTCH
+    ,vl_SHPIPE
+    ,vl_XDIGIT
 #else
 #define vl_XDIGIT 0
 #endif
-	, vl_UNUSED
+    ,vl_UNUSED
 } VL_CTYPES;
 
 #define vl_alpha    chrBIT(vl_ALPHA)	/* alphabetic */
@@ -131,7 +131,7 @@ typedef enum {
 #define vl_ident    chrBIT(vl_IDENT)	/* is typically legal in "normal" identifier */
 #define vl_pathn    chrBIT(vl_PATHN)	/* is typically legal in a file's pathname */
 #define vl_wild     chrBIT(vl_WILD)	/* is typically a shell wildcard char */
-#define vl_linespec chrBIT(vl_LINESPEC)	/* ex-style line range: 1,$ or 13,15 or % etc.*/
+#define vl_linespec chrBIT(vl_LINESPEC)	/* ex-style line range: 1,$ or 13,15 or % etc. */
 #define vl_fence    chrBIT(vl_FENCE)	/* a fence, i.e. (, ), [, ], {, } */
 #define vl_nonspace chrBIT(vl_NONSPACE)	/* non-whitespace */
 #define vl_qident   chrBIT(vl_QIDENT)	/* is typically legal in "qualified" identifier */
@@ -142,7 +142,7 @@ typedef enum {
 #define vl_xdigit   chrBIT(vl_XDIGIT)	/* hex digit */
 #define isXDigit(c)	istype(vl_xdigit, c)
 
-typedef	unsigned long CHARTYPE;
+typedef unsigned long CHARTYPE;
 #else
 typedef USHORT CHARTYPE;
 #endif
@@ -152,7 +152,7 @@ typedef struct {
     char *encoding;		/* "ISO-8859-1" */
 } VL_CTYPE2;
 
-#define okCTYPE2(ct)	((ct).locale != 0 && *((ct).locale) != '\0')
+#define okCTYPE2(ct)	((ct).locale != NULL && *((ct).locale) != '\0')
 
 /* these parallel the ctypes.h definitions, except that
 	they force the char to valid range first */

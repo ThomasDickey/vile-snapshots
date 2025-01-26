@@ -4,12 +4,12 @@
 %{
 
 /*
- * $Id: php-filt.l,v 1.27 2016/12/11 16:04:15 tom Exp $
+ * $Id: php-filt.l,v 1.28 2025/01/26 11:35:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to PHP scripts.
  * - T.Dickey
  *
- * see 
+ * see
  *	http://www.php.net/manual/en/index.php
  *
  * todo:
@@ -22,7 +22,7 @@
 
 DefineFilter(php);
 
-#define isQuote(ch) (ch != 0 && strchr("'", ch) != 0)
+#define isQuote(ch) (ch != 0 && strchr("'", ch) != NULL)
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -134,7 +134,7 @@ got_here(char *text, int length)
 		if (pass)
 		    flt_bfr_append(text + j, 1);
 	    } else {
-		if (here_tag != 0 && (text[j] != here_tag[k++]))
+		if (here_tag != NULL && (text[j] != here_tag[k++]))
 		    return 0;
 		if (pass)
 		    flt_bfr_append(text + j, 1);
@@ -150,15 +150,15 @@ save_here(char *text, int length)
     char *s;
 
     here_exp = 1;
-    if ((here_tag = do_alloc(here_tag, (size_t) length, &here_len)) != 0) {
+    if ((here_tag = do_alloc(here_tag, (size_t) length, &here_len)) != NULL) {
 	s = here_tag;
 	while (length--) {
 	    if (isQuote(*text)) {
 		here_exp = 0;
-	    } else if (strchr(" \t", *text) != 0) {
+	    } else if (strchr(" \t", *text) != NULL) {
 		if (s != here_tag)
 		    break;
-	    } else if (strchr("<", *text) == 0) {
+	    } else if (strchr("<", *text) == NULL) {
 		*s++ = *text;
 	    }
 	    text++;

@@ -5,7 +5,7 @@
  *		for control-break in the go32 libraries
  *	critical error handling from Bob Babcock.
  *
- * $Id: djhandl.c,v 1.8 2010/11/10 09:20:16 tom Exp $
+ * $Id: djhandl.c,v 1.9 2025/01/26 21:38:18 tom Exp $
  *
  *
  */
@@ -37,7 +37,7 @@ ctrl_c_isr(_go32_dpmi_registers * regs)
 }
 
 unsigned long
-was_ctrl_c_hit()
+was_ctrl_c_hit(void)
 {
     unsigned long cnt;
     want_ctrl_c(1);

@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Id: line.c,v 1.240 2022/08/04 23:51:57 tom Exp $
+ * $Id: line.c,v 1.241 2025/01/26 14:25:36 tom Exp $
  */
 
 /* #define POISON */
@@ -91,7 +91,7 @@ lalloc(int used, BUFFER *bp)
     } else {
 	size = roundlenup(used);
     }
-    if ((lp = alloc_LINE(bp)) != 0) {
+    if ((lp = alloc_LINE(bp)) != NULL) {
 	lvalue(lp) = NULL;
 	if (size && (lvalue(lp) = castalloc(char, size)) == NULL) {
 	    (void) no_memory("LINE text");
@@ -104,7 +104,7 @@ lalloc(int used, BUFFER *bp)
 #endif
 	    llength(lp) = used;
 	    lsetclear(lp);
-	    lp->l_nxtundo = 0;
+	    lp->l_nxtundo = NULL;
 #if OPT_LINE_ATTRS
 	    lp->l_attrs = NULL;
 #endif
@@ -308,7 +308,7 @@ lstrinsert(TBUFF *tp, int len)
 	int limit = tb_length0(tp);
 	int save_offset = DOT.o;
 
-	if (tp != 0) {
+	if (tp != NULL) {
 	    const char *string = tb_values(tp);
 	    for (n = 0; n < len; ++n) {
 		if (!lins_bytes(1, (n < limit) ? string[n] : ' ')) {
@@ -416,7 +416,7 @@ lins_bytes(int n, int c)
 	if (DOT.o != 0) {
 	    mlforce("BUG: lins_bytes");
 	    rc = (FALSE);
-	} else if ((lp2 = lalloc(n, curbp)) == 0) {
+	} else if ((lp2 = lalloc(n, curbp)) == NULL) {
 	    rc = (FALSE);
 	} else {
 	    lp3 = lback(lp1);	/* Previous line        */
@@ -452,7 +452,7 @@ lins_bytes(int n, int c)
 		if (lvalue(lp1)) {
 #if OPT_LINE_ATTRS
 		    UCHAR *l_attrs = lp1->l_attrs;
-		    lp1->l_attrs = 0;	/* momentarily detach */
+		    lp1->l_attrs = NULL;	/* momentarily detach */
 #endif
 		    if (llength(lp1) > doto) {
 			(void) memcpy(&ntext[doto + n],
@@ -602,7 +602,7 @@ lnewline(void)
 	&& lforw(lp1) == lp1) {
 	/* empty buffer -- just  create empty line */
 	lp2 = lalloc(doto, curbp);
-	if (lp2 != 0) {
+	if (lp2 != NULL) {
 	    /* put lp2 in below lp1 */
 	    set_lforw(lp2, lforw(lp1));
 	    set_lforw(lp1, lp2);
@@ -624,20 +624,20 @@ lnewline(void)
 	}
     } else {
 	lp2 = lalloc(doto, curbp);	/* New first half line */
-	if (lp2 != 0) {
+	if (lp2 != NULL) {
 	    if (doto > 0) {
 		CopyForUndo(lp1);
 #if OPT_LINE_ATTRS
-		if (lp1->l_attrs != 0) {
+		if (lp1->l_attrs != NULL) {
 		    if (doto == llength(lp1)) {
 			lp2->l_attrs = lp1->l_attrs;
-			lp1->l_attrs = 0;
+			lp1->l_attrs = NULL;
 		    } else {
 			UCHAR *newattr
 			= typeallocn(UCHAR, (size_t) llength(lp1) + 1);
 			int n;
 
-			if (newattr != 0) {
+			if (newattr != NULL) {
 			    lp2->l_attrs = newattr;
 			    lp2->l_attrs[doto] = EOS;
 			    for (n = 0; (lp1->l_attrs[n] =
@@ -972,7 +972,7 @@ lrepl_regex(REGEXVAL * rexp, const char *np, int length)
 	   rexp ? NONNULL(rexp->pat) : "",
 	   length, np));
 
-    if (rexp == 0 || rexp->reg == 0) {
+    if (rexp == NULL || rexp->reg == NULL) {
 	status = FALSE;
 
     } else if ((status = check_editable(curbp)) == TRUE) {
@@ -1349,9 +1349,9 @@ usekreg(int f, int n)
 	kregflag |= KAPPEND;
 
     if (clexec) {
-	TBUFF *tok = 0;
+	TBUFF *tok = NULL;
 	char *name = mac_unquotedarg(&tok);	/* get the next token */
-	if (name != 0) {
+	if (name != NULL) {
 	    status = execute(engl2fnc(name), f, n);
 	    tb_free(&tok);
 	} else {
@@ -1807,12 +1807,12 @@ execkreg(int f, int n)
 	    whichkb = kbcount;
 	    tkp = kp;
 	    while (--whichkb > 0) {
-		if ((tkp = tkp->d_next) == 0) {
+		if ((tkp = tkp->d_next) == NULL) {
 		    kbcount = 0;
 		    break;	/* quit on error */
 		}
 	    }
-	    if (tkp != 0) {
+	    if (tkp != NULL) {
 		i = (int) KbSize(jj, tkp);
 		sp = (char *) tkp->d_chunk + i - 1;
 		while (i--) {
@@ -1881,7 +1881,7 @@ makereglist(
 	short save = ukb;
 
 	ii = index2ukb(i);
-	if ((kp = kbs[ii].kbufh) != 0) {
+	if ((kp = kbs[ii].kbufh) != NULL) {
 	    int first = FALSE;
 	    if (any++) {
 		bputc('\n');
@@ -1915,7 +1915,7 @@ makereglist(
 		    } else
 			any = 1;
 		}
-	    } while ((kp = kp->d_next) != 0);
+	    } while ((kp = kp->d_next) != NULL);
 	}
 	if (i < 10)
 	    ukb = save;
@@ -1975,7 +1975,7 @@ init_regs_cmpl(char *buf, size_t cpos)
 {
     int dst, src;
     char **result = typeallocn(char *, 96);
-    if (result != 0) {
+    if (result != NULL) {
 	for (dst = 0, src = 32; src < 127; ++src) {
 	    if (isUpper(src))	/* register names are caseless */
 		continue;
@@ -1988,7 +1988,7 @@ init_regs_cmpl(char *buf, size_t cpos)
 		}
 	    }
 	}
-	result[dst] = 0;
+	result[dst] = NULL;
     }
     return (const char **) result;
 }
@@ -2004,7 +2004,7 @@ regs_completion(DONE_ARGS)
     buf[cpos] = EOS;		/* terminate it for us */
 
     beginDisplay();
-    if ((nptr = init_regs_cmpl(buf, cpos)) != 0) {
+    if ((nptr = init_regs_cmpl(buf, cpos)) != NULL) {
 	status = kbd_complete(PASS_DONE_ARGS, (const char *) nptr, sizeof(*nptr));
 	free(TYPECAST(char *, nptr));
     }

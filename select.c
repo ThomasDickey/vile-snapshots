@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Id: select.c,v 1.195 2018/10/25 22:50:17 tom Exp $
+ * $Id: select.c,v 1.196 2025/01/26 14:38:58 tom Exp $
  */
 
 #include	"estruct.h"
@@ -159,7 +159,7 @@ free_attrib2(BUFFER *bp, AREGION ** rpp)
 static void
 detach_attrib(BUFFER *bp, AREGION * arp)
 {
-    if (find_bp(bp) != 0) {
+    if (find_bp(bp) != NULL) {
 	if (valid_buffer(bp)) {
 	    AREGION **rpp;
 	    mark_buffers_windows(bp);
@@ -219,7 +219,7 @@ attach_attrib(BUFFER *bp, AREGION * arp)
 static void
 fix_dot(void)
 {
-    if (curwp != 0 && is_header_line(DOT, curwp->w_bufp)) {
+    if (curwp != NULL && is_header_line(DOT, curwp->w_bufp)) {
 	DOT.l = lback(DOT.l);
 	DOT.o = llength(DOT.l);
     }
@@ -261,7 +261,7 @@ sel_begin(void)
     startregion.ar_vattr = 0;
     startregion.ar_shape = rgn_EXACT;
 #if OPT_HYPERTEXT
-    startregion.ar_hypercmd = 0;
+    startregion.ar_hypercmd = NULL;
 #endif
     startbufp = curwp->w_bufp;
     attach_attrib(startbufp, &startregion);
@@ -667,7 +667,7 @@ selectregion(void)
 	selregion.ar_vattr = VASEL | VOWN_SELECT;
 	selregion.ar_shape = regionshape;
 #if OPT_HYPERTEXT
-	selregion.ar_hypercmd = 0;
+	selregion.ar_hypercmd = NULL;
 #endif
 	attach_attrib(selbufp, &selregion);
 	OWN_SELECTION();
@@ -833,8 +833,8 @@ on_mouse_click(int button, int y, int x)
 	pending = FALSE;
 	this_wp = row2window(y);
 	that_wp = row2window(first_y);
-	if (this_wp == 0
-	    || that_wp == 0
+	if (this_wp == NULL
+	    || that_wp == NULL
 	    || reading_msg_line) {
 	    TRACE(("MOUSE cannot move msg-line\n"));
 	    status = FALSE;
@@ -1181,7 +1181,7 @@ attributeregion(void)
 	    arp->ar_vattr = videoattribute;	/* include ownership */
 	    arp->ar_shape = regionshape;
 #if OPT_HYPERTEXT
-	    arp->ar_hypercmd = 0;
+	    arp->ar_hypercmd = NULL;
 	    if (tb_length(hypercmd) && *tb_values(hypercmd)) {
 #if OPT_EXTRA_COLOR
 		if (tb_length(hypercmd) > 4
@@ -1213,7 +1213,7 @@ attributeregion(void)
 
 	    pp = &(bp->b_attribs);
 
-	    for (p = *pp; p != 0; pp = qq, p = *pp) {
+	    for (p = *pp; p != NULL; pp = qq, p = *pp) {
 		L_NUM pls, ple;
 		C_NUM pos, poe;
 
@@ -1415,7 +1415,7 @@ hyperspray(int (*f) (char *))
     dlno = DOT.l->l_number;
     doff = DOT.o;
 
-    for (p = curbp->b_attribs; p != 0; p = p->ar_next) {
+    for (p = curbp->b_attribs; p != NULL; p = p->ar_next) {
 	if (p->ar_hypercmd) {
 	    int slno, elno, soff, eoff;
 
@@ -1512,7 +1512,7 @@ setup_region(void)
     if (!sameline(MK, DOT)) {
 	REGION region;
 	if (getregion(bp, &region) != TRUE)
-	    return 0;
+	    return NULL;
 	if (sameline(region.r_orig, MK))
 	    swapmark();
     }
@@ -1709,7 +1709,7 @@ attribute_cntl_a_sequences(void)
     AREGION *new_attribs;
 #endif
 
-    if ((pastline = setup_region()) == 0)
+    if ((pastline = setup_region()) == NULL)
 	return FALSE;
 
     while (DOT.l != pastline) {
@@ -1770,7 +1770,7 @@ attribute_from_filter(void)
     int drained = FALSE;
 
     TRACE((T_CALLED "attribute_from_filter\n"));
-    if ((pastline = setup_region()) == 0) {
+    if ((pastline = setup_region()) == NULL) {
 	result = FALSE;
 
 #ifdef MDHILITE
@@ -1855,17 +1855,17 @@ attribute_directly(void)
 #endif
 	discard_syntax_highlighting();
 	if (b_val(bp, MDHILITE)) {
-	    char *filtername = 0;
-	    TBUFF *token = 0;
+	    char *filtername = NULL;
+	    TBUFF *token = NULL;
 
 	    if (clexec || isnamedcmd)
 		filtername = mac_unquotedarg(&token);
 
-	    if (filtername == 0
-		&& bp->majr != 0)
+	    if (filtername == NULL
+		&& bp->majr != NULL)
 		filtername = bp->majr->shortname;
 
-	    if (filtername != 0
+	    if (filtername != NULL
 		&& flt_start(filtername)) {
 		TRACE(("attribute_directly(%s) using %s\n",
 		       bp->b_bname,
@@ -1977,7 +1977,7 @@ lattr_shift(BUFFER *bp GCC_UNUSED, LINE *lp, int doto, int shift)
     int status = TRUE;
     UCHAR *lap;
 
-    if (lp->l_attrs != 0) {
+    if (lp->l_attrs != NULL) {
 	lap = lp->l_attrs;
 	if (shift > 0) {
 	    int f, t, len;
@@ -1991,7 +1991,7 @@ lattr_shift(BUFFER *bp GCC_UNUSED, LINE *lp, int doto, int shift)
 			beginDisplay();
 			newlen = len + shift - (t - f);
 			safe_castrealloc(UCHAR, lap, (size_t) newlen + 1);
-			if (lap != 0) {
+			if (lap != NULL) {
 			    lp->l_attrs = lap;
 			    lap[newlen] = 0;
 			    t = newlen - 1;
@@ -2001,7 +2001,7 @@ lattr_shift(BUFFER *bp GCC_UNUSED, LINE *lp, int doto, int shift)
 			break;
 		    }
 		}
-		if (lap != 0) {
+		if (lap != NULL) {
 		    while (f > doto) {
 			lap[t--] = lap[f--];
 		    }
@@ -2050,7 +2050,7 @@ free_line_attribs(BUFFER *bp)
     LINE *lp;
     int do_update = 0;
     for_each_line(lp, bp) {
-	do_update |= (lp->l_attrs != 0);
+	do_update |= (lp->l_attrs != NULL);
 	FreeAndNull(lp->l_attrs);
     }
     if (do_update) {
@@ -2111,7 +2111,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, unsigned vattr,
 	/* Must allocate and initialize memory for the line attributes */
 	beginDisplay();
 	lp->l_attrs = castalloc(UCHAR, (size_t) llength(lp) + 1);
-	if (lp->l_attrs != 0) {
+	if (lp->l_attrs != NULL) {
 	    lp->l_attrs[llength(lp)] = 0;
 	    for (i = llength(lp) - 1; i >= 0; i--)
 		lp->l_attrs[i] = 1;
@@ -2148,7 +2148,7 @@ purge_line_attribs(BUFFER *bp, REGION * rp, REGIONSHAPE rs, int owner)
     int do_update = 0;
 
     for (lp = ls; lp != buf_head(curbp); lp = lforw(lp)) {
-	if (lp->l_attrs != 0) {
+	if (lp->l_attrs != NULL) {
 	    for (i = 0; i < llength(lp); i++) {
 		if (lp->l_attrs[i] == 0)
 		    break;	/* at end of attrs */

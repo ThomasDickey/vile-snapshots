@@ -1,5 +1,5 @@
 /*
- * $Id: rubyfilt.c,v 1.86 2020/01/17 23:37:07 tom Exp $
+ * $Id: rubyfilt.c,v 1.87 2025/01/26 10:56:05 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This began as a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -608,15 +608,15 @@ make_here_tag(char *value, int quote, int strip)
     size_t size = 0;
     HERE_TAGS *data = type_alloc(HERE_TAGS, (char *) 0, (size_t) 1, &size);
 
-    if (data != 0) {
+    if (data != NULL) {
 	HERE_TAGS *p = here_tags;
-	HERE_TAGS *q = 0;
+	HERE_TAGS *q = NULL;
 
-	while (p != 0) {
+	while (p != NULL) {
 	    q = p;
 	    p = p->next;
 	}
-	if (q != 0)
+	if (q != NULL)
 	    q->next = data;
 	else
 	    here_tags = data;
@@ -634,7 +634,7 @@ static char *
 free_here_tag(void)
 {
     HERE_TAGS *next = here_tags->next;
-    char *result = next ? next->value : 0;
+    char *result = next ? next->value : NULL;
 
     free(here_tags->value);
     free(here_tags);
@@ -689,7 +689,7 @@ begin_HERE(char *s)
 {
     char *base = s;
     char *first;
-    char *marker = 0;
+    char *marker = NULL;
     int ok;
     int strip = 0;
 
@@ -710,7 +710,7 @@ begin_HERE(char *s)
 
 	    s += ok;
 
-	    if ((marker = do_alloc((char *) 0, (size_t) (ok + 1), &temp)) != 0) {
+	    if ((marker = do_alloc((char *) 0, (size_t) (ok + 1), &temp)) != NULL) {
 		char *d = marker;
 		if (delim) {
 		    ++first;
@@ -1272,7 +1272,7 @@ put_ERB(char *s, int ok, int *had_op)
 static char *
 put_KEYWORD(char *s, int ok, int *had_op)
 {
-    const char *attr = 0;
+    const char *attr = NULL;
     char save = s[ok];
 
     s[ok] = '\0';
@@ -1289,7 +1289,7 @@ static char *
 put_OPERATOR(char *s, int ok, int *had_op)
 {
     flt_puts(s, ok, "");
-    if (strchr("[(|&=~!,;", *s) != 0)
+    if (strchr("[(|&=~!,;", *s) != NULL)
 	*had_op = 1;
     return s + ok;
 }
@@ -1297,13 +1297,13 @@ put_OPERATOR(char *s, int ok, int *had_op)
 static char *
 put_VARIABLE(char *s, int ok)
 {
-    const char *attr = 0;
+    const char *attr = NULL;
     char save = s[ok];
 
     s[ok] = '\0';
     attr = get_keyword_attr(s);
     s[ok] = save;
-    flt_puts(s, ok, (attr != 0 && *attr != '\0') ? attr : Ident2_attr);
+    flt_puts(s, ok, (attr != NULL && *attr != '\0') ? attr : Ident2_attr);
     return s + ok;
 }
 
@@ -1441,7 +1441,7 @@ do_filter(FILE *input GCC_UNUSED)
     TType this_tok = tNULL;
     TType last_tok = tNULL;
     char *s;
-    char *marker = 0;
+    char *marker = NULL;
     int in_line = -1;
     int ok;
     int err;
@@ -1466,7 +1466,7 @@ do_filter(FILE *input GCC_UNUSED)
      * the regular expression "syntax", let's just concentrate on the latter.
      */
     the_size = 0;
-    the_file = 0;
+    the_file = NULL;
     while (flt_gets(&line, &used) != NULL) {
 	size_t len = strlen(line);	/* FIXME: nulls? */
 	if (len != 0 && line[len - 1] == '\r')	/* FIXME: move this to readline */
@@ -1474,19 +1474,19 @@ do_filter(FILE *input GCC_UNUSED)
 	if ((request = the_size + len + 1) > actual)
 	    request = 1024 + (request * 2);
 	the_file = do_alloc(the_file, request, &actual);
-	if (the_file == 0)
+	if (the_file == NULL)
 	    break;
 	memcpy(the_file + the_size, line, len + 1);
 	the_size += len;
     }
 
-    if (the_file != 0) {
+    if (the_file != NULL) {
 	the_last = the_file + the_size;
 
 	s = the_file;
 	while (MORE(s)) {
 	    if (*s == '\n') {
-		if (marker != 0)
+		if (marker != NULL)
 		    state = eHERE;
 		in_line = -1;
 		if (state == eCODE)
@@ -1643,13 +1643,13 @@ do_filter(FILE *input GCC_UNUSED)
 		}
 		break;
 	    case eHERE:
-		if (here_tags == 0) {
+		if (here_tags == NULL) {
 		    state = eCODE;
 		} else if (end_marker(s + (here_tags->strip
 					   ? is_BLANK(s)
 					   : 0),
 				      marker, 1)) {
-		    if ((marker = free_here_tag()) == 0)
+		    if ((marker = free_here_tag()) == NULL)
 			state = eCODE;
 		}
 		s = put_remainder(s, String_attr,
@@ -1693,7 +1693,7 @@ do_filter(FILE *input GCC_UNUSED)
 	}
 	free(the_file);
     }
-    while (here_tags != 0) {
+    while (here_tags != NULL) {
 	flt_error("expected tag:%s", here_tags->value);
 	(void) free_here_tag();
     }

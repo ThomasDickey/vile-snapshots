@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Id: region.c,v 1.172 2024/07/08 08:10:58 tom Exp $
+ * $Id: region.c,v 1.174 2025/01/26 14:31:19 tom Exp $
  */
 
 #include	"estruct.h"
@@ -105,7 +105,7 @@ do_lines_in_region(int (*linefunc) (REGN_ARGS), void *argp, int convert_cols)
 		if (sameline(region.r_end, DOT)) {
 		    r = region.r_end.o;
 		    /*
-		     * if we're on the end-of- region, in col 0, we're done. 
+		     * if we're on the end-of- region, in col 0, we're done.
 		     * we don't want to call the line function for the empty
 		     * case.
 		     */
@@ -188,7 +188,7 @@ get_do_lines_rgn(void)
 }
 
 /*
- * Kill the region.  Ask "getregion" to figure out the bounds of the region. 
+ * Kill the region.  Ask "getregion" to figure out the bounds of the region.
  * Move "." to the start, and kill the characters.
  */
 int
@@ -429,7 +429,7 @@ detabline(void *flagp, int l GCC_UNUSED, int r GCC_UNUSED)
     int s;
     int c;
     int ocol;
-    int leadingonly = (flagp != 0);
+    int leadingonly = (flagp != NULL);
     LINE *lp = DOT.l;
 
     if (llength(lp) == 0)
@@ -488,7 +488,7 @@ int
 entabline(void *flagp, int l GCC_UNUSED, int r GCC_UNUSED)
 {
     int savecol;
-    int leadingonly = (flagp != 0);
+    int leadingonly = (flagp != NULL);
     LINE *lp = DOT.l;
     C_NUM ocol, ncol;
     C_NUM ooff, noff;
@@ -897,7 +897,7 @@ set_rect_columns(REGION * rp)
 static int
 found_region(REGION * rp)
 {
-    if (wantregion != 0)
+    if (wantregion != NULL)
 	*wantregion = *rp;
 #if OPT_TRACE > 1
     trace_region(rp, curbp);
@@ -1234,7 +1234,7 @@ encode_one_attribute(TBUFF **result, long count, char *hypercmd, unsigned attr)
 	tb_sappend(result, temp);
     }
 #if OPT_HYPERTEXT
-    if (hypercmd != 0) {
+    if (hypercmd != NULL) {
 	tb_append(result, 'H');
 	tb_sappend(result, hypercmd);
 	tb_append(result, EOS);
@@ -1264,12 +1264,12 @@ recompute_regionsize(REGION * region)
 TBUFF *
 encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
 {
-    TBUFF *result = 0;
+    TBUFF *result = NULL;
     int j, k, len;
 
     if ((len = llength(lp)) > 0) {
 	AREGION *ap;
-	AREGION *my_list = 0;
+	AREGION *my_list = NULL;
 	AREGION ar_temp;
 	size_t my_used = 0;
 	size_t my_size = 0;
@@ -1316,13 +1316,13 @@ encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
 		if (found < 0) {	/* recompute limits */
 		    recompute_regionsize(&ar_temp.ar_region);
 		}
-		if (my_list == 0)
+		if (my_list == NULL)
 		    my_list = typeallocn(AREGION, my_size = 10);
 		else if (my_used + 1 > my_size)
 		    safe_typereallocn(AREGION, my_list, my_size *= 2);
-		if (my_list == 0) {
+		if (my_list == NULL) {
 		    no_memory("encode_attributes");
-		    return 0;
+		    return NULL;
 		}
 		my_list[my_used++] = ar_temp;
 	    }
@@ -1347,7 +1347,7 @@ encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
 		}
 	    }
 #if OPT_LINE_ATTRS
-	    if (lp->l_attrs != 0) {
+	    if (lp->l_attrs != NULL) {
 		if (lp->l_attrs[j] > 1
 		    && (j == 0 || lp->l_attrs[j - 1] != lp->l_attrs[j])) {
 		    for (k = j + 1; k < len; ++k) {
@@ -1359,12 +1359,12 @@ encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
 		}
 	    }
 #endif
-	    if (tb_append(&result, lgetc(lp, j)) == 0) {
+	    if (tb_append(&result, lgetc(lp, j)) == NULL) {
 		break;
 	    }
 	}
 	FreeIfNeeded(my_list);
-	if (result == 0)
+	if (result == NULL)
 	    (void) no_memory("encode_attributes");
     }
     return result;
@@ -1380,12 +1380,12 @@ encode_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
     L_NUM base_line = line_no(curbp, work->enc_region.r_orig.l);
 
     if (llength(lp) != 0) {
-	if ((text = encode_attributes(lp, curbp, &(work->enc_region))) == 0) {
+	if ((text = encode_attributes(lp, curbp, &(work->enc_region))) == NULL) {
 	    return FALSE;
 	}
 	work->enc_list[this_line - base_line] = text;
     } else {
-	work->enc_list[this_line - base_line] = 0;
+	work->enc_list[this_line - base_line] = NULL;
     }
     return TRUE;
 }
@@ -1412,7 +1412,7 @@ encode_region(void)
 	&& (base_line = line_no(bp, work.enc_region.r_orig.l)) > 0
 	&& (last_line = line_no(bp, work.enc_region.r_end.l)) > base_line) {
 	total = (last_line - base_line);
-	if ((work.enc_list = typeallocn(TBUFF *, (size_t) total)) == 0) {
+	if ((work.enc_list = typeallocn(TBUFF *, (size_t) total)) == NULL) {
 	    status = no_memory("encode_region");
 	} else {
 	    status = do_lines_in_region(encode_line, (void *) &work, FALSE);

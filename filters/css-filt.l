@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: css-filt.l,v 1.30 2013/12/02 01:32:54 tom Exp $
+ * $Id: css-filt.l,v 1.31 2025/01/26 11:05:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Cascading Style Sheets.
  *
@@ -124,7 +124,7 @@ css_number_units(char *text, int length)
 	    flt_puts(text + digits, length - digits, "");
 	} else {
 	    set_symbol_table("cssUnits");
-	    if ((attr = get_keyword_attr(text + digits)) == 0)
+	    if ((attr = get_keyword_attr(text + digits)) == NULL)
 		attr = Error_attr;
 	    flt_puts(text + digits, length - digits, attr);
 	    set_symbol_table(default_table);

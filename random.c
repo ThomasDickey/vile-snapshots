@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Id: random.c,v 1.360 2022/08/04 21:23:10 tom Exp $
+ * $Id: random.c,v 1.361 2025/01/26 14:29:47 tom Exp $
  */
 
 #ifdef __BEOS__
@@ -158,7 +158,7 @@ liststuff(const char *name,
 		    (void) gomark(FALSE, 1);
 		    (void) forwbline(FALSE, 1);
 		    (void) reposition(FALSE, 1);
-		} else if (wp != 0 && (appendit < 0 && save_line >= 0)) {
+		} else if (wp != NULL && (appendit < 0 && save_line >= 0)) {
 		    (void) vl_gotoline(save_top);
 		    wp->w_line.l = wp->w_dot.l;
 		    wp->w_line.o = 0;
@@ -323,7 +323,7 @@ L_NUM
 vl_line_count(BUFFER *the_buffer)
 {
     L_NUM numlines = 0;		/* # of lines in file */
-    if (the_buffer != 0) {
+    if (the_buffer != NULL) {
 #if SMALLER
 	LINE *lp;		/* current line */
 
@@ -343,7 +343,7 @@ line_no(BUFFER *the_buffer, LINE *the_line)
 {
     L_NUM line_num = 0;
 
-    if (the_line != 0) {
+    if (the_line != NULL) {
 #if SMALLER
 	LINE *lp;
 
@@ -534,7 +534,7 @@ getcol(MARK mark, int actual)
     C_NUM i;
     C_NUM col = 0;
 
-    if (mark.l != 0
+    if (mark.l != NULL
 	&& llength(mark.l) > 0) {
 	if (actual) {
 	    col = offs2col(curwp, mark.l, mark.o) - nu_width(curwp);
@@ -628,7 +628,7 @@ gocol(int n)
 {
     int offs;			/* column number the cursor is on */
 
-    if (DOT.l != 0) {
+    if (DOT.l != NULL) {
 	offs = getoff(n, (C_NUM *) 0);
 
 	if (offs >= 0) {
@@ -838,7 +838,7 @@ int
 writemsg(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     int status;
-    TBUFF *buf = 0;
+    TBUFF *buf = NULL;
 
     if ((status = kbd_reply("Message to write: ", &buf, eol_history, '\n',
 			    KBD_NORMAL, no_completion)) == TRUE)
@@ -1062,11 +1062,11 @@ current_directory(int force)
      * Given the choice between broken and slow behavior, we can resolve it
      * with another environment variable, set in the user's shell.
      */
-    s = ((did_chdir != 0 || getenv("VILE_PWD") == 0)
-	 ? 0
+    s = ((did_chdir != 0 || getenv("VILE_PWD") == NULL)
+	 ? NULL
 	 : getenv("PWD"));
     cwd = realpath(s ? s : ".", current_dirname);
-    if (cwd == 0)
+    if (cwd == NULL)
 #endif
 	cwd = getcwd(current_dirname, (size_t) NFILEN);
 #else
@@ -1476,7 +1476,7 @@ set_directory(const char *dir)
 	    int first = TRUE;
 	    /* For each appropriately delimited component in CDPATH */
 	    cdpath = get_cdpath();
-	    while ((cdpath = parse_pathlist(cdpath, cdpathdir, &first)) != 0) {
+	    while ((cdpath = parse_pathlist(cdpath, cdpathdir, &first)) != NULL) {
 		char **globvec = glob_string(cdpathdir);
 
 		if (glob_length(globvec) == 1) {
@@ -1512,7 +1512,7 @@ set_directory_from_file(BUFFER *bp)
     if (!isInternalName(bp->b_fname)) {
 	char name[NFILEN];
 	char *leaf = pathleaf(vl_strncpy(name, bp->b_fname, (size_t) NFILEN));
-	if (leaf != 0
+	if (leaf != NULL
 	    && leaf != name) {
 	    *leaf = EOS;
 	    bsl_to_sl_inplace(name);
@@ -1548,7 +1548,7 @@ ch_fname(BUFFER *bp, const char *fname)
 
 	len = (int) strlen(np) + 1;
 
-	if (bp->b_fname == 0 || strcmp(bp->b_fname, np)) {
+	if (bp->b_fname == NULL || strcmp(bp->b_fname, np)) {
 
 	    if (bp->b_fname && bp->b_fnlen < len) {
 		/* don't free it yet -- it _may_ have been passed in as
@@ -1559,7 +1559,7 @@ ch_fname(BUFFER *bp, const char *fname)
 	    }
 
 	    if (!bp->b_fname) {
-		if ((bp->b_fname = strmalloc(np)) == 0) {
+		if ((bp->b_fname = strmalloc(np)) == NULL) {
 		    bp->b_fname = out_of_mem;
 		    bp->b_fnlen = (int) strlen(bp->b_fname);
 		    no_memory("ch_fname");
@@ -1664,7 +1664,7 @@ vl_elapsed(VL_ELAPSED * first, int begin)
 #if defined(HAVE_GETTIMEOFDAY) && (SYS_UNIX && !SYS_MINGW)
 #define	SECS(tv)	((double) tv.tv_sec + ((double) tv.tv_usec / 1.0e6))
     VL_ELAPSED tv1;
-    gettimeofday(&tv1, 0);
+    gettimeofday(&tv1, NULL);
     if (begin)
 	*first = tv1;
     result = 1000.0 * (SECS(tv1) - SECS((*first)));
@@ -1691,7 +1691,7 @@ can_autocolor(BUFFER *bp)
     int rc = FALSE;
     if (b_val(bp, VAL_AUTOCOLOR) > 0
 #if OPT_MAJORMODE
-	&& (bp->majr != 0 || !b_is_temporary(bp))
+	&& (bp->majr != NULL || !b_is_temporary(bp))
 	&& b_val(bp, MDHILITE)
 #endif
 	) {
@@ -2284,7 +2284,7 @@ vl_atol(const char *str, int base, int *failed)
 
     *failed = FALSE;
 
-    if (str != 0) {
+    if (str != NULL) {
 #if defined(EDOM) && defined(ERANGE)
 	char *prem;
 
@@ -2439,10 +2439,10 @@ tb_visbuf(const char *buffer, size_t len)
 {
     char temp[20];
     size_t n;
-    TBUFF *result = 0;
+    TBUFF *result = NULL;
 
-    if (buffer != 0 && len != 0
-	&& tb_init(&result, EOS) != 0) {
+    if (buffer != NULL && len != 0
+	&& tb_init(&result, EOS) != NULL) {
 	for (n = 0; n < len; ++n) {
 	    tb_sappend0(&result, vl_vischr(temp, buffer[n]));
 	}

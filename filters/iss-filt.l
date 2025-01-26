@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: iss-filt.l,v 1.21 2020/05/10 20:28:08 tom Exp $
+ * $Id: iss-filt.l,v 1.22 2025/01/26 11:06:34 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Inno Setup
  * input text.
@@ -133,7 +133,7 @@ do_string(char *text, int length)
 		    text[k] = '\0';
 		    attr = ci_keyword_attr(text + j + 1);
 		    text[k] = save;
-		    if (attr != 0) {
+		    if (attr != NULL) {
 			flt_puts(text + last, j - last, String_attr);
 			last = k + 1;
 			flt_puts(text + j, last - j, attr);

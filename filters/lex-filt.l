@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Id: lex-filt.l,v 1.87 2016/12/17 01:54:26 tom Exp $
+ * $Id: lex-filt.l,v 1.89 2025/01/26 21:48:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -151,7 +151,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 
 <STATES>{IDENT}		{
 			  const char *attr = class_attr(yytext);
-			  if (attr == 0) {
+			  if (attr == NULL) {
 			    insert_keyword(yytext, NAME_LEX_STATES, 0);
 			    attr = get_keyword_attr(yytext);
 			  } else {
@@ -169,7 +169,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 <RULES>^{IDENT}		{
 			  if (set_symbol_table(NAME_LEX_PATTERN)) {
 			      const char *attr = class_attr(yytext);
-			      if (attr == 0) {
+			      if (attr == NULL) {
 				  insert_keyword(yytext, Pattern_attr, 0);
 				  attr = get_keyword_attr(yytext);
 			      } else {
@@ -266,7 +266,7 @@ static void
 write_1state(char *text, int len)
 {
     const char *attr = get_keyword_attr(text);
-    if (attr == 0) {
+    if (attr == NULL) {
 	if (len == 1 && *text == '*') {
 	    attr = Keyword_attr;
 	} else {
@@ -293,10 +293,10 @@ write_states(char *text, int len)
 	++text;
 	--len;
 
-	if ((last = strchr(text, '>')) != 0)
+	if ((last = strchr(text, '>')) != NULL)
 	    *last = 0;
 
-	while ((next = strchr(text, ',')) != 0) {
+	while (len >= 0 && (next = strchr(text, ',')) != NULL) {
 	    *next = 0;
 	    write_1state(text, (int) (next - text));
 	    *next = ',';
@@ -307,7 +307,7 @@ write_states(char *text, int len)
 	    ++text;
 	    --len;
 	}
-	if (last != 0) {	/* ...or is confused with a {PATTERN} */
+	if (last != NULL) {	/* ...or is confused with a {PATTERN} */
 	    n = (int) (1 + last - text);
 	    write_1state(text, n - 1);
 	    *last = '>';
@@ -410,7 +410,7 @@ write_patterns(char *text, int len)
 		     * it is more likely to be useful.
 		     */
 		    flt_bfr_append(text + first, last - first);
-		    if ((attr = get_keyword_attr(text + last + 1)) == 0) {
+		    if ((attr = get_keyword_attr(text + last + 1)) == NULL) {
 			attr = Error_attr;
 			flt_error("Undefined name \"%s\"", text + last + 1);
 		    }
@@ -454,15 +454,15 @@ do_filter(FILE *inputs)
     Preproc_attr = class_attr(NAME_PREPROC);
     String_attr = class_attr(NAME_LITERAL);
 
-    if ((Section_attr = class_attr(NAME_LEX_SECTION)) == 0)
+    if ((Section_attr = class_attr(NAME_LEX_SECTION)) == NULL)
 	Section_attr = Keyword_attr;
 
-    if ((States_attr = class_attr(NAME_LEX_STATES)) == 0)
+    if ((States_attr = class_attr(NAME_LEX_STATES)) == NULL)
 	insert_keyword(NAME_LEX_STATES, Keyword_attr, 0);
 
     flt_make_symtab(NAME_LEX_PATTERN);
     set_symbol_table(NAME_LEX_PATTERN);
-    if ((Pattern_attr = class_attr(NAME_LEX_PATTERN)) == 0)
+    if ((Pattern_attr = class_attr(NAME_LEX_PATTERN)) == NULL)
 	Pattern_attr = String_attr;
 
     set_symbol_table(default_table);

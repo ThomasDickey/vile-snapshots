@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Id: fileio.c,v 1.209 2018/10/21 19:19:18 tom Exp $
+ * $Id: fileio.c,v 1.212 2025/01/26 17:03:16 tom Exp $
  */
 
 #include <estruct.h>
@@ -54,8 +54,8 @@ copy_file(const char *src, const char *dst)
     int chr;
     int ok = FALSE;
 
-    if ((ifp = fopen(SL_TO_BSL(src), FOPEN_READ)) != 0) {
-	if ((ofp = fopen(SL_TO_BSL(dst), FOPEN_WRITE)) != 0) {
+    if ((ifp = fopen(SL_TO_BSL(src), FOPEN_READ)) != NULL) {
+	if ((ofp = fopen(SL_TO_BSL(dst), FOPEN_WRITE)) != NULL) {
 	    ok = TRUE;
 	    for_ever {
 		chr = vl_getc(ifp);
@@ -188,7 +188,7 @@ make_backup(char *fname)
 
 	switch (choice_to_code(&fsm_backup_blist, gvalfileback, strlen(gvalfileback))) {
 	case bak_BAK:
-	    if (t == 0		/* i.e. no '.' at all */
+	    if (t == NULL	/* i.e. no '.' at all */
 #if SYS_UNIX
 		|| t == s	/* i.e. leading char is '.' */
 #endif
@@ -260,14 +260,14 @@ file_stat(const char *fn, struct stat *sb)
     unsigned n;
     int found = FALSE;
 
-    if (fn != 0) {
+    if (fn != NULL) {
 	for (n = 0; n < TABLESIZE(cache); ++n) {
 	    if (!strcmp(fn, cache[n].fn)) {
 		found = TRUE;
 		break;
 	    }
 	}
-	if (sb != 0) {
+	if (sb != NULL) {
 	    if (!found) {
 		for (n = TABLESIZE(cache) - 1; n != 0; --n) {
 		    if (strlen(cache[n].fn) == 0)
@@ -290,7 +290,7 @@ file_stat(const char *fn, struct stat *sb)
     }
     TRACE(("file_stat(%s) = %d%s\n", fn, rc,
 	   (found
-	    ? ((sb != 0)
+	    ? ((sb != NULL)
 	       ? " cached"
 	       : " purged")
 	    : "")));
@@ -311,7 +311,7 @@ ffropen(char *fn)
     TRACE(("ffropen(fn=%s)\n", fn));
 #if OPT_SHELL
     if (isShellOrPipe(fn)) {
-	ffp = 0;
+	ffp = NULL;
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 	ffp = npopen(fn + 1, FOPEN_READ);
 #endif
@@ -319,7 +319,7 @@ ffropen(char *fn)
 	ffp = vms_rpipe(fn + 1, 0, (char *) 0);
 	/* really a temp-file, but we cannot fstat it to get size */
 #endif
-	if (ffp == 0) {
+	if (ffp == NULL) {
 	    mlerror("opening pipe for read");
 	    rc = FIOERR;
 	} else {
@@ -594,7 +594,7 @@ ffexists(char *p)
 
     struct stat statbuf;
     if (!isInternalName(p)
-	&& file_stat(p, 0) == 0
+	&& file_stat(p, NULL) == 0
 	&& file_stat(p, &statbuf) == 0) {
 	status = TRUE;
     }
@@ -714,7 +714,7 @@ ffclose(void)
     } else {
 	free_fline();
 
-	if (ffp != 0) {
+	if (ffp != NULL) {
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #if OPT_SHELL
 	    if (ffstatus == file_is_pipe) {
@@ -738,8 +738,8 @@ ffclose(void)
 	    (void) fclose(ffp);
 #endif
 	}
-	ffp = 0;
-	ffbuffer = 0;
+	ffp = NULL;
+	ffbuffer = NULL;
     }
     ffstatus = file_is_closed;
     return (FIOSUC);
@@ -754,13 +754,13 @@ ffputline(const char *buf, int nbuf, const char *ending)
 {
     int i = 0;
 
-    if (buf != 0) {
+    if (buf != NULL) {
 	for (i = 0; i < nbuf; ++i)
 	    if (ffputc(CharOf(buf[i])) == FIOERR)
 		return FIOERR;
     }
 
-    if (ending != 0) {
+    if (ending != NULL) {
 	while (*ending != EOS) {
 	    if (*ending != '\r' || i == 0 || buf[i - 1] != '\r')
 		ffputc(*ending);
@@ -768,7 +768,7 @@ ffputline(const char *buf, int nbuf, const char *ending)
 	}
     }
 
-    if (ffp != 0 && ferror(ffp)) {
+    if (ffp != NULL && ferror(ffp)) {
 	mlerror("writing");
 	return (FIOERR);
     }
@@ -816,7 +816,7 @@ alloc_linebuf(size_t needed)
     if (needed < NSTRING)
 	needed = NSTRING;
 
-    if (fflinebuf == 0) {
+    if (fflinebuf == NULL) {
 	fflinelen = needed;
 	fflinebuf = castalloc(char, fflinelen);
     } else if (needed >= fflinelen) {
@@ -824,10 +824,10 @@ alloc_linebuf(size_t needed)
 	safe_castrealloc(char, fflinebuf, fflinelen);
     }
 
-    if (fflinebuf == 0)
+    if (fflinebuf == NULL)
 	fflinelen = 0;
     endofDisplay();
-    return (fflinebuf != 0);
+    return (fflinebuf != NULL);
 }
 
 #define ALLOC_LINEBUF(i) \
@@ -856,7 +856,7 @@ ffgetline(size_t *lenp)
 #if COMPLETE_FILES || COMPLETE_DIRS
     if (ffstatus == file_is_internal) {
 	if (ffcursor == buf_head(ffbuffer)) {
-	    ffcursor = 0;
+	    ffcursor = NULL;
 	    fileeof = TRUE;
 	    return (FIOEOF);
 	}

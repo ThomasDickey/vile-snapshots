@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Id: map.c,v 1.134 2023/01/13 08:51:24 tom Exp $
+ * $Id: map.c,v 1.136 2025/01/26 17:07:24 tom Exp $
  */
 
 #include "estruct.h"
@@ -106,7 +106,7 @@ int do_keylog = 1;
 static void
 makemaplist(int dummy GCC_UNUSED, void *mapp)
 {
-    TBUFF *lhsstr = 0;
+    TBUFF *lhsstr = NULL;
     struct maprec **lhsstack;
     struct maprec *mp = (struct maprec *) mapp;
     int footnote = 0;
@@ -118,7 +118,7 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
     lhsstr = tb_init(&lhsstr, 0);
 
     lhsstack = typeallocn(struct maprec *, maxdepth = NSTRING);
-    if (lhsstack == 0) {
+    if (lhsstack == NULL) {
 	no_memory("makemaplist");
 	return;
     }
@@ -133,7 +133,7 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 	    if (depth + 1 >= maxdepth) {
 		maxdepth *= 2;
 		safe_typereallocn(struct maprec *, lhsstack, maxdepth);
-		if (lhsstack == 0) {
+		if (lhsstack == NULL) {
 		    no_memory("makemaplist");
 		    return;
 		}
@@ -147,10 +147,10 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 		(void) kcod2escape_seq(mp->irv, esc_seq, sizeof(esc_seq));
 		mapstr = esc_seq;
 	    }
-	    if (mapstr && (the_lhs_string = tb_values(lhsstr)) != 0) {
+	    if (mapstr && (the_lhs_string = tb_values(lhsstr)) != NULL) {
 		if (mapp && (struct maprec *) mapp == abbr_map) {
 		    /* the abbr map is stored inverted */
-		    if (the_lhs_string != 0)
+		    if (the_lhs_string != NULL)
 			for (i = depth; i != 0;)
 			    bputc(the_lhs_string[--i]);
 		} else {
@@ -227,7 +227,7 @@ addtomap(struct maprec **mpp,
     int status = TRUE;
     struct maprec *mp = NULL;
 
-    if (ks != 0 && kslen != 0) {
+    if (ks != NULL && kslen != 0) {
 
 	TRACE2(("addtomap %s\n", visible_buff(ks, kslen, FALSE)));
 	while (*mpp && kslen) {
@@ -243,7 +243,7 @@ addtomap(struct maprec **mpp,
 
 	while (kslen) {
 	    mp = typealloc(struct maprec);
-	    if (mp == 0) {
+	    if (mp == NULL) {
 		status = no_memory("addtomap");
 		break;
 	    }
@@ -258,7 +258,7 @@ addtomap(struct maprec **mpp,
 	    kslen--;
 	}
 
-	if (mp != 0) {
+	if (mp != NULL) {
 	    if (irv != -1)
 		mp->irv = irv;
 	    if (srv) {
@@ -277,12 +277,12 @@ static int
 delfrommap(struct maprec **mpp, const char *ks, int length)
 {
     struct maprec **save_m = mpp;
-    struct maprec ***mstk = 0;
+    struct maprec ***mstk = NULL;
     int depth = 0;
     int pass;
     int n;
 
-    if (mpp == 0 || ks == 0 || length == 0)
+    if (mpp == NULL || ks == NULL || length == 0)
 	return FALSE;
 
     for (pass = 0; pass < 2; pass++) {
@@ -306,7 +306,7 @@ delfrommap(struct maprec **mpp, const char *ks, int length)
 	}
 	if (!pass) {
 	    mstk = typecallocn(struct maprec **, (size_t) depth + 1);
-	    if (mstk == 0)
+	    if (mstk == NULL)
 		return no_memory("delfrommap");
 	}
     }
@@ -354,7 +354,7 @@ maplookup(int c,
 	  int suffix)
 {
     struct maprec *rmp = NULL;
-    ITBUFF *unmatched = 0;
+    ITBUFF *unmatched = NULL;
     int matchedcnt;
     int use_sys_timing;
     int had_start = FALSE;
@@ -377,7 +377,7 @@ maplookup(int c,
 
     TRACE2(("maplookup unmatched:%s\n", itb_visible(unmatched)));
     matchedcnt = 0;
-    while (mp != 0) {
+    while (mp != NULL) {
 	TRACE2(("... c=0x%X, mp->ch=0x%X\n", c, mp->ch));
 	if (c == mp->ch) {
 	    if (mp->irv != -1 || mp->srv != NULL) {
@@ -455,10 +455,10 @@ maplookup(int c,
 	    mp = mp->flink;
     }
 
-    if (itb_values(unmatched) == 0) {
+    if (itb_values(unmatched) == NULL) {
 	matchedcnt = 0;
 	no_memory("maplookup");
-    } else if (had_start && (rmp != 0)) {
+    } else if (had_start && (rmp != NULL)) {
 	/* unget the unmatched suffix */
 	while (suffix && (count > 0)) {
 	    (void) itb_append(out_ptr, itb_values(unmatched)[--count]);
@@ -903,7 +903,7 @@ mapped_c(int remap, int raw)
     c = STRIP_REMAPFLAGS(c);
 
     if (reading_msg_line) {
-	mp = 0;
+	mp = NULL;
 	TRACE(("...using no mapping\n"));
     } else if (insertmode) {
 	mp = map_insert;
@@ -1127,11 +1127,11 @@ static void
 free_maprec(struct maprec **p)
 {
     struct maprec *q;
-    if ((q = *p) != 0) {
+    if ((q = *p) != NULL) {
 	free_maprec(&(q->flink));
 	free_maprec(&(q->dlink));
 	FreeAndNull(q->srv);
-	*p = 0;
+	*p = NULL;
 	free((char *) q);
     }
 }

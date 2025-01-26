@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: rcs-filt.l,v 1.24 2016/12/16 20:45:42 tom Exp $
+ * $Id: rcs-filt.l,v 1.25 2025/01/26 11:36:23 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -57,13 +57,13 @@ find_ident(char *first)
 {
     char *dollar = strchr(first, '$');
 
-    if (dollar != 0
+    if (dollar != NULL
 	&& is_ident(dollar + 1)
 	&& strchr(dollar + 1, '$')) {
 	return dollar;
     }
 
-    return 0;
+    return NULL;
 }
 
 /*
@@ -79,7 +79,7 @@ add_to_quoted(char *text, int length)
 {
     size_t extra = (size_t) length;
 
-    if ((save_bfr = do_alloc(save_bfr, save_len + extra + 1, &save_max)) != 0) {
+    if ((save_bfr = do_alloc(save_bfr, save_len + extra + 1, &save_max)) != NULL) {
 	strncpy(save_bfr + save_len, text, extra + 1);
 	save_len += extra;
     } else {
@@ -95,7 +95,7 @@ flush_quoted(void)
 	char *last = save_bfr + save_len;
 	while (base < last) {
 	    char *ident = find_ident(base);
-	    if (ident != 0) {
+	    if (ident != NULL) {
 		char *next = strchr(ident + 1, '$');
 		if (ident != base)
 		    flt_puts(base, (int) (ident - base), String_attr);

@@ -1,7 +1,7 @@
 /*
  * Parsing and I/O support for atr2text, etc.
  *
- * $Id: unfilter.c,v 1.13 2013/12/07 15:28:27 tom Exp $
+ * $Id: unfilter.c,v 1.14 2025/01/26 10:43:31 tom Exp $
  */
 #define CAN_TRACE 0
 #define CAN_VMS_PATH 0
@@ -21,7 +21,7 @@ typedef struct {
     int attrib;
 } COUNTS;
 
-static COUNTS *my_counts = 0;
+static COUNTS *my_counts = NULL;
 static size_t my_length = 0;
 
 static void
@@ -86,7 +86,7 @@ unfilter(FILE *src, FILE *dst)
 		markup_unfilter(dst, attrs);
 		if (my_length == 0) {
 		    my_length = 10;
-		    if ((my_counts = typecallocn(COUNTS, my_length)) == 0)
+		    if ((my_counts = typecallocn(COUNTS, my_length)) == NULL)
 			failed("malloc");
 		}
 		for (n = 0; n < my_length; ++n) {

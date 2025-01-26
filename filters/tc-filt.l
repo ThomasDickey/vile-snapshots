@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: tc-filt.l,v 1.41 2013/12/02 01:32:53 tom Exp $
+ * $Id: tc-filt.l,v 1.42 2025/01/26 11:38:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -84,7 +84,7 @@ check_name(const char *name)
     strncpy(temp, name, (size_t) 2);
     temp[2] = 0;
     attr = get_keyword_attr(temp);
-    if (attr == 0)
+    if (attr == NULL)
 	attr = "";
     if (strcmp(attr, Keyword_attr))
 	attr = Action_attr;	/* not necessarily an error */

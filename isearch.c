@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Id: isearch.c,v 1.71 2020/03/29 22:48:01 tom Exp $
+ * $Id: isearch.c,v 1.72 2025/01/26 14:38:58 tom Exp $
  */
 
 #include	"estruct.h"
@@ -41,11 +41,11 @@ scanmore(			/* search forward or back for a pattern */
 
     FreeIfNeeded(gregexp);
     gregexp = regcomp(tb_values(patrn), tb_length(patrn), b_val(curbp, MDMAGIC));
-    if (gregexp != 0) {
+    if (gregexp != NULL) {
 	int ic = window_b_val(curwp, MDIGNCASE) &&
 	!(window_b_val(curwp, MDSMARTCASE) && gregexp->uppercase);
 
-	if (curwp != 0) {
+	if (curwp != NULL) {
 	    sts = scanner(gregexp,
 			  ((dir < 0)
 			   ? REVERSE
@@ -109,7 +109,7 @@ echochar(int c)			/* character to be echoed */
 static void
 unget_char(void)
 {
-    if (cmd_buff != 0
+    if (cmd_buff != NULL
 	&& cmd_buff->itb_used >= 2) {
 	cmd_buff->itb_used -= 2;	/* remove Rubout and last char */
     }
@@ -172,7 +172,7 @@ get_char(void)
 static int
 isearch(int f GCC_UNUSED, int n)
 {
-    static TBUFF *pat_save = 0;	/* Saved copy of the old pattern str */
+    static TBUFF *pat_save = NULL;	/* Saved copy of the old pattern str */
 
     int status;			/* Search status */
     register int cpos;		/* character number in search string */
@@ -181,7 +181,7 @@ isearch(int f GCC_UNUSED, int n)
     int init_direction;		/* The initial search direction */
 
     /* Initialize starting conditions */
-    if (curwp == 0)
+    if (curwp == NULL)
 	return FALSE;
     cmd_reexecute = -1;		/* We're not re-executing (yet?) */
     itb_init(&cmd_buff, EOS);	/* Init the command buffer */

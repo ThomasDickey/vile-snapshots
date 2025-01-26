@@ -3,7 +3,7 @@
  *
  * written for vile.  Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Id: undo.c,v 1.103 2013/03/09 01:14:13 tom Exp $
+ * $Id: undo.c,v 1.104 2025/01/26 14:34:21 tom Exp $
  *
  */
 
@@ -220,7 +220,7 @@ copy_for_undo(LINE *lp)
 
     if (liscopied(lp)) {
 	status = TRUE;
-    } else if ((nlp = copyline(lp)) == 0) {
+    } else if ((nlp = copyline(lp)) == NULL) {
 	status = ABORT;
     } else {
 	/* take care of the normal undo stack */
@@ -256,7 +256,7 @@ tag_for_undo(LINE *lp)
 
     if (liscopied(lp)) {
 	status = TRUE;
-    } else if ((nlp = lalloc(LINENOTREAL, curbp)) == 0) {
+    } else if ((nlp = lalloc(LINENOTREAL, curbp)) == NULL) {
 	TRACE(("tag_for_undo: no memory\n"));
 	status = ABORT;
     } else {
@@ -307,8 +307,8 @@ freeundostacks(BUFFER *bp, int both)
 	while ((lp = popline(BACKSTK(bp), TRUE)) != NULL) {
 	    lfree(lp, bp);
 	}
-	bp->b_udtail = 0;
-	bp->b_udlastsep = 0;
+	bp->b_udtail = NULL;
+	bp->b_udlastsep = NULL;
 	bp->b_udcount = 0;
     }
     returnVoid();
@@ -486,7 +486,7 @@ popline(LINE **stkp, int force)
     }
 
     *stkp = lp->l_nxtundo;
-    lp->l_nxtundo = 0;
+    lp->l_nxtundo = NULL;
     undolog("popped", lp);
     return (lp);
 }
@@ -510,7 +510,7 @@ freshstack(int stkindx)
 	/* and make sure there are no _other_ special separators */
 	nounmodifiable(curbp);
     }
-    if (plp == 0) {
+    if (plp == NULL) {
 	TRACE(("freshstack: no memory\n"));
 	return;
     }
@@ -520,8 +520,8 @@ freshstack(int stkindx)
     plp->l_forw_offs = FORWDOT(curbp).o;
     pushline(plp, STACK(stkindx));
     if (stkindx == BACK) {
-	plp->l_nextsep = 0;
-	if (curbp->b_udtail == 0) {
+	plp->l_nextsep = NULL;
+	if (curbp->b_udtail == NULL) {
 	    if (curbp->b_udcount != 0) {
 		mlforce("BUG: null tail with non-0 undo count");
 		curbp->b_udcount = 0;
@@ -529,7 +529,7 @@ freshstack(int stkindx)
 	    curbp->b_udtail = plp;
 	    curbp->b_udlastsep = plp;
 	} else {
-	    if (curbp->b_udlastsep == 0) {
+	    if (curbp->b_udlastsep == NULL) {
 		/* then we need to find lastsep */
 		int i;
 		curbp->b_udlastsep = curbp->b_udtail;
@@ -549,25 +549,25 @@ freshstack(int stkindx)
 	    LINE *newtail;
 	    LINE *lp;
 
-	    if ((newtail = curbp->b_udtail) != 0) {
+	    if ((newtail = curbp->b_udtail) != NULL) {
 		while (curbp->b_udcount > b_val(curbp, VAL_UNDOLIM)) {
-		    if ((newtail = newtail->l_nextsep) == 0)
+		    if ((newtail = newtail->l_nextsep) == NULL)
 			break;
 		    curbp->b_udcount--;
 		}
 
-		if ((curbp->b_udtail = newtail) != 0) {
+		if ((curbp->b_udtail = newtail) != NULL) {
 		    newtail = newtail->l_nxtundo;
-		    if (newtail != 0) {
+		    if (newtail != NULL) {
 			do {
 			    lp = newtail;
 			    if (newtail == curbp->b_udlastsep)
 				mlforce("BUG: tail passed lastsep");
 			    newtail = newtail->l_nxtundo;
 			    lfree(lp, curbp);
-			} while (newtail != 0);
+			} while (newtail != NULL);
 		    }
-		    curbp->b_udtail->l_nxtundo = 0;
+		    curbp->b_udtail->l_nxtundo = NULL;
 		}
 	    }
 	}
@@ -580,7 +580,7 @@ make_undo_patch(LINE *olp, LINE *nlp)
     LINE *plp;
     /* push on a tag that matches up the copy with the original */
     plp = lalloc(LINEUNDOPATCH, curbp);
-    if (plp == 0) {
+    if (plp == NULL) {
 	TRACE(("make_undo_patch: no memory\n"));
 	return;
     }
@@ -620,7 +620,7 @@ copyline(LINE *lp)
     nlp = lalloc(llength(lp), curbp);
     if (nlp == NULL) {
 	TRACE(("copyline: no memory\n"));
-	return 0;
+	return NULL;
     }
     /* copy the text and forward and back pointers.  everything else
        matches already */
@@ -639,7 +639,7 @@ undoworker(int stkindx)
     LINE *alp;
     int nopops = TRUE;
 
-    while ((lp = popline(STACK(stkindx), FALSE)) != 0) {
+    while ((lp = popline(STACK(stkindx), FALSE)) != NULL) {
 	if (nopops)		/* first pop -- establish a new stack base */
 	    freshstack(1 ^ stkindx);
 	nopops = FALSE;
@@ -673,7 +673,7 @@ undoworker(int stkindx)
 	} else {		/* there is no line where we're going */
 	    /* create an "unreal" tag line to push */
 	    alp = lalloc(LINENOTREAL, curbp);
-	    if (alp == 0) {
+	    if (alp == NULL) {
 		TRACE(("undoworker: no memory\n"));
 		return (FALSE);
 	    }
@@ -701,7 +701,7 @@ undoworker(int stkindx)
     }
 #define bug_checks 1
 #ifdef bug_checks
-    if ((lp = peekline(STACK(stkindx))) == 0) {
+    if ((lp = peekline(STACK(stkindx))) == NULL) {
 	mlforce("BUG: found null after undo/redo");
 	return FALSE;
     }
@@ -729,7 +729,7 @@ undoworker(int stkindx)
 	DOT = BACKDOT(curbp);
 	/* dbgwrite("about to decr undocount %d", curbp->b_udcount); */
 	curbp->b_udcount--;
-	curbp->b_udlastsep = 0;	/* it's only a hint */
+	curbp->b_udlastsep = NULL;	/* it's only a hint */
 	if (curbp->b_udtail == lp) {
 	    if (curbp->b_udcount != 0) {
 		mlforce("BUG: popped tail; non-0 undo count");
@@ -737,8 +737,8 @@ undoworker(int stkindx)
 	    }
 	    /* dbgwrite("clearing tail 0x%x and lastsep 0x%x", curbp->b_udtail,
 	       curbp->b_udlastsep); */
-	    curbp->b_udtail = 0;
-	    curbp->b_udlastsep = 0;
+	    curbp->b_udtail = NULL;
+	    curbp->b_udlastsep = NULL;
 	}
     }
 
@@ -775,7 +775,7 @@ dumpuline(LINE *lp)
 
     if ((ulp != NULL) && (ulp->l_nxtundo == lp)) {
 	lfree(curbp->b_ulinep, curbp);
-	curbp->b_ulinep = 0;
+	curbp->b_ulinep = NULL;
     }
 }
 
@@ -911,7 +911,7 @@ repointstuff(LINE *nlp, LINE *olp)
 	} else {
 	    /* we lose the ability to undo all changes
 	       to this line, since it's going away */
-	    curbp->b_ulinep = 0;
+	    curbp->b_ulinep = NULL;
 	}
     }
 
@@ -949,7 +949,7 @@ list_undos(LINE *lp)
 {
     int limit = 1000;
 
-    for (; lp != 0; lp = lp->l_nxtundo) {
+    for (; lp != NULL; lp = lp->l_nxtundo) {
 	int len = llength(lp);
 
 	bputc('\n');

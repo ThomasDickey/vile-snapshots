@@ -10,7 +10,7 @@
 %{
 
 /*
- * $Id: yamlfilt.l,v 1.48 2018/11/13 02:05:11 tom Exp $
+ * $Id: yamlfilt.l,v 1.49 2025/01/26 11:40:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YAML program.
  *
@@ -188,7 +188,7 @@ ANY_KEY		({INTEGER}|{FLOAT}|{DSTRING}|{KEYNAME})
 			  WriteToken3(Action_attr,1);
 			  if (set_symbol_table(NAME_YAML_ANCHORS)) {
 			      attr = class_attr(name);
-			      if (attr == 0) {
+			      if (attr == NULL) {
 				  insert_keyword(name, Anchor_attr, 0);
 				  attr = get_keyword_attr(name);
 			      } else {
@@ -205,7 +205,7 @@ ANY_KEY		({INTEGER}|{FLOAT}|{DSTRING}|{KEYNAME})
 			  WriteToken3(Action_attr, 1);
 			  if (set_symbol_table(NAME_YAML_ANCHORS)) {
 			      attr = get_keyword_attr(name);
-			      if (attr == 0) {
+			      if (attr == NULL) {
 				  attr = Error_attr;
 				  flt_error("Keyword \"%s\" is not an anchor", name);
 			      }
@@ -389,7 +389,7 @@ do_filter(FILE *inputs)
 
     flt_make_symtab(NAME_YAML_ANCHORS);
     set_symbol_table(NAME_YAML_ANCHORS);
-    if ((Anchor_attr = class_attr(NAME_YAML_ANCHORS)) == 0)
+    if ((Anchor_attr = class_attr(NAME_YAML_ANCHORS)) == NULL)
 	Anchor_attr = Keyword_attr;
 
     set_symbol_table(default_table);

@@ -2,7 +2,7 @@
  *	matching lines, then for each such line, an action is performed.
  *	written for vile.  Copyright (c) 1990-1999 by Paul Fox
  *
- * $Id: globals.c,v 1.51 2018/10/25 00:19:53 tom Exp $
+ * $Id: globals.c,v 1.52 2025/01/26 14:13:25 tom Exp $
  */
 
 #include	"estruct.h"
@@ -55,7 +55,7 @@ globber(int f GCC_UNUSED, int n GCC_UNUSED, int g_or_v)
     if (!fnp) {
 	mlforce("[No function]");
 	return FALSE;
-    } else if ((cfp = engl2fnc(fnp)) == 0) {
+    } else if ((cfp = engl2fnc(fnp)) == NULL) {
 	return no_such_function(fnp);
     } else if ((cfp->c_flags & GLOBOK) == 0) {
 	mlforce("[Function not allowed]");

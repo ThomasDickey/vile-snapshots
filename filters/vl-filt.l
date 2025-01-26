@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: vl-filt.l,v 1.23 2013/12/02 01:32:53 tom Exp $
+ * $Id: vl-filt.l,v 1.24 2025/01/26 11:38:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VeriLog
  * program.
@@ -46,7 +46,7 @@ DSTRING		\"(\\.|[^"\\])*\"
 
 <CODE>{ESCNAME}		{ WriteToken(get_keyword_attr(yytext)); }
 <CODE>{SYSNAME}		{ const char *attr = get_keyword_attr(yytext);
-			  if (attr != 0) {
+			  if (attr != NULL) {
 			      WriteToken(attr);
 			  } else {
 			      flt_error("unknown sysname");
@@ -57,7 +57,7 @@ DSTRING		\"(\\.|[^"\\])*\"
 
 <CODE>`define{SPACE}+{IDENT} { do_define(yytext); }
 <CODE>{DIRECTIVE}	{ const char *attr = get_keyword_attr(yytext);
-			  if (attr != 0) {
+			  if (attr != NULL) {
 			      WriteToken(attr);
 			  } else {
 			      flt_error("unknown directive");

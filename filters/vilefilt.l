@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: vilefilt.l,v 1.78 2022/12/02 23:22:54 tom Exp $
+ * $Id: vilefilt.l,v 1.79 2025/01/26 11:38:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -290,7 +290,7 @@ command_attr(char *text)
 {
     if (vile_keywords) {
 	static char none[] = "";
-	return vl_lookup_cmd(text) != 0 ? Keyword_attr : none;
+	return vl_lookup_cmd(text) != NULL ? Keyword_attr : none;
     }
     return get_keyword_attr(text);
 }

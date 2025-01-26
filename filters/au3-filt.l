@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: au3-filt.l,v 1.15 2020/05/10 20:28:46 tom Exp $
+ * $Id: au3-filt.l,v 1.16 2025/01/26 11:05:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of AutoIt
  * input text.
@@ -64,7 +64,7 @@ NUMBER		{HEX}|{INTEGER}|{REAL}
 <NORMAL>;			{ WriteToken(Comment_attr); BEGIN(COMMENT); }
 <NORMAL>{IDENT}			{
 				  const char *attr = get_keyword_attr(yytext);
-				  if (attr == 0) {
+				  if (attr == NULL) {
 				      if (yytext[0] == '$') {
 					  attr = Ident2_attr;
 				      } else if (yytext[0] == '@') {

@@ -1,7 +1,7 @@
 /*
  * Configurable headers used by termcap/terminfo driver for vile.
  *
- * $Id: tcap.h,v 1.21 2023/12/13 23:52:09 tom Exp $
+ * $Id: tcap.h,v 1.22 2025/01/26 11:58:52 tom Exp $
  */
 
 #ifndef VILE_TCAP_H
@@ -91,7 +91,7 @@ extern "C" {
 #if USE_TERMINFO
 #  define USE_TERMCAP 0
 #  define CAPNAME(a,b)        b
-#  define NO_CAP(s)           (s == 0 || s == (char *)-1)
+#  define NO_CAP(s)           (s == NULL || s == (char *)-1)
 #  if !defined(HAVE_TIGETNUM) && defined(HAVE_TIGETINT)
 #    define tigetnum tigetint
 #  endif
@@ -106,10 +106,10 @@ extern char PC;			/* used in 'tputs()' */
 #endif
 
 #define I_AM_XTERM(given) \
-    if (given != 0 && \
-    	(strstr(given, "xterm") != 0 || strstr(given, "rxvt") != 0)) { \
+    if (given != NULL && \
+    	(strstr(given, "xterm") != NULL || strstr(given, "rxvt") != NULL)) { \
 	i_am_xterm = TRUE; \
-    } else if ((t = TGETSTR(CAPNAME("Km", "kmous"), &p)) != 0 \
+    } else if ((t = TGETSTR(CAPNAME("Km", "kmous"), &p)) != NULL \
 	       && (t != (char *) (-1)) \
 	       && !strcmp(t, "\033[M")) { \
 	i_am_xterm = TRUE; \

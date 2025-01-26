@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Id: perl.xs,v 1.147 2023/01/16 01:21:02 tom Exp $
+ * $Id: perl.xs,v 1.148 2025/01/26 16:43:53 tom Exp $
  */
 
 /*
@@ -252,7 +252,7 @@ write_message(const char *prefix, SV *sv)
 
     while (text)
     {
-	if ((nl = strchr(text, '\n')) != 0)
+	if ((nl = strchr(text, '\n')) != NULL)
 	{
 	    *nl = 0;
 	    mktrimmed(text);
@@ -260,7 +260,7 @@ write_message(const char *prefix, SV *sv)
 		;
 
 	    if (!*nl)
-		nl = 0;
+		nl = NULL;
 	}
 
 	if (*text)
@@ -343,7 +343,7 @@ perl_default_region(void)
 static SV *
 newVBrv(SV *rv, VileBuf *sp)
 {
-    if (sp->perl_handle == 0) {
+    if (sp->perl_handle == NULL) {
 	sp->perl_handle = newGVgen("Vile::Buffer");
 	GvSV((GV*)sp->perl_handle) = newSV((size_t) 0);
 	sv_setiv(GvSV((GV*)sp->perl_handle), PTR2IV(sp));
@@ -367,10 +367,10 @@ newVBrv(SV *rv, VileBuf *sp)
 static VileBuf *
 getVB(SV *sv, const char **croakmessage_ptr)
 {
-    VileBuf *vbp = 0;
+    VileBuf *vbp = NULL;
     if (sv_isa(sv, "Vile::Buffer")) {
 	vbp = INT2PTR(VileBuf *, SvIV((SV*)GvSV((GV*)SvRV(sv))));
-	if (vbp == 0) {
+	if (vbp == NULL) {
 	    *croakmessage_ptr = "buffer no longer exists";
 	}
     }
@@ -427,7 +427,7 @@ newVWrv(SV *rv, VileWin vw)
 static VileWin
 getVW(SV *sv, const char **croakmessage_ptr)
 {
-    VileWin vw = 0;
+    VileWin vw = NULL;
     if (sv_isa(sv, "Vile::Window")) {
 	vw = id2win((WIN_ID)SvIV((SV*)SvRV(sv)));
 	if (!vw) {
@@ -455,10 +455,10 @@ do_perl_cmd(SV *cmd, int inplace)
 
     if (recursecount == 0) {
 	curvbp = api_bp2vbp(curbp);
-	if (curvbp == 0)
+	if (curvbp == NULL)
 	    returnCode(FALSE);
 
-	if (DOT.l == 0 || MK.l == 0 || getregion(curbp, &region) != TRUE) {
+	if (DOT.l == NULL || MK.l == NULL || getregion(curbp, &region) != TRUE) {
 	    /* shouldn't ever get here. But just in case... */
 	    perl_default_region();
 	    if (getregion(curbp, &region) != TRUE) {
@@ -548,25 +548,25 @@ int
 perl_call_sub(void *data, int oper, int f, int n)
 {
     AV *av = data;	/* callback is an array containing: */
-    SV **name = 0;	/* the registered name, */
-    SV **sub = 0;	/* a sub name or coderef to call, */
-    SV **req = 0;	/* and an [optional] file to require */
+    SV **name = NULL;	/* the registered name, */
+    SV **sub = NULL;	/* a sub name or coderef to call, */
+    SV **req = NULL;	/* and an [optional] file to require */
 
     TRACE((T_CALLED "perl_call_sub\n"));
     switch (av_len(av))
     {
 	case 2: /* (name, sub, require) */
-	    if ((req = av_fetch(av, 2, 0)) != 0 && SvTRUE(*req))
+	    if ((req = av_fetch(av, 2, 0)) != NULL && SvTRUE(*req))
 		if (!require(SvPV(*req, PL_na), FALSE))
 		    returnCode(FALSE);
 
 	    /* FALLTHRU */
 
 	case 1: /* (name, sub) */
-	    if ((name = av_fetch(av, 0, 0)) == 0 || !SvTRUE(*name))
+	    if ((name = av_fetch(av, 0, 0)) == NULL || !SvTRUE(*name))
 		croak("BUG: can't fetch name SV");
 
-	    if ((sub = av_fetch(av, 1, 0)) == 0 || !SvTRUE(*sub))
+	    if ((sub = av_fetch(av, 1, 0)) == NULL || !SvTRUE(*sub))
 		croak("BUG: can't fetch subroutine SV");
 
 	    break;
@@ -1085,7 +1085,7 @@ svcurbuf_set(pTHX_ SV *sv, MAGIC *mg GCC_UNUSED)
     }
     else {
 	VileBuf *curvbp = api_bp2vbp(curbp);
-	if (curvbp != 0) {
+	if (curvbp != NULL) {
 	    SV *my_sv = newVBrv(newSV((size_t) 0), curvbp);
 	    sv_setsv(svcurbuf, my_sv);
 	    SvREFCNT_dec(my_sv);
@@ -1141,7 +1141,7 @@ real_perl_init(void)
     prepend_include(lengthen_path(pathcat(temp, HELP_LOC, "perl")));
 #endif
     /* Always recognize environment variable */
-    if ((vile_path = vile_getenv("VILE_LIBDIR_PATH")) != 0)
+    if ((vile_path = vile_getenv("VILE_LIBDIR_PATH")) != NULL)
     {
 	const char *cp = vile_path;
 	char result[NFILEN];
@@ -1151,7 +1151,7 @@ real_perl_init(void)
 	 * %VILE_LIBDIR_PATH%\\perl .
 	 */
 	TRACE(("perl_init VILE_LIBDIR_PATH=%s\n", vile_path));
-	while ((cp = parse_pathlist(cp, result, &first)) != 0) {
+	while ((cp = parse_pathlist(cp, result, &first)) != NULL) {
 	    TRACE(("parsed %s\n", cp));
 	    prepend_include(pathcat(temp, result, "perl"));
 	}
@@ -1209,7 +1209,7 @@ void perl_exit()
 	perl_run(perl_interp);		/* process END blocks */
 	perl_destruct(perl_interp);	/* global destructors */
 	perl_free(perl_interp);
-	perl_interp = 0;
+	perl_interp = NULL;
 #ifdef USE_SYS_INIT3
 	PERL_SYS_TERM();
 #endif
@@ -1251,7 +1251,7 @@ xs_init(pTHX)
  */
 
 static const char *CRfmtstr = "perl \"&{$Vile::CRs[%d]}\"";
-static AV *CRarray   = 0;
+static AV *CRarray   = NULL;
 static int freeCRidx = 0;
 
 static char *
@@ -1260,7 +1260,7 @@ stringify_coderef(SV *coderef) {
     int idx = 0;
     int cantstore = 0;
 
-    if (CRarray == 0) {
+    if (CRarray == NULL) {
 	/* Short name to keep the size of strings short on the vile side */
 	CRarray = perl_get_av("Vile::CRs", TRUE);
 	freeCRidx = -1;
@@ -1270,14 +1270,14 @@ stringify_coderef(SV *coderef) {
 	SV **svp;
 	idx = freeCRidx;
 	svp = av_fetch(CRarray, (I32) idx, 0);
-	if (svp == 0) {
+	if (svp == NULL) {
 	    /* Something's screwy... */
 	    freeCRidx = -1;
 	}
 	else {
 	    freeCRidx = (int) SvIV(*svp);
 	}
-	if (av_store(CRarray, (I32) idx, SvREFCNT_inc(coderef)) == 0) {
+	if (av_store(CRarray, (I32) idx, SvREFCNT_inc(coderef)) == NULL) {
 	    cantstore = 1;
 	    SvREFCNT_dec(coderef);
 	}
@@ -1299,7 +1299,7 @@ stringify_coderef(SV *coderef) {
 #if HAVE_BROKEN_PERL_ANON_SUB_DEALLOC
 static unsigned CRs_tofree_maxsize = 0;
 static unsigned CRs_tofree_idx = 0;
-static SV **CRs_tofree = 0;
+static SV **CRs_tofree = NULL;
 #endif /* HAVE_BROKEN_PERL_ANON_SUB_DEALLOC */
 
 void
@@ -1321,7 +1321,7 @@ perl_free_callback(char *callback)
 	SV **svp;
 	SV *svfreeCRidx;
 	svp = av_fetch(CRarray, (I32) idx, 0);
-	if (svp == 0)
+	if (svp == NULL)
 	    return 0;	/* Something screwy, bail... */
 
 	if (!SvROK(*svp) || SvTYPE(SvRV(*svp)) != SVt_PVCV)
@@ -1365,7 +1365,7 @@ perl_free_callback(char *callback)
 #endif /* HAVE_BROKEN_PERL_ANON_SUB_DEALLOC */
 
 	svfreeCRidx = newSViv((IV)freeCRidx);
-	if (av_store(CRarray, (I32) idx, svfreeCRidx) == 0) {
+	if (av_store(CRarray, (I32) idx, svfreeCRidx) == NULL) {
 	    /* Not successful (!) */
 	    SvREFCNT_dec(svfreeCRidx);
 	}
@@ -1784,8 +1784,8 @@ FindMode(char *mode, int isglobal, VALARGS *args)
     int status = FALSE;
     int literal = (toktyp(mode) == TOK_LITSTR);
     const char *value;
-    char *result = 0;
-    TBUFF *temp = 0;
+    char *result = NULL;
+    TBUFF *temp = NULL;
     char new_mode[NLINE];
 
     if (literal)
@@ -1806,7 +1806,7 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 		char *save_str = execstr;
 		int save_flag = clexec;
 
-		if ((temp = tb_scopy(&temp, mode)) != 0
+		if ((temp = tb_scopy(&temp, mode)) != NULL
 		    && tb_length(temp) != 0) {
 
 		    execstr = skip_text(tb_values(temp));
@@ -1831,8 +1831,8 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 
     if (isErrorVal(value)) {
 	result = error_val;
-    } else if (value != 0) {
-	if ((result = strmalloc(value)) == 0)
+    } else if (value != NULL) {
+	if ((result = strmalloc(value)) == NULL)
 	    value = "";
     } else {
 	value = "";
@@ -2329,7 +2329,7 @@ selection_buffer(...)
 	    bp = get_selection_buffer_and_region(&aregion);
 	    if (bp != NULL) {
 		VileBuf *vbp = api_bp2vbp(bp);
-		if (vbp != 0) {
+		if (vbp != NULL) {
 		    vbp->region = aregion.ar_region;
 		    vbp->regionshape =  aregion.ar_shape;
 		    XPUSHs(sv_2mortal(newVBrv(newSV((size_t) 0), vbp)));
@@ -2345,7 +2345,7 @@ selection_buffer(...)
 	    /* Need a buffer object */
 	    vbp = getVB(ST(argno), &croakmess);
 
-	    if (vbp == 0)
+	    if (vbp == NULL)
 		croak("Vile::%s: %s",
 		      ix == 1 ? "Buffer::set_selection" : "selection_buffer",
 		      croakmess);
@@ -2442,7 +2442,7 @@ set(...)
 	    vbp = getVB(ST(argno), &croakmess);
 	    argno++;
 
-	    if (vbp == 0)
+	    if (vbp == NULL)
 		croak("Vile::Buffer::set: %s", croakmess);
 
 	    isglobal = 0;
@@ -2507,7 +2507,7 @@ set(...)
 		    }
 		}
 	    } else {
-		const char *val = 0;
+		const char *val = NULL;
 
 		if (modenames)
 		    modenames[nmodenames++] = mode;
@@ -2684,7 +2684,7 @@ register(name, ...)
 	    if (!isAlnum(*p) && *p != '-' && *p != '_')
 		croak("invalid subroutine name");
 
-	if ((cmd = typecalloc(CMDFUNC)) == 0)
+	if ((cmd = typecalloc(CMDFUNC)) == NULL)
 	    croak("Can't allocate space");
 
 	ix |= (I32) ((ix == OPER) ? RANGE : VIEWOK);
@@ -2957,7 +2957,7 @@ READLINE(vbp)
 
 	    if (RsSNARF(svrs)) {
 		fnc = svgetregion;
-		rsstr = 0;
+		rsstr = NULL;
 		rslen = 0;
 	    }
 	    else {
@@ -3048,7 +3048,7 @@ attribute(vbp, ...)
 	    char *atname;
 	    VIDEO_ATTR vattr = 0;
 	    int normal = 0;
-	    char *hypercmd = 0;
+	    char *hypercmd = NULL;
 	    int status;
 
 	    for (i = 1; i < items; i++) {
@@ -3318,8 +3318,8 @@ current_buffer(...)
 	Vile::current_buffer = 1
 
     PREINIT:
-	VileBuf *callbuf = 0;
-	VileBuf *newbuf = 0;
+	VileBuf *callbuf = NULL;
+	VileBuf *newbuf = NULL;
 
     PPCODE:
 	TRACE(("Vile::current_buffer\n"));
@@ -3328,16 +3328,16 @@ current_buffer(...)
 	else if (items == 2) {
 	    if (sv_isa(ST(0), "Vile::Buffer")) {
 		callbuf = INT2PTR(VileBuf *, SvIV((SV*)GvSV((GV*)SvRV(ST(0)))));
-		if (callbuf == 0) {
+		if (callbuf == NULL) {
 		    croak("buffer no longer exists");
 		}
 	    }
 	    else
-		callbuf = 0;
+		callbuf = NULL;
 
 	    if (sv_isa(ST(1), "Vile::Buffer")) {
 		newbuf = INT2PTR(VileBuf *, SvIV((SV*)GvSV((GV*)SvRV(ST(1)))));
-		if (newbuf == 0) {
+		if (newbuf == NULL) {
 		    croak("switched to buffer no longer exists");
 		}
 	    }
@@ -3369,7 +3369,7 @@ delete(vbp)
 	if (api_delregion(vbp))
 	    RETVAL = vbp;
 	else
-	    RETVAL = 0;		/* which gets turned into undef */
+	    RETVAL = NULL;	/* which gets turned into undef */
     OUTPUT:
 	RETVAL
 
@@ -3530,7 +3530,7 @@ fetch(vbp)
 
 	old_DOT = DOT;
 
-	svgetregion(&sv, vbp, 0, (STRLEN) 0);
+	svgetregion(&sv, vbp, NULL, (STRLEN) 0);
 
 	XPUSHs(sv_2mortal(sv));
 
@@ -4114,7 +4114,7 @@ buffer(vw, ...)
 	    VileBuf *vbp;
 	    WINDOW *savewp = curwp;
 	    vbp = getVB(ST(1), &croakmess);
-	    if (vbp == 0)
+	    if (vbp == NULL)
 		croak("Vile::Window::buffer: %s", croakmess);
 	    set_curwp(vw);
 	    swbuffer_lfl(vbp2bp(vbp), FALSE, TRUE);
@@ -4177,7 +4177,7 @@ current_window(...)
 	    /* Need a window object */
 	    vw = getVW(ST(argno), &croakmess);
 
-	    if (vw == 0)
+	    if (vw == NULL)
 		croak("Vile::%scurrent_window: %s",
 		      ix == 1 ? "Window::" : "",
 		      croakmess);
@@ -4359,7 +4359,7 @@ new(...)
 		croak("Vile::Window::new: %s",croakmess);
 	}
 	else
-	    vbp = 0;
+	    vbp = NULL;
 
 	if (items > 2)
 	    croak("Vile::Window::new: Too many arguments.");
@@ -4371,7 +4371,7 @@ new(...)
 	else if (sv_isa(ST(0), "Vile::Window")) {
 	    const char *croakmess;
 	    vw = getVW(ST(0), &croakmess);	/* Fetch window object */
-	    if (vw == 0)
+	    if (vw == NULL)
 		croak("Vile::Window::new: %s", croakmess);
 
 	    if (vw->w_ntrows < MINWLNS)

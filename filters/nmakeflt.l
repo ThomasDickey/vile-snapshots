@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: nmakeflt.l,v 1.14 2024/01/21 15:02:39 tom Exp $
+ * $Id: nmakeflt.l,v 1.15 2025/01/26 11:08:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of nmake files.
  *
@@ -65,7 +65,7 @@ OPER		[+:?]?=
 
 <NORMAL>^{SPACE}*{NAME}{SPACE}*{OPER}	{
 				  int oper = 1;
-				  if (strchr("+:?", yytext[yyleng - 2]) != 0)
+				  if (strchr("+:?", yytext[yyleng - 2]) != NULL)
 				      ++oper;
 				  write_delimited(yytext, yyleng, oper, Ident2_attr);
 				}
@@ -223,12 +223,12 @@ write_keyword(char *text, int size, int prepro)
      * Some symbols cannot be preceded by tabs - we put those in the "premake"
      * table.
      */
-    if ((attr == 0) && !continued && prepro) {
+    if ((attr == NULL) && !continued && prepro) {
 	set_symbol_table("premake");
 	attr = keyword_attr(text);
 	set_symbol_table(flt_name());
-	notabs = (attr != 0);
-	if (attr == 0)
+	notabs = (attr != NULL);
+	if (attr == NULL)
 	    nospcs = want_tabs(base, before);
     } else {
 	nospcs = want_tabs(base, before);

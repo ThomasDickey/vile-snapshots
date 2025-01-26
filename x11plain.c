@@ -3,7 +3,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11plain.c,v 1.18 2021/11/28 21:09:41 tom Exp $
+ * $Id: x11plain.c,v 1.19 2025/01/26 16:39:58 tom Exp $
  */
 
 #include <x11vile.h>
@@ -330,7 +330,7 @@ xvileQueryFont(Display *dpy, TextWindow tw, const char *fname)
     XVileFont *pf;
 
     TRACE(("x11:query_font(%s)\n", fname));
-    if ((pf = XLoadQueryFont(dpy, fname)) != 0) {
+    if ((pf = XLoadQueryFont(dpy, fname)) != NULL) {
 	char *fullname = NULL;
 
 	if (pf->max_bounds.width != pf->min_bounds.width) {

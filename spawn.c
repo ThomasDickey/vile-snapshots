@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Id: spawn.c,v 1.218 2018/10/25 22:50:17 tom Exp $
+ * $Id: spawn.c,v 1.221 2025/01/26 16:31:43 tom Exp $
  */
 
 #ifdef _WIN32
@@ -79,13 +79,13 @@ VMSVT_DATA short iochan;
 static void
 x_window_SHELL(const char *cmd)
 {
-    TBUFF *tmp = 0;
+    TBUFF *tmp = NULL;
 
 #ifdef HAVE_WAITPID
     int pid;
 
     if ((pid = fork()) > 0) {
-	waitpid(pid, 0, 0);
+	waitpid(pid, NULL, 0);
     } else if (pid == 0) {
 	if (fork() == 0) {
 #endif
@@ -97,16 +97,16 @@ x_window_SHELL(const char *cmd)
 #ifdef HAVE_PUTENV
 	    static char *display_env;
 	    char *env = get_xdisplay();
-	    if (display_env != 0)
+	    if (display_env != NULL)
 		free(display_env);
-	    if ((display_env = typeallocn(char, 20 + strlen(env))) != 0) {
+	    if ((display_env = typeallocn(char, 20 + strlen(env))) != NULL) {
 		lsprintf(display_env, "DISPLAY=%s", env);
 		putenv(display_env);
 	    }
 #endif
 
 	    tmp = tb_scopy(&tmp, get_xshell());
-	    if (cmd != 0) {
+	    if (cmd != NULL) {
 		tb_unput(tmp);
 		tmp = tb_sappend(&tmp, " ");
 		tmp = tb_sappend(&tmp, get_xshellflags());
@@ -114,7 +114,7 @@ x_window_SHELL(const char *cmd)
 		tmp = tb_sappend(&tmp, cmd);
 		tmp = tb_append(&tmp, EOS);
 	    }
-	    if (tmp != 0) {
+	    if (tmp != NULL) {
 		char *result = tb_values(tmp);
 		TRACE(("executing '%s'\n", result));
 		IGNORE_RC(system(result));
@@ -144,7 +144,7 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 #if	SYS_UNIX
 #define	OK_SPAWN
     term.clean(TRUE);
-    (void) file_stat(0, 0);
+    (void) file_stat(NULL, NULL);
     term.openup();
 #if	DISP_X11 && !SMALLER
     (void) x_window_SHELL((char *) 0);
@@ -230,7 +230,7 @@ bktoshell(int f, int n)		/* suspend and wait to wake up */
 
     beginDisplay();
     term.clean(TRUE);
-    (void) file_stat(0, 0);
+    (void) file_stat(NULL, NULL);
 
 /* #define simulate_job_control_for_debug */
 # ifdef simulate_job_control_for_debug
@@ -404,7 +404,7 @@ spawn1(int rerun, int pressret)
 #endif
 #else
     term.clean(TRUE);
-    (void) file_stat(0, 0);
+    (void) file_stat(NULL, NULL);
 
     (void) system_SHELL(line);
 
@@ -774,7 +774,7 @@ filterregion(void)
 #endif
 	    }
 #if ! ((SYS_OS2 && CC_CSETPP) || SYS_WINNT)
-	    if (fw != 0)
+	    if (fw != NULL)
 		(void) fclose(fw);
 #endif
 	    DOT.l = lback(DOT.l);
@@ -1019,7 +1019,7 @@ set_envvar(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	    if (len_var != 0
 		&& len_val != 0
-		&& (both = typeallocn(char, len_var + len_val + 1)) != 0) {
+		&& (both = typeallocn(char, len_var + len_val + 1)) != NULL) {
 		lsprintf(both, "%s=%s", tb_values(var), tb_values(val));
 		rc = (putenv(both) == 0);	/* this will leak.  i think it has to. */
 	    } else {
@@ -1279,19 +1279,19 @@ add_token_to_cmd(char **cmd,
     char *tmp;
     size_t toklen = strlen(token);
 
-    if ((tmp = *cmd) != 0) {
+    if ((tmp = *cmd) != NULL) {
 	if (*cmdidx + toklen + 2 > *cmdlen) {
 	    *cmdlen *= 2;
 	    tmp = castrealloc(char, tmp, *cmdlen);
 	    if (tmp == NULL) {
 		(void) free(*cmd);
-		*cmd = 0;
+		*cmd = NULL;
 	    } else {
 		*cmd = tmp;
 	    }
 	}
     }
-    if (*cmd != 0) {
+    if (*cmd != NULL) {
 	strcpy(*cmd + *cmdidx, token);
 	*cmdidx += toklen;
 	(*cmd)[*cmdidx] = ' ';
@@ -1413,7 +1413,7 @@ ck_find_cmd(char *cmd, int *allocd_storage, int prepend_bang)
  *
  *   pinfo        - contains info about the user's various "find" parameters.
  *
- *   prepend_bang - Boolean, T -> prepend '!' to beginning of shell cmd 
+ *   prepend_bang - Boolean, T -> prepend '!' to beginning of shell cmd
  *                  synthesized by this routine.
  *
  * DESCRIPTION
@@ -1424,7 +1424,7 @@ ck_find_cmd(char *cmd, int *allocd_storage, int prepend_bang)
  *     [!]find <$findpath_dir_list> -type d -print | \
  *          egrep -v <RE that elides CVS & RCS dirs> | xargs cmdstr
  *
- *   - if executing on a host that supports case insensitive file names, 
+ *   - if executing on a host that supports case insensitive file names,
  *     modify the above shell command to include option modifiers that as
  *     required.
  *
@@ -1488,7 +1488,7 @@ find_dirs_only(char *cmd, FINDINFO * pinfo, int prepend_bang)
     qdelim = determine_quoted_delimiter();
 
     /*
-     * filter out RCS/CVS directories and tags files.  we make the 
+     * filter out RCS/CVS directories and tags files.  we make the
      * assumption that the user's "find" creates filenames with
      * '/' as a path delimiter.
      *
@@ -1507,7 +1507,7 @@ find_dirs_only(char *cmd, FINDINFO * pinfo, int prepend_bang)
 	rslt = NULL;
     } else if (!add_token_to_cmd(&rslt, &outidx, &outlen, cmd, fnname)) {
 	rslt = NULL;
-    } else if (rslt != 0) {
+    } else if (rslt != NULL) {
 	rslt[outidx] = EOS;	/* terminate cmd string */
 	if (outidx != 0) {
 	    char *cp;
@@ -1537,7 +1537,7 @@ find_dirs_only(char *cmd, FINDINFO * pinfo, int prepend_bang)
  *
  *   pinfo        - contains info about the user's various "find" parameters.
  *
- *   prepend_bang - Boolean, T -> prepend '!' to beginning of shell cmd 
+ *   prepend_bang - Boolean, T -> prepend '!' to beginning of shell cmd
  *                  synthesized by this routine.
  *
  * DESCRIPTION
@@ -1556,10 +1556,10 @@ find_dirs_only(char *cmd, FINDINFO * pinfo, int prepend_bang)
  *          egrep -v <RE that elides CVS & RCS dirs and tags files> | \
  *          xargs cmdstr
  *
- *   - if executing on a host that supports case insensitive file names, 
+ *   - if executing on a host that supports case insensitive file names,
  *     modify the above shell command to include option modifiers that as
  *     required.  Note that the find options used in this case (i.e., -iname)
- *     may only be supported by the GNU version of find. 
+ *     may only be supported by the GNU version of find.
  *
  *   - if a nonrecursive find is requested, add an appropriate option
  *     (i.e., -maxdepth 1) to the find cmdline (again, this syntax used may
@@ -1582,8 +1582,8 @@ find_all_files(char *cmd, FINDINFO * pinfo, int prepend_bang)
     if ((xargstr = extract_wildcards(cmd, &vec, &vecidx, fnname)) == NULL)
 	return (NULL);
     if (vecidx == 0) {
-	/* No wild cards were found on the command line.  No sense 
-	 * continuing.  Why?  With no wild cards, the find command 
+	/* No wild cards were found on the command line.  No sense
+	 * continuing.  Why?  With no wild cards, the find command
 	 * will search for all files by default, this may or may not
 	 * be what the user wants.  It's certainly not what the user
 	 * wants if s/he types this by mistake:
@@ -1676,7 +1676,7 @@ find_all_files(char *cmd, FINDINFO * pinfo, int prepend_bang)
 	return (NULL);
 
     /*
-     * filter out RCS/CVS directories and tags files.  we make the 
+     * filter out RCS/CVS directories and tags files.  we make the
      * assumption that the user's "find" creates filenames with
      * '/' as a path delimiter.
      *
@@ -1696,7 +1696,7 @@ find_all_files(char *cmd, FINDINFO * pinfo, int prepend_bang)
 	rslt = NULL;
     } else if (!add_token_to_cmd(&rslt, &outidx, &outlen, xargstr, fnname)) {
 	rslt = NULL;
-    } else if (rslt != 0) {
+    } else if (rslt != NULL) {
 	rslt[outidx] = EOS;	/* terminate cmd string */
 	if (outidx != 0) {
 	    char *cp;

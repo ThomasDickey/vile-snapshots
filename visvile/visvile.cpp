@@ -101,7 +101,7 @@ STDAPI DllRegisterServer(void)
 {
     AFX_MANAGE_STATE(AfxGetStaticModuleState());
     HRESULT hRes = S_OK;
-    
+
     // Registers object, typelib and all interfaces in typelib
     hRes = _Module.RegisterServer(TRUE);
     if (FAILED(hRes))

@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Id: filters.c,v 1.165 2018/11/13 01:37:52 tom Exp $
+ * $Id: filters.c,v 1.168 2025/01/26 17:07:24 tom Exp $
  *
  */
 
@@ -85,7 +85,7 @@ static CLASS *current_class;
 /*
  * flt_bfr_*() function data
  */
-static char *flt_bfr_text = 0;
+static char *flt_bfr_text = NULL;
 static const char *flt_bfr_attr = "";
 static size_t flt_bfr_used = 0;
 static size_t flt_bfr_size = 0;
@@ -93,8 +93,8 @@ static size_t flt_bfr_size = 0;
 /*
  * OpenKeywords() function data
  */
-static char *str_keyword_name = 0;
-static char *str_keyword_file = 0;
+static char *str_keyword_name = NULL;
+static char *str_keyword_file = NULL;
 static size_t len_keyword_name = 0;
 static size_t len_keyword_file = 0;
 
@@ -105,7 +105,7 @@ static size_t len_keyword_file = 0;
 #define KW_FLAG(p) ((p) ? ((p)->kw_type ? "class" : "keyword") : "?")
 
 #define COPYIT(name) save->name = name
-#define SAVEIT(name) if (name) save->name = strmalloc(name); else save->name = 0
+#define SAVEIT(name) if (name) save->name = strmalloc(name); else save->name = NULL
 
 static void
 flt_save_chars(FLTCHARS * save)
@@ -160,7 +160,7 @@ init_data(KEYWORD * data,
     data->kw_name = strmalloc(name);
     data->kw_size = strlen(data->kw_name);
     data->kw_attr = strmalloc(attribute);
-    data->kw_flag = (flag != 0) ? strmalloc(flag) : 0;
+    data->kw_flag = (flag != NULL) ? strmalloc(flag) : NULL;
     data->kw_type = (unsigned short) classflag;
     data->kw_used = 2;
 }
@@ -168,7 +168,7 @@ init_data(KEYWORD * data,
 static void
 free_data(KEYWORD * data)
 {
-    if (data != 0) {
+    if (data != NULL) {
 	if (data->kw_name)
 	    free(data->kw_name);
 	if (data->kw_attr)
@@ -199,13 +199,13 @@ static void
 flt_tdestroy(void *root, void (*pFreeNode) (void *nodep))
 {
     CLASS *p;
-    if (root != 0) {
-	for (p = classes; p != 0; p = p->next) {
+    if (root != NULL) {
+	for (p = classes; p != NULL; p = p->next) {
 	    if (p->data == root) {
-		while (p->keywords != 0) {
+		while (p->keywords != NULL) {
 		    KEYWORD *q = p->keywords;
 		    p->keywords = q->kw_next;
-		    if (tdelete(q, &(p->data), compare_data) != 0)
+		    if (tdelete(q, &(p->data), compare_data) != NULL)
 			pFreeNode(q);
 		}
 		break;
@@ -262,9 +262,9 @@ ExecDefault(const char *param)
     if (!*temp) {
 	free(temp);
 	temp = strmalloc(NAME_KEYWORD);
-	isClass = (is_class(temp) != 0);
+	isClass = (is_class(temp) != NULL);
     } else {
-	isClass = (is_class(temp) != 0);
+	isClass = (is_class(temp) != NULL);
 	*s = (char) save;
     }
 
@@ -343,15 +343,15 @@ ExecTable(const char *param)
 static KEYWORD *
 FindIdentifier(const char *name)
 {
-    KEYWORD *result = 0;
+    KEYWORD *result = NULL;
 
 #if USE_TSEARCH
-    if (name != 0 && strlen(name) != 0) {
+    if (name != NULL && strlen(name) != 0) {
 	KEYWORD find;
 	void *pp;
 
 	find.kw_name = (char *) name;
-	if ((pp = tfind(&find, &(current_class->data), compare_data)) != 0) {
+	if ((pp = tfind(&find, &(current_class->data), compare_data)) != NULL) {
 	    result = *(KEYWORD **) pp;
 	}
     }
@@ -376,7 +376,7 @@ FindIdentifier(const char *name)
 static void
 Free(char *ptr)
 {
-    if (ptr != 0)
+    if (ptr != NULL)
 	free(ptr);
 }
 
@@ -393,7 +393,7 @@ Free(char *ptr)
 static FILE *
 OpenKeywords(const char *table_name)
 {
-#define OPEN_IT(p) if ((fp = fopen(p, "r")) != 0) { \
+#define OPEN_IT(p) if ((fp = fopen(p, "r")) != NULL) { \
 			VERBOSE(1,("Opened %s", p)); return fp; } else { \
 			VERBOSE(2,("..skip %s", p)); }
 #define FIND_IT(p) sprintf p; OPEN_IT(str_keyword_name)
@@ -407,17 +407,17 @@ OpenKeywords(const char *table_name)
 
     need = sizeof(suffix) + strlen(table_name) + 2;
     str_keyword_file = do_alloc(str_keyword_file, need, &len_keyword_file);
-    if (str_keyword_file == 0) {
+    if (str_keyword_file == NULL) {
 	CannotAllocate("OpenKeywords");
-	return 0;
+	return NULL;
     }
     sprintf(str_keyword_file, "%s%s", table_name, suffix);
 
-    if (strchr(str_keyword_file, PATHSEP) != 0) {
+    if (strchr(str_keyword_file, PATHSEP) != NULL) {
 	OPEN_IT(str_keyword_file);
     }
 
-    if ((path = home_dir()) == 0)
+    if ((path = home_dir()) == NULL)
 	path = "";
 
     need = strlen(path)
@@ -425,9 +425,9 @@ OpenKeywords(const char *table_name)
 	+ 20;
 
     str_keyword_name = do_alloc(str_keyword_name, need, &len_keyword_name);
-    if (str_keyword_name == 0) {
+    if (str_keyword_name == NULL) {
 	CannotAllocate("OpenKeywords");
-	return 0;
+	return NULL;
     }
 
     FIND_IT((str_keyword_name, "%s%c%s%s", PATHDOT, PATHSEP, DOT_TO_HIDE_IT, str_keyword_file));
@@ -438,17 +438,17 @@ OpenKeywords(const char *table_name)
 
     path = vile_getenv("VILE_STARTUP_PATH");
 #ifdef VILE_STARTUP_PATH
-    if (path == 0)
+    if (path == NULL)
 	path = VILE_STARTUP_PATH;
 #endif
-    if (path != 0) {
+    if (path != NULL) {
 	int n = 0, m;
 
 	need = strlen(path) + strlen(str_keyword_file) + 2;
 	str_keyword_name = do_alloc(str_keyword_name, need, &len_keyword_name);
-	if (str_keyword_name == 0) {
+	if (str_keyword_name == NULL) {
 	    CannotAllocate("OpenKeywords");
-	    return 0;
+	    return NULL;
 	}
 	while (path[n] != 0) {
 	    for (m = n; path[m] != 0 && path[m] != PATHCHR; m++)
@@ -461,7 +461,7 @@ OpenKeywords(const char *table_name)
 	}
     }
 
-    return 0;
+    return NULL;
 }
 
 static int
@@ -560,9 +560,9 @@ char *
 class_attr(const char *name)
 {
     KEYWORD *data;
-    char *result = 0;
+    char *result = NULL;
 
-    while ((data = is_class(name)) != 0) {
+    while ((data = is_class(name)) != NULL) {
 	VERBOSE(data->kw_used, ("class_attr(%s) = %s",
 				name, AttrsOnce(data)));
 	name = result = data->kw_attr;
@@ -575,9 +575,9 @@ void *
 flt_alloc(void *ptr, size_t need, size_t *have, size_t size)
 {
     need += (2 * size);		/* allow for trailing null, etc */
-    if ((need > *have) || (ptr == 0)) {
+    if ((need > *have) || (ptr == NULL)) {
 	need *= 2;
-	if (ptr != 0)
+	if (ptr != NULL)
 	    ptr = realloc(ptr, need);
 	else
 	    ptr = malloc(need);
@@ -594,7 +594,7 @@ void
 flt_bfr_append(const char *text, int length)
 {
     flt_bfr_text = do_alloc(flt_bfr_text, flt_bfr_used + (size_t) length, &flt_bfr_size);
-    if (flt_bfr_text != 0) {
+    if (flt_bfr_text != NULL) {
 	strncpy(flt_bfr_text + flt_bfr_used, text, (size_t) length);
 	flt_bfr_used += (unsigned) length;
     } else {
@@ -614,8 +614,8 @@ flt_bfr_embed(const char *text, int length, const char *attr)
 {
     const char *save = flt_bfr_attr;
 
-    if ((save == 0 && attr == 0) ||
-	(save != 0 && attr != 0 && !strcmp(save, attr))) {
+    if ((save == NULL && attr == NULL) ||
+	(save != NULL && attr != NULL && !strcmp(save, attr))) {
 	flt_bfr_append(text, length);
     } else {
 	flt_bfr_finish();
@@ -657,7 +657,7 @@ static CLASS *
 find_symtab(const char *table_name)
 {
     CLASS *p;
-    for (p = classes; p != 0; p = p->next) {
+    for (p = classes; p != NULL; p = p->next) {
 	if (!strcmp(p->name, table_name)) {
 	    break;
 	}
@@ -688,7 +688,7 @@ dump_update2(const char *name, int keep)
     int result;
 
     for (result = 32; result < 127; ++result) {
-	if (result != keep && ispunct(result) && vl_index(name, result) == 0) {
+	if (result != keep && ispunct(result) && vl_index(name, result) == NULL) {
 	    break;
 	}
     }
@@ -705,12 +705,12 @@ dump_update(const char *name)
 {
     int newc;
 
-    if (vl_index(name, dump_meta_ch) != 0) {
+    if (vl_index(name, dump_meta_ch) != NULL) {
 	newc = dump_update2(name, dump_eqls_ch);
 	flt_message("%cmeta %c\n", dump_meta_ch, newc);
 	dump_meta_ch = newc;
     }
-    if (vl_index(name, dump_eqls_ch) != 0) {
+    if (vl_index(name, dump_eqls_ch) != NULL) {
 	dump_eqls_ch = dump_update2(name, dump_meta_ch);
 	flt_message("%cequals %c\n", dump_meta_ch, dump_eqls_ch);
     }
@@ -789,12 +789,12 @@ flt_dump_symtab(const char *table_name)
 {
     CLASS *p;
 
-    if (table_name == 0) {
+    if (table_name == NULL) {
 	dump_init();
-	for (p = classes; p != 0; p = p->next) {
+	for (p = classes; p != NULL; p = p->next) {
 	    flt_dump_symtab(p->name);
 	}
-    } else if ((p = find_symtab(table_name)) != 0) {
+    } else if ((p = find_symtab(table_name)) != NULL) {
 	dump_update(p->name);
 	flt_message("%ctable %s\n", dump_meta_ch, p->name);
 	dump_symtab(p, dump_class);
@@ -821,7 +821,7 @@ flt_free_keywords(const char *table_name)
 #endif
 
     VERBOSE(1, ("flt_free_keywords(%s)", table_name));
-    for (p = classes, q = 0; p != 0; q = p, p = p->next) {
+    for (p = classes, q = NULL; p != NULL; q = p, p = p->next) {
 	if (!strcmp(table_name, p->name)) {
 #if USE_TSEARCH
 	    flt_tdestroy(p->data, free_node);
@@ -837,7 +837,7 @@ flt_free_keywords(const char *table_name)
 #endif
 
 	    free(p->name);
-	    if (q != 0)
+	    if (q != NULL)
 		q->next = p->next;
 	    else
 		classes = p->next;
@@ -845,21 +845,21 @@ flt_free_keywords(const char *table_name)
 	    break;
 	}
     }
-    my_table = (classes != 0) ? classes->data : 0;
+    my_table = (classes != NULL) ? classes->data : NULL;
     current_class = classes;
 }
 
 void
 flt_free_symtab(void)
 {
-    while (classes != 0)
+    while (classes != NULL)
 	flt_free_keywords(classes->name);
 }
 
 void
 flt_init_table(const char *table_name)
 {
-    if (default_table != 0)
+    if (default_table != NULL)
 	free(default_table);
     default_table = strmalloc(table_name);
 
@@ -869,7 +869,7 @@ flt_init_table(const char *table_name)
 void
 flt_init_attr(const char *attr_name)
 {
-    if (default_attr != 0)
+    if (default_attr != NULL)
 	free(default_attr);
     default_attr = strmalloc(attr_name);
 
@@ -902,13 +902,13 @@ flt_make_symtab(const char *table_name)
     if (!set_symbol_table(table_name)) {
 	CLASS *p;
 
-	if ((p = typecallocn(CLASS, (size_t) 1)) == 0) {
+	if ((p = typecallocn(CLASS, (size_t) 1)) == NULL) {
 	    CannotAllocate("flt_make_symtab");
 	    return;
 	}
 
 	p->name = strmalloc(table_name);
-	if (p->name == 0) {
+	if (p->name == NULL) {
 	    free(p);
 	    CannotAllocate("flt_make_symtab");
 	    return;
@@ -966,7 +966,7 @@ void
 flt_read_keywords(const char *table_name)
 {
     FILE *kwfile;
-    char *line = 0;
+    char *line = NULL;
     char *name;
     size_t line_len = 0;
     FLTCHARS fltchars;
@@ -978,7 +978,7 @@ flt_read_keywords(const char *table_name)
 
     if ((kwfile = OpenKeywords(table_name)) != NULL) {
 	int linenum = 0;
-	while (readline(kwfile, &line, &line_len) != 0) {
+	while (readline(kwfile, &line, &line_len) != NULL) {
 
 	    name = skip_blanks(line);
 	    if (TrimBlanks(name) == 0)
@@ -1000,7 +1000,7 @@ const char *
 get_symbol_table(void)
 {
 #if USE_TSEARCH
-    if (current_class != 0)
+    if (current_class != NULL)
 	return current_class->name;
 #else
     CLASS *p;
@@ -1030,28 +1030,28 @@ alloc_keyword(const char *ident, const char *attribute, int classflag, char *fla
 {
     KEYWORD *nxt;
 
-    if ((nxt = FindIdentifier(ident)) != 0) {
+    if ((nxt = FindIdentifier(ident)) != NULL) {
 	Free(nxt->kw_attr);
 	if ((nxt->kw_attr = strmalloc(attribute)) == NULL) {
 	    free(nxt);
-	    nxt = 0;
+	    nxt = NULL;
 	}
     } else {
 	nxt = NULL;
 	if ((nxt = typecallocn(KEYWORD, (size_t) 1)) != NULL) {
 	    init_data(nxt, ident, attribute, classflag, flag);
 
-	    if (nxt->kw_name != 0
-		&& nxt->kw_attr != 0) {
+	    if (nxt->kw_name != NULL
+		&& nxt->kw_attr != NULL) {
 #if USE_TSEARCH
 		void **pp;
 		pp = (void **) tsearch(nxt, &(current_class->data), compare_data);
-		if (pp != 0) {
+		if (pp != NULL) {
 		    nxt = *(KEYWORD **) pp;
 		} else {
-		    nxt = 0;
+		    nxt = NULL;
 		}
-		if (nxt != 0) {
+		if (nxt != NULL) {
 		    nxt->kw_next = current_class->keywords;
 		    current_class->keywords = nxt;
 		}
@@ -1062,7 +1062,7 @@ alloc_keyword(const char *ident, const char *attribute, int classflag, char *fla
 #endif
 	    } else {
 		free_data(nxt);
-		nxt = 0;
+		nxt = NULL;
 	    }
 	}
     }
@@ -1083,9 +1083,9 @@ insert_keyword2(const char *ident, const char *attribute, int classflag, char *f
 		NONNULL(flag)));
 
     if (zero_or_more
-	&& (mark = vl_index(ident, zero_or_more)) != 0
+	&& (mark = vl_index(ident, zero_or_more)) != NULL
 	&& (mark != ident)) {
-	if ((temp = strmalloc(ident)) != 0) {
+	if ((temp = strmalloc(ident)) != NULL) {
 
 	    mark = temp + (mark - ident);
 	    while (*mark == zero_or_more) {
@@ -1100,9 +1100,9 @@ insert_keyword2(const char *ident, const char *attribute, int classflag, char *f
 	    CannotAllocate("insert_keyword");
 	}
     } else if (zero_or_all
-	       && (mark = vl_index(ident, zero_or_all)) != 0
+	       && (mark = vl_index(ident, zero_or_all)) != NULL
 	       && (mark != ident)) {
-	if ((temp = strmalloc(ident)) != 0) {
+	if ((temp = strmalloc(ident)) != NULL) {
 
 	    mark = temp + (mark - ident);
 	    if (*mark == zero_or_all) {
@@ -1116,7 +1116,7 @@ insert_keyword2(const char *ident, const char *attribute, int classflag, char *f
 	} else {
 	    CannotAllocate("insert_keyword");
 	}
-    } else if ((nxt = alloc_keyword(ident, attribute, classflag, flag)) == 0) {
+    } else if ((nxt = alloc_keyword(ident, attribute, classflag, flag)) == NULL) {
 	CannotAllocate("insert_keyword");
     } else {
 	VERBOSE(3, ("...\tname \"%s\"\tattr \"%s\"",
@@ -1128,16 +1128,16 @@ insert_keyword2(const char *ident, const char *attribute, int classflag, char *f
 void
 insert_keyword(const char *ident, const char *attribute, int classflag)
 {
-    insert_keyword2(ident, attribute, classflag, 0);
+    insert_keyword2(ident, attribute, classflag, NULL);
 }
 
 KEYWORD *
 is_class(const char *name)
 {
     KEYWORD *result = FindIdentifier(name);
-    if (result != 0) {
+    if (result != NULL) {
 	if (result->kw_type == 0) {
-	    result = 0;
+	    result = NULL;
 	}
     }
     return result;
@@ -1147,23 +1147,24 @@ KEYWORD *
 is_keyword(const char *name)
 {
     KEYWORD *result;
-    if ((result = FindIdentifier(name)) != 0
+    if ((result = FindIdentifier(name)) != NULL
 	&& result->kw_type == 0) {
 	return result;
     }
-    return 0;
+    return NULL;
 }
 
 const char *
 keyword_attr(const char *name)
 {
     KEYWORD *data = keyword_data(name);
-    const char *result = 0;
+    const char *result = NULL;
 
-    if (data != 0) {
+    if (data != NULL) {
 	result = data->kw_attr;
     }
-    VERBOSE(1, ("keyword_attr(%s) = %p %s", name, (const void *) result, NONNULL(result)));
+    VERBOSE(1, ("keyword_attr(%s) = %p %s", name, (const void *) result,
+		NONNULL(result)));
     return result;
 }
 
@@ -1171,12 +1172,12 @@ KEYWORD *
 keyword_data(const char *name)
 {
     KEYWORD *data = is_keyword(name);
-    KEYWORD *result = 0;
+    KEYWORD *result = NULL;
 
-    if (data != 0) {
+    if (data != NULL) {
 	result = data;
 	name = data->kw_attr;
-	while ((data = is_class(name)) != 0) {
+	while ((data = is_class(name)) != NULL) {
 	    result = data;
 	    name = data->kw_attr;
 	}
@@ -1188,12 +1189,13 @@ const char *
 keyword_flag(const char *name)
 {
     KEYWORD *data = is_keyword(name);
-    const char *result = 0;
+    const char *result = NULL;
 
-    if (data != 0) {
+    if (data != NULL) {
 	result = data->kw_flag;
     }
-    VERBOSE(1, ("keyword_flag(%s) = %p %s", name, (const void *) result, NONNULL(result)));
+    VERBOSE(1, ("keyword_flag(%s) = %p %s", name, (const void *) result,
+		NONNULL(result)));
     return result;
 }
 
@@ -1206,12 +1208,12 @@ lowercase_of(const char *text)
     const char *result;
 
 #if NO_LEAKS
-    if (text == 0) {
+    if (text == NULL) {
 	flt_free(&name, &used);
-	result = 0;
+	result = NULL;
     } else
 #endif
-    if ((name = do_alloc(name, strlen(text), &used)) != 0) {
+    if ((name = do_alloc(name, strlen(text), &used)) != NULL) {
 	for (n = 0; text[n] != 0; n++) {
 	    if (isalpha(CharOf(text[n])) && isupper(CharOf(text[n])))
 		name[n] = (char) tolower(CharOf(text[n]));
@@ -1230,13 +1232,13 @@ lowercase_of(const char *text)
 void
 parse_keyword(char *name, int classflag)
 {
-    char *args = 0;
-    char *flag = 0;
+    char *args = NULL;
+    char *flag = NULL;
     char *s, *t;
     int quoted = 0;
 
     VERBOSE(1, ("parse_keyword(%s, %d)", name, classflag));
-    if ((s = vl_index(name, eqls_ch)) != 0) {
+    if ((s = vl_index(name, eqls_ch)) != NULL) {
 	*s++ = 0;
 	s = skip_blanks(s);
 	if (*s != 0) {
@@ -1256,7 +1258,7 @@ parse_keyword(char *name, int classflag)
 			continue;
 		    } else if (!isalnum(CharOf(*s))) {
 			if (!*name) {
-			    args = 0;	/* comment: ignore */
+			    args = NULL;	/* comment: ignore */
 			} else if (*s == eqls_ch) {
 			    flag = s;
 			    *flag++ = '\0';
@@ -1268,7 +1270,7 @@ parse_keyword(char *name, int classflag)
 			} else {
 			    VERBOSE(1, ("unexpected:%s%c%s", name,
 					eqls_ch, s));
-			    args = 0;	/* error: ignore */
+			    args = NULL;	/* error: ignore */
 			}
 			break;
 		    }
@@ -1289,13 +1291,13 @@ parse_keyword(char *name, int classflag)
     if (*name && args) {
 	insert_keyword2(name, args, classflag, flag);
     } else if (*name) {
-	if (args == 0) {
+	if (args == NULL) {
 	    args = default_attr;
 	    VERBOSE(2, ("using attr \"%s\"", args));
 	}
-	if (args != 0
+	if (args != NULL
 	    && strcmp(name, args)
-	    && FindIdentifier(args) != 0) {
+	    && FindIdentifier(args) != NULL) {
 	    /*
 	     * Insert the classname rather than the data->kw_attr value,
 	     * since insert_keyword makes a copy of the string we pass to it.
@@ -1315,7 +1317,7 @@ readline(FILE *fp, char **ptr, size_t *len)
     char *buf = *ptr;
     size_t used = 0;
 
-    if (buf == 0) {
+    if (buf == NULL) {
 	*len = BUFSIZ;
 	buf = typeallocn(char, *len);
     }
@@ -1327,8 +1329,8 @@ readline(FILE *fp, char **ptr, size_t *len)
 	if (used + 2 >= *len) {
 	    *len = 3 * (*len) / 2;
 	    buf = typereallocn(char, buf, *len);
-	    if (buf == 0)
-		return 0;
+	    if (buf == NULL)
+		return NULL;
 	}
 	buf[used++] = (char) ch;
 	if (ch == '\n')
@@ -1336,14 +1338,14 @@ readline(FILE *fp, char **ptr, size_t *len)
     }
     buf[used] = '\0';
     *ptr = buf;
-    return used ? *ptr : 0;
+    return used ? *ptr : NULL;
 }
 
 int
 set_symbol_table(const char *table_name)
 {
     CLASS *p;
-    for (p = classes; p != 0; p = p->next) {
+    for (p = classes; p != NULL; p = p->next) {
 	if (!strcmp(table_name, p->name)) {
 	    my_table = p->data;
 	    current_class = p;
@@ -1382,7 +1384,7 @@ filters_leaks(void)
     flt_free(&str_keyword_file, &len_keyword_file);
 
     flt_free(&flt_bfr_text, &flt_bfr_size);
-    (void) lowercase_of(0);
+    (void) lowercase_of(NULL);
     FreeAndNull(default_table);
     FreeAndNull(default_attr);
 }

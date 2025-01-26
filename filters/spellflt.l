@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Id: spellflt.l,v 1.62 2022/08/21 15:42:52 tom Exp $
+ * $Id: spellflt.l,v 1.64 2025/01/26 15:00:33 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -119,7 +119,7 @@ pipe_close(FILE *s)
 static FILE *
 open_tempfile(char **fname)
 {
-    FILE *fp = 0;
+    FILE *fp = NULL;
 #ifdef HAVE_MKSTEMP
     const char fmt[] = "%s/vileXXXXXX";
     const char *tmpdir = getenv("TMPDIR");
@@ -127,7 +127,7 @@ open_tempfile(char **fname)
 
     if (tmpdir == NULL)
 	tmpdir = "/tmp";
-    if ((*fname = (char *) malloc(strlen(tmpdir) + sizeof(fmt))) != 0) {
+    if ((*fname = (char *) malloc(strlen(tmpdir) + sizeof(fmt))) != NULL) {
 	mode_t oldmask = umask(0077);
 	sprintf(*fname, fmt, tmpdir);
 	fd = mkstemp(*fname);
@@ -152,7 +152,7 @@ zap_tempfile(char **fname)
 {
     (void) remove(*fname);
     free(*fname);
-    *fname = 0;
+    *fname = NULL;
 }
 
 %}
@@ -166,7 +166,7 @@ WORD		{LETTER}({LETTER}|[[:digit:]])*
 
 {WORD}		{ ChopWords(ChopFP, yytext, yyleng); }
 [\n\r]		|
-.		{ if (ChopFP == 0) flt_putc(*yytext); }
+.		{ if (ChopFP == NULL) flt_putc(*yytext); }
 
 %%
 
@@ -181,7 +181,7 @@ ChopWords(FILE *fp, char *text, int len)
     /*
      * Write the whole "word", just in case the chopped flavor is not needed.
      */
-    if (fp != 0) {
+    if (fp != NULL) {
 	IGNORE_RC(fwrite(text, sizeof(*text), (size_t) len, fp));
 	fputc('\n', fp);
     } else {
@@ -234,7 +234,7 @@ ChopWords(FILE *fp, char *text, int len)
 	    }
 	}
 
-	if (fp != 0) {
+	if (fp != NULL) {
 	    if (text != base || next != len) {
 		IGNORE_RC(fwrite(text, sizeof(*text), (size_t) next, fp));
 		IGNORE_RC(fputc('\n', fp));
@@ -244,7 +244,7 @@ ChopWords(FILE *fp, char *text, int len)
 		save = text[next];
 		text[next] = '\0';
 		attr = get_keyword_attr(text);
-		if (attr != 0)
+		if (attr != NULL)
 		    flt_error("%s", text);
 		text[next] = save;
 	    } else {
@@ -274,7 +274,7 @@ do_filter(FILE *inputs GCC_UNUSED)
     char *from;
     int ch;
 #endif
-    char *chop = 0;
+    char *chop = NULL;
     FILE *fp;
     char buffer[BUFFER_SIZE + 2];
     const char *attr = class_attr(NAME_ERROR);
@@ -286,11 +286,10 @@ do_filter(FILE *inputs GCC_UNUSED)
     /*
      * Create a temporary file which will hold the words to check spelling.
      */
-    if ((ChopFP = open_tempfile(&chop)) == 0) {
+    if ((ChopFP = open_tempfile(&chop)) == NULL) {
 	free(chop);
 	return;
     }
-
 #ifdef filter_def		/* built-in filter? */
     ffp = ChopFP;
 #if OPT_ENCRYPT
@@ -319,23 +318,23 @@ do_filter(FILE *inputs GCC_UNUSED)
 #endif
 
     fclose(ChopFP);
-    ChopFP = 0;
+    ChopFP = NULL;
 
 #ifdef filter_def		/* built-in filter? */
     ffstatus = file_is_closed;
-    ffp = 0;
+    ffp = NULL;
 #endif
 
     /*
      * Run the spelling checker, reading the misspelled words from the pipe.
      * Record those in the keyword table.
      */
-    if ((prog = vile_getenv("VILE_SPELL_FILT")) == 0)
+    if ((prog = vile_getenv("VILE_SPELL_FILT")) == NULL)
 	prog = SPELL_PIPE;
     command = malloc(strlen(prog) + strlen(chop) + 4);
-    if (command != 0) {
+    if (command != NULL) {
 	sprintf(command, "%s <%s", prog, chop);
-	if ((fp = pipe_open(command)) != 0) {
+	if ((fp = pipe_open(command)) != NULL) {
 	    while (pipe_read(buffer, fp)) {
 		size_t len = strlen(buffer);
 		while (len-- && isspace(CharOf(buffer[len]))) {
@@ -347,14 +346,14 @@ do_filter(FILE *inputs GCC_UNUSED)
 		 * multiple entries.
 		 */
 		if (len != 0
-		    && vl_index(buffer, zero_or_more) == 0
-		    && vl_index(buffer, zero_or_all) == 0) {
+		    && vl_index(buffer, zero_or_more) == NULL
+		    && vl_index(buffer, zero_or_all) == NULL) {
 		    /*
 		     * If user did not override with an entry in
 		     * spell.keywords, add the latest as a misspelled word to
 		     * highlight.
 		     */
-		    if (get_keyword_attr(buffer) == 0) {
+		    if (get_keyword_attr(buffer) == NULL) {
 			insert_keyword(buffer, attr, 0);
 		    }
 		}

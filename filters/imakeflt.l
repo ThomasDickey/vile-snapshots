@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: imakeflt.l,v 1.27 2022/08/20 23:03:03 tom Exp $
+ * $Id: imakeflt.l,v 1.28 2025/01/26 11:05:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
@@ -112,7 +112,7 @@ preprocessor(char *text, int size)
 {
     char *s = skip_blanks(text);
     char *t;
-    const char *attr = 0;
+    const char *attr = NULL;
     int save;
 
     if (set_symbol_table("cpre")) {
@@ -124,7 +124,7 @@ preprocessor(char *text, int size)
 	*t = (char) save;
 	set_symbol_table(default_table);
     }
-    if (attr != 0) {
+    if (attr != NULL) {
 	flt_puts(text, size, Preproc_attr);
 	return 1;
     }
@@ -204,14 +204,14 @@ write_keyword(char *text, int size, int prepro, int caseless)
      * Some symbols cannot be preceded by tabs - we put those in the "premake"
      * table.
      */
-    if ((attr == 0) && !continued && prepro) {
+    if ((attr == NULL) && !continued && prepro) {
 	set_symbol_table("premake");
 	attr = (caseless
 		? ci_keyword_attr(text)
 		: keyword_attr(text));
 	set_symbol_table(flt_name());
-	notabs = (attr != 0);
-	if (attr == 0)
+	notabs = (attr != NULL);
+	if (attr == NULL)
 	    nospcs = want_tabs(base, before);
     } else {
 	nospcs = want_tabs(base, before);

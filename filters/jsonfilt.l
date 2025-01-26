@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: jsonfilt.l,v 1.13 2013/12/02 01:32:53 tom Exp $
+ * $Id: jsonfilt.l,v 1.14 2025/01/26 11:06:34 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of JSON input
  * text.  JSON officially has no comments; some applications use JSON-syntax
@@ -57,11 +57,11 @@ STRING		\"(\\.|[^"\\])*\"
 <COMMENT>.		{ flt_bfr_append(yytext, yyleng); }
 
 <INITIAL>"//"		{ PushQuote(INLINE, Comment_attr); }
-<INLINE>[\r\n]		{ PopQuote(); } 
-<INLINE>[^\r\n]		{ flt_bfr_append(yytext, yyleng); } 
+<INLINE>[\r\n]		{ PopQuote(); }
+<INLINE>[^\r\n]		{ flt_bfr_append(yytext, yyleng); }
 
 <INITIAL>{IDENT}	{ const char *attr = get_keyword_attr(yytext);
-			  if (attr == 0)
+			  if (attr == NULL)
 			      attr = Error_attr;
 			  WriteToken(attr);
 			}

@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Id: path.c,v 1.184 2020/01/17 23:31:02 tom Exp $
+ * $Id: path.c,v 1.186 2025/01/26 14:33:43 tom Exp $
  */
 
 #include "estruct.h"
@@ -260,7 +260,7 @@ char *
 unix_pathleaf(char *path)
 {
     char *s = last_slash(path);
-    if (s == 0) {
+    if (s == NULL) {
 #if OPT_MSDOS_PATH
 	if ((s = is_msdos_drive(path)) == 0)
 #endif
@@ -293,10 +293,10 @@ pathcat(char *dst, const char *path, const char *cleaf)
     char *s;
     size_t have;
 
-    if (dst == 0)
-	return 0;
+    if (dst == NULL)
+	return NULL;
 
-    if (cleaf == 0)
+    if (cleaf == NULL)
 	cleaf = "";
 
     leaf = vl_strncpy(save_leaf, cleaf, (size_t) NFILEN);	/* leaf may be in dst */
@@ -321,7 +321,7 @@ pathcat(char *dst, const char *path, const char *cleaf)
 #endif
 	if (is_abs_pathname(leaf)) {
 	    (void) strcpy(dst, leaf);
-	} else if (leaf != 0) {
+	} else if (leaf != NULL) {
 	    have = strlen(strcpy(dst, path));
 	    if (have + strlen(leaf) + 2 < NFILEN) {
 		s = dst + have - 1;
@@ -359,7 +359,7 @@ last_slash(char *fn)
 	for (s = skip_string(fn); s > fn; s--)
 	    if (is_slashc(s[-1]))
 		return s - 1;
-    return 0;
+    return NULL;
 }
 
 /*
@@ -435,13 +435,13 @@ find_user(const char *name)
 	/* if either of the above lookups worked
 	 * then save the result
 	 */
-	if (p != 0) {
+	if (p != NULL) {
 	    return save_user(name, p->pw_dir);
 	}
 #endif
 	if (*name == EOS) {
 	    char *env = home_dir();
-	    if (env != 0) {
+	    if (env != NULL) {
 		return save_user(name, env);
 	    }
 	}
@@ -1093,8 +1093,8 @@ canonpath(char *ss)
     char *s;
 
     TRACE((T_CALLED "canonpath '%s'\n", str_visible(ss)));
-    if ((s = is_appendname(ss)) != 0) {
-	returnString((canonpath(s) != 0) ? ss : 0);
+    if ((s = is_appendname(ss)) != NULL) {
+	returnString((canonpath(s) != NULL) ? ss : NULL);
     } else {
 
 	s = ss;
@@ -1150,16 +1150,16 @@ canonpath(char *ss)
 	    char temp3[NFILEN];
 	    char *real = realpath(s, temp);
 
-	    if (real != 0) {
+	    if (real != NULL) {
 		(void) strcpy(s, real);
 	    } else if ((leaf = pathleaf(vl_strncpy(temp, s,
-						   sizeof(temp)))) != 0) {
+						   sizeof(temp)))) != NULL) {
 		vl_strncpy(temp2, leaf, sizeof(temp2));
 		if (leaf == temp + 1)
 		    leaf[0] = EOS;
 		else
 		    leaf[-1] = EOS;
-		if (realpath(temp, temp3) != 0) {
+		if (realpath(temp, temp3) != NULL) {
 		    pathcat(s, temp3, temp2);
 		}
 	    }
@@ -1309,8 +1309,8 @@ shorten_path(char *path, int keep_cwd)
     if (isInternalName(path))
 	return path;
 
-    if ((f = is_appendname(path)) != 0)
-	return (shorten_path(f, keep_cwd) != 0) ? path : 0;
+    if ((f = is_appendname(path)) != NULL)
+	return (shorten_path(f, keep_cwd) != NULL) ? path : NULL;
 
     TRACE(("shorten '%s'\n", path));
 #if OPT_VMS_PATH
@@ -1412,7 +1412,7 @@ shorten_path(char *path, int keep_cwd)
 	if (slp != path) {
 	    /* if we mismatched in the last component of cwd, then the file
 	       is under '..' */
-	    if (last_slash(cwd) == 0) {
+	    if (last_slash(cwd) == NULL) {
 		(void) strcpy(path,
 			      vl_strncat(vl_strncpy(temp, "..", sizeof(temp)),
 					 slp,
@@ -1459,7 +1459,7 @@ lengthen_path(char *path)
     char my_rsa[NAM$C_MAXRSS + 1];	/* result: sys$search */
 #endif
     int len;
-    const char *cwd = 0;
+    const char *cwd = NULL;
     char *f;
     char temp[NFILEN];
 #if OPT_MSDOS_PATH
@@ -1467,10 +1467,10 @@ lengthen_path(char *path)
     char drive;
 #endif
 
-    if ((f = is_appendname(path)) != 0)
-	return (lengthen_path(f) != 0) ? path : 0;
+    if ((f = is_appendname(path)) != NULL)
+	return (lengthen_path(f) != NULL) ? path : NULL;
 
-    if ((f = path) == 0
+    if ((f = path) == NULL
 	|| isErrorVal(f))
 	return path;
 
@@ -1634,9 +1634,9 @@ is_abs_pathname(char *path)
     int result = FALSE;
     char *f;
 
-    if (path == 0)
+    if (path == NULL)
 	result = FALSE;
-    else if ((f = is_appendname(path)) != 0)
+    else if ((f = is_appendname(path)) != NULL)
 	result = is_pathname(f);
 
 #if OPT_VMS_PATH
@@ -1716,7 +1716,7 @@ maybe_pathname(char *fn)
     if (is_msdos_drive(fn))
 	return TRUE;
 #endif
-    if (last_slash(fn) != 0)
+    if (last_slash(fn) != NULL)
 	return TRUE;
 #if OPT_VMS_PATH
     while (*fn != EOS) {
@@ -1735,7 +1735,7 @@ maybe_pathname(char *fn)
 char *
 is_appendname(char *fn)
 {
-    if (fn != 0) {
+    if (fn != NULL) {
 	if (isAppendToName(fn)) {
 	    fn += 2;		/* skip the ">>" prefix */
 	    fn = skip_blanks(fn);
@@ -1743,7 +1743,7 @@ is_appendname(char *fn)
 		return fn;
 	}
     }
-    return 0;
+    return NULL;
 }
 
 /*
@@ -2118,7 +2118,7 @@ find_in_path_list(const char *path_list, char *path)
 
     vl_strncpy(find, SL_TO_BSL(path), sizeof(find));
     TRACE(("find_in_path_list\n\t%s\n\t%s\n", TRACE_NULL(path_list), find));
-    while ((path_list = parse_pathlist(path_list, temp, &first)) != 0) {
+    while ((path_list = parse_pathlist(path_list, temp, &first)) != NULL) {
 	if (!cs_strcmp(global_g_val(GMDFILENAME_IC), temp, find)) {
 	    found = TRUE;
 	    break;
@@ -2182,24 +2182,24 @@ append_to_path_list(char **path_list, const char *path)
     int first = TRUE;
 
     vl_strncpy(working, SL_TO_BSL(path), sizeof(working));
-    while ((in_work = parse_pathlist(in_work, find, &first)) != 0) {
+    while ((in_work = parse_pathlist(in_work, find, &first)) != NULL) {
 	if (!find_in_path_list(*path_list, find)
 #if SYS_UNIX
 	    && file_stat(find, &sb) == 0
 #endif
 	    ) {
 	    need = strlen(find) + 2;
-	    if ((t = *path_list) != 0) {
+	    if ((t = *path_list) != NULL) {
 		need += strlen(t);
 	    } else {
 		t = empty_string;
 	    }
-	    if ((s = typeallocn(char, need)) != 0) {
+	    if ((s = typeallocn(char, need)) != NULL) {
 		if (*t != EOS)
 		    lsprintf(s, "%s%c%s", t, vl_pathchr, find);
 		else
 		    strcpy(s, find);
-		if (*path_list != 0)
+		if (*path_list != NULL)
 		    free(*path_list);
 		*path_list = s;
 	    }
@@ -2224,7 +2224,7 @@ append_to_path_list(char **path_list, const char *path)
  *   trunc_buf_len - sizeof(trunc_buf).  Must be >= 5.
  *
  * DESCRIPTION
- *   Shorten a path from _the left_ to fit within the bounds of 
+ *   Shorten a path from _the left_ to fit within the bounds of
  *   both max_output_len and trunc_buf_len.  This function is useful when
  *   displaying path names in the message line.
  *
@@ -2272,17 +2272,17 @@ append_libdir_to_path(void)
     const char *cp;
     char buf[NFILEN];
 
-    if (libdir_path != 0
-	&& (tmp = getenv("PATH")) != 0
-	&& (env = strmalloc(tmp)) != 0) {
+    if (libdir_path != NULL
+	&& (tmp = getenv("PATH")) != NULL
+	&& (env = strmalloc(tmp)) != NULL) {
 	int first = TRUE;
 
 	cp = libdir_path;
-	while ((cp = parse_pathlist(cp, buf, &first)) != 0) {
+	while ((cp = parse_pathlist(cp, buf, &first)) != NULL) {
 	    append_to_path_list(&env, buf);
 	}
 	if (strcmp(tmp, env)) {
-	    if ((tmp = typeallocn(char, 6 + strlen(env))) != 0) {
+	    if ((tmp = typeallocn(char, 6 + strlen(env))) != NULL) {
 		lsprintf(tmp, "PATH=%s", env);
 		putenv(tmp);
 		TRACE(("putenv %s\n", tmp));

@@ -6,8 +6,8 @@
 
 #include "VisVileTypes.h"
 
-class CCommands : 
-	public CComDualImpl<ICommands, &IID_ICommands, &LIBID_VisVile>, 
+class CCommands :
+	public CComDualImpl<ICommands, &IID_ICommands, &LIBID_VisVile>,
 	public CComObjectRoot,
 	public CComCoClass<CCommands, &CLSID_Commands>
 {
@@ -56,8 +56,8 @@ protected:
 	};
 
 	// This object handles events fired by the Application object
-	class XApplicationEvents : public XEventHandler<IApplicationEvents, 
-		&IID_IApplicationEvents, &LIBID_VisVile, 
+	class XApplicationEvents : public XEventHandler<IApplicationEvents,
+		&IID_IApplicationEvents, &LIBID_VisVile,
 		XApplicationEvents, &CLSID_ApplicationEvents>
 	{
 	public:
@@ -79,8 +79,8 @@ protected:
 	XApplicationEventsObj* m_pApplicationEventsObj;
 
 	// This object handles events fired by the Application object
-	class XDebuggerEvents : public XEventHandler<IDebuggerEvents, 
-		&IID_IDebuggerEvents, &LIBID_VisVile, 
+	class XDebuggerEvents : public XEventHandler<IDebuggerEvents,
+		&IID_IDebuggerEvents, &LIBID_VisVile,
 		XDebuggerEvents, &CLSID_DebuggerEvents>
 	{
 	public:
