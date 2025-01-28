@@ -1,5 +1,6 @@
 PORTNAME=	vile
-PORTVERSION=	9.8w
+PORTVERSION=	9.8za
+PORTREVISION=	1
 CATEGORIES=	editors
 MASTER_SITES=	https://invisible-island.net/archives/vile/current/ \
 		https://invisible-mirror.net/archives/vile/current/
@@ -10,6 +11,7 @@ PATCHFILES=	# none
 
 MAINTAINER=	dickey@invisible-island.net
 COMMENT=	VI Like Emacs -- X11 version
+WWW=		https://invisible-island.net/vile/
 
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/COPYING
@@ -20,6 +22,7 @@ USES=		pkgconfig shebangfix tar:tgz xorg
 SHEBANG_FILES=	macros/lxvile macros/lxvile-fonts perl/vileget
 USE_XORG=	x11 xext xpm xt
 GNU_CONFIGURE=	yes
+GNU_CONFIGURE_MANPREFIX=${PREFIX}/share
 CONFIGURE_ENV=	cf_cv_crypt_works=yes
 CONFIGURE_ARGS=	--disable-imake \
 		--disable-desktop \

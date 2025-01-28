@@ -1,14 +1,15 @@
 This package was debianized by Brendan O'Dea <bod@debian.org> on
 Tue, 28 Sep 1999 14:27:29 +1000.
 
-It was downloaded from:
+It can be downloaded from:
 
-    <URL:ftp://dickey.his.com/vile/>
+    <URL:https://invisible-island.net/vile/>
+    <URL:https://invisible-mirror.net/vile/>
 
 Upstream Authors:
 
-    Tom Dickey <dickey@clark.net>, Kevin Buettner <kev@primenet.com>
-    and Paul Fox <pgf@foxharp.boston.ma.us>.
+    Thomas E. Dickey <dickey@clark.net>, Kevin Buettner <kev@primenet.com>
+    and Paul G. Fox <pgf@foxharp.boston.ma.us>.
 
 Copyright:
 
@@ -26,20 +27,19 @@ Copyright:
 
 Copyright notices appearing in the code:
 
-    Copyright (c) 1986 Dana L. Hoggatt
-    Copyright (c) 1986 University of Toronto
-    Copyright (c) 1990 Paul Fox
-    Copyright (c) 1990, 1995-1999 Paul Fox
-    Copyright (c) 1990, 1995-2000 Paul Fox
-    Copyright (c) 1990, 1995-2001 Paul Fox
-    Copyright (c) 1990-1999 Paul Fox
-    Copyright (c) 1990-2000 Paul Fox and Thomas Dickey
-    Copyright (c) 1991 J. Alan Eldridge
-    Copyright (c) 1992-2001 Paul Fox and Thomas Dickey
-    Copyright (c) 1995-1999 Paul Fox and Thomas Dickey
-    Copyright (c) 1995-2001 Paul Fox, Tom Dickey, and Kevin Buettner
-    Copyright (c) 1997-1999 Thomas E. Dickey
-    Copyright (c) 1998 Clark Morgan
-    Copyright (c) 1998 J. Chris Coppick
-    Copyright (c) 1998-2000 Clark Morgan
-    Copyright (c) Tom Dickey 1997-2001
+    Copyright (c) 1986, Dana L. Hoggatt
+    Copyright (c) 1986, University of Toronto.
+    Copyright (c) 1990-2003, Paul Fox
+    Copyright (c) 1990-2019,2025, Paul Fox and Thomas E. Dickey
+    Copyright (c) 1991 Jochen Obalek
+    Copyright (c) 1992-2024,2025, Paul Fox and Thomas Dickey
+    Copyright (c) 1994 X Consortium
+    Copyright (c) 1995-2024,2025, Paul Fox, Thomas Dickey, and Kevin Buettner
+    Copyright (c) 1995-2025, Paul Fox and Thomas Dickey
+    Copyright (c) 1996-2024,2025, Thomas E. Dickey
+    Copyright (c) 1997 Heiko Erhardt
+    Copyright (c) 1997, Christopher Payne
+    Copyright (c) 1998-2001, J. Chris Coppick
+    Copyright (c) 1998-2002 Clark Morgan
+    Copyright (c) 2005-2024,2025, Thomas E. Dickey and Paul G. Fox
+    Copyright (c) 2007-2019,2025, Thomas E. Dickey
