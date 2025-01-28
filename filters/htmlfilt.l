@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Id: htmlfilt.l,v 1.126 2025/01/26 11:05:40 tom Exp $
+ * $Id: htmlfilt.l,v 1.128 2025/01/27 23:30:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -666,15 +666,17 @@ html_quotes(char *text, int len, int state, int which)
 static void
 resume_attr(void)
 {
-    switch (FLT_STATE) {
-    case HTMLNOTE:
-    case JS_NOTE:
-	flt_bfr_begin(Comment_attr);
-	break;
-    case HTMLQUO1:
-    case HTMLQUO2:
-	flt_bfr_begin(String_attr);
-	break;
+    if (FLTSTACK_OK) {
+	switch (FLT_STATE) {
+	case HTMLNOTE:
+	case JS_NOTE:
+	    flt_bfr_begin(Comment_attr);
+	    break;
+	case HTMLQUO1:
+	case HTMLQUO2:
+	    flt_bfr_begin(String_attr);
+	    break;
+	}
     }
     set_symbol_table(default_table);
 }

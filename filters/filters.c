@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Id: filters.c,v 1.168 2025/01/26 17:07:24 tom Exp $
+ * $Id: filters.c,v 1.170 2025/01/27 23:12:42 tom Exp $
  *
  */
 
@@ -860,7 +860,7 @@ void
 flt_init_table(const char *table_name)
 {
     if (default_table != NULL)
-	free(default_table);
+	FreeAndNull(default_table);
     default_table = strmalloc(table_name);
 
     VERBOSE(3, ("flt_init_table:%s", table_name));
@@ -870,7 +870,7 @@ void
 flt_init_attr(const char *attr_name)
 {
     if (default_attr != NULL)
-	free(default_attr);
+	FreeAndNull(default_attr);
     default_attr = strmalloc(attr_name);
 
     VERBOSE(3, ("flt_init_attr:%s", attr_name));
@@ -1031,9 +1031,11 @@ alloc_keyword(const char *ident, const char *attribute, int classflag, char *fla
     KEYWORD *nxt;
 
     if ((nxt = FindIdentifier(ident)) != NULL) {
-	Free(nxt->kw_attr);
-	if ((nxt->kw_attr = strmalloc(attribute)) == NULL) {
-	    free(nxt);
+	char *new_attr = strmalloc(attribute);
+	if (new_attr != NULL) {
+	    Free(nxt->kw_attr);
+	    nxt->kw_attr = new_attr;
+	} else {
 	    nxt = NULL;
 	}
     } else {

@@ -1,5 +1,5 @@
 /*
- * $Id: fltstack.h,v 1.22 2025/01/26 17:02:51 tom Exp $
+ * $Id: fltstack.h,v 1.23 2025/01/27 23:33:59 tom Exp $
  * A simple stack for lex states
  */
 
@@ -34,6 +34,7 @@ static int stk_limit = 0;
 static int stk_level = -1;
 
 #define FLTSTACK_OK   (stk_level >= 0 && stk_level < stk_limit)
+#define FLTSTACK_USED (stk_level >= 1 && stk_level < stk_limit)
 #define FLTSTACK_THIS stk_state[stk_level]
 #define FLT_STATE     FLTSTACK_THIS.state
 

@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20250126 (za)
+ 20250127 (za)
 	> Tom Dickey:
+	+ correct a limit-check for syntax filter stack.
+	+ avoid leaving a dangling pointer if malloc fails in alloc_keyword
+	  (Savannah #65965).
 	+ fix stricter gcc 15 warnings.
 	+ build-fixes for VMS, from vile-9_8_vmspatch.zip on Hunter Goatley's
 	  website.

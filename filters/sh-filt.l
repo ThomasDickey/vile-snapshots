@@ -10,7 +10,7 @@
 %{
 
 /*
- * $Id: sh-filt.l,v 1.185 2025/01/26 11:40:03 tom Exp $
+ * $Id: sh-filt.l,v 1.186 2025/01/27 23:36:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -199,7 +199,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			    FLEX_PRINTF((stderr, "cannot pop '$((' level %d\n", stk_level));
 			    if (!pop_backtic1(yytext, 1, LEN_BACKTIC1_DOWN)) {
 			      FLEX_PRINTF((stderr, "cannot pop '$(' level %d\n", stk_level));
-			      if (FLTSTACK_OK && stk_state[stk_level-1].state == NORMAL) {
+			      if (FLTSTACK_USED && stk_state[stk_level-1].state == NORMAL) {
 			        pop_state();
 				resume_state();
 			      }
@@ -216,7 +216,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			}
 <NORMAL>{BACKTIC1_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC1_DOWN)) {
 			    FLEX_PRINTF((stderr, "cannot pop '$(' level %d\n", stk_level));
-			    if (FLTSTACK_OK && stk_state[stk_level-1].state == NORMAL) {
+			    if (FLTSTACK_USED && stk_state[stk_level-1].state == NORMAL) {
 			      pop_state();
 			      resume_state();
 			    }

@@ -1,5 +1,5 @@
 /*
- * $Id: filterio.c,v 1.70 2025/01/26 15:00:32 tom Exp $
+ * $Id: filterio.c,v 1.71 2025/01/27 23:23:15 tom Exp $
  *
  * Main program and I/O for external vile syntax/highlighter programs
  */
@@ -502,7 +502,6 @@ main(int argc, char **argv)
     }
 #if NO_LEAKS
     filter_def.FreeFilter();
-    free(default_attr);
     filters_leaks();
 #endif
     fflush(my_out);
