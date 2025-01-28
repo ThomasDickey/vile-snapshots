@@ -1,7 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20250127 (za)
+ 20250128 (za)
 	> Tom Dickey:
+	+ update test-package files.
 	+ correct a limit-check for syntax filter stack.
 	+ avoid leaving a dangling pointer if malloc fails in alloc_keyword
 	  (Savannah #65965).

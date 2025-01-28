@@ -1,5 +1,6 @@
 PORTNAME=	vile
-PORTVERSION=	9.8w
+PORTVERSION=	9.8za
+PORTREVISION=	1
 CATEGORIES=	editors
 MASTER_SITES=	https://invisible-island.net/archives/vile/current/ \
 		https://invisible-mirror.net/archives/vile/current/
@@ -9,6 +10,7 @@ PATCH_SITES=	${MASTER_SITES:S,vile/current/,vile/patches/,g}
 
 MAINTAINER=	dickey@invisible-island.net
 COMMENT=	VI Like Emacs -- console version
+WWW=		https://invisible-island.net/vile/
 
 LICENSE=	GPLv2
 LICENSE_FILE=	${WRKSRC}/COPYING
@@ -18,6 +20,7 @@ BUILD_DEPENDS=	reflex:textproc/reflex
 USES=		ncurses pkgconfig shebangfix tar:tgz
 SHEBANG_FILES=	perl/vileget
 GNU_CONFIGURE=	yes
+GNU_CONFIGURE_MANPREFIX=${PREFIX}/share
 CONFIGURE_ENV=	cf_cv_crypt_works=yes
 MAKEFILE=	makefile
 INSTALL_TARGET=	install install-doc install-html
