@@ -1,4 +1,4 @@
-dnl $Id: aclocal.m4,v 1.377 2025/01/26 10:06:47 tom Exp $
+dnl $Id: aclocal.m4,v 1.378 2025/08/05 08:09:09 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2024,2025 by Thomas E. Dickey
@@ -420,17 +420,51 @@ done
 ifelse($2,,LIBS,[$2])="$cf_add_libs"
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ADD_LIB_AFTER version: 3 updated: 2013/07/09 21:27:22
+dnl CF_ADD_LIB_AFTER version: 4 updated: 2025/06/14 06:46:23
 dnl ----------------
 dnl Add a given library after another, e.g., following the one it satisfies a
 dnl dependency for.
 dnl
 dnl $1 = the first library
 dnl $2 = its dependency
+dnl $3 = variable to update (default $LIBS)
 AC_DEFUN([CF_ADD_LIB_AFTER],[
-CF_VERBOSE(...before $LIBS)
-LIBS=`echo "$LIBS" | sed -e "s/[[ 	]][[ 	]]*/ /g" -e "s%$1 %$1 $2 %" -e 's%  % %g'`
-CF_VERBOSE(...after  $LIBS)
+cf_add_libs="[$]ifelse($3,,LIBS,[$3])"
+CF_VERBOSE(...before $cf_add_libs)
+for cf_add_1lib in $2; do
+	# filter duplicates
+	cf_found_2lib=no
+	for cf_add_2lib in $cf_add_libs; do
+		if test "x$cf_add_1lib" = "x$cf_add_2lib"; then
+			cf_found_2lib=yes
+			break
+		fi
+	done
+	# if not a duplicate, find the dependent library
+	if test "$cf_found_2lib" = no
+	then
+		cf_found_2lib=no
+		cf_add_2libs=
+		for cf_add_2lib in $cf_add_libs
+		do
+			test -n "$cf_add_2libs" && cf_add_2libs="$cf_add_2libs "
+			cf_add_2libs="$cf_add_2libs$cf_add_2lib"
+			if test "x$cf_add_2lib" = "x$1"
+			then
+				cf_found_2lib=yes
+				cf_add_2libs="$cf_add_2libs $cf_add_1lib"
+			fi
+		done
+		if test "$cf_found_2lib" = yes
+		then
+			cf_add_libs="$cf_add_2libs"
+		else
+			CF_VERBOSE(...missed $1)
+		fi
+	fi
+done
+CF_VERBOSE(...after  $cf_add_libs)
+ifelse($3,,LIBS,[$3])="$cf_add_libs"
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_ADD_OPTIONAL_PATH version: 6 updated: 2024/09/10 19:19:44
@@ -544,7 +578,7 @@ dnl Allow user to enable a normally-off option.
 AC_DEFUN([CF_ARG_ENABLE],
 [CF_ARG_OPTION($1,[$2],[$3],[$4],no)])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ARG_OPTION version: 5 updated: 2015/05/10 19:52:14
+dnl CF_ARG_OPTION version: 6 updated: 2025/08/05 04:09:09
 dnl -------------
 dnl Restricted form of AC_ARG_ENABLE that ensures user doesn't give bogus
 dnl values.
@@ -553,7 +587,7 @@ dnl Parameters:
 dnl $1 = option name
 dnl $2 = help-string
 dnl $3 = action to perform if option is not default
-dnl $4 = action if perform if option is default
+dnl $4 = action to perform if option is default
 dnl $5 = default option value (either 'yes' or 'no')
 AC_DEFUN([CF_ARG_OPTION],
 [AC_ARG_ENABLE([$1],[$2],[test "$enableval" != ifelse([$5],no,yes,no) && enableval=ifelse([$5],no,no,yes)
@@ -3476,16 +3510,18 @@ AC_MSG_RESULT($cf_cv_locale)
 test "$cf_cv_locale" = yes && { ifelse($1,,AC_DEFINE(LOCALE,1,[Define to 1 if we have locale support]),[$1]) }
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAKEFLAGS version: 21 updated: 2021/09/04 06:47:34
+dnl CF_MAKEFLAGS version: 22 updated: 2025/07/05 16:17:37
 dnl ------------
 dnl Some 'make' programs support ${MAKEFLAGS}, some ${MFLAGS}, to pass 'make'
 dnl options to lower-levels.  It is very useful for "make -n" -- if we have it.
-dnl (GNU 'make' does both, something POSIX 'make', which happens to make the
-dnl ${MAKEFLAGS} variable incompatible because it adds the assignments :-)
+dnl POSIX accommodates both by pretending they are the same variable, adding
+dnl the behavior of the latter to the former.
 AC_DEFUN([CF_MAKEFLAGS],
 [AC_REQUIRE([AC_PROG_FGREP])dnl
 
 AC_CACHE_CHECK(for makeflags variable, cf_cv_makeflags,[
+	cf_save_makeflags="$MAKEFLAGS"; unset MAKEFLAGS
+	cf_save_mflags="$MFLAGS";       unset MFLAGS
 	cf_cv_makeflags=''
 	for cf_option in '-${MAKEFLAGS}' '${MFLAGS}'
 	do
@@ -3513,6 +3549,8 @@ CF_EOF
 			;;
 		esac
 	done
+	test -n "$cf_save_makeflags" && MAKEFLAGS="$cf_save_makeflags"
+	test -n "$cf_save_mflags"    && MFLAGS="$cf_save_mflags"
 	rm -f cf_makeflags.tmp
 ])
 
@@ -5042,13 +5080,13 @@ if test "$cf_stdio_unlocked" != no ; then
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_STRUCT_TERMIOS version: 13 updated: 2023/12/03 19:38:54
+dnl CF_STRUCT_TERMIOS version: 14 updated: 2025/07/19 12:19:51
 dnl -----------------
 dnl Some machines require _POSIX_SOURCE to completely define struct termios.
 AC_DEFUN([CF_STRUCT_TERMIOS],[
 AC_REQUIRE([CF_XOPEN_SOURCE])
 
-AC_CHECK_HEADERS( \
+AC_CHECK_HEADERS( sgtty.h \
 termio.h \
 termios.h \
 unistd.h \
@@ -6676,7 +6714,7 @@ esac
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_SOURCE version: 68 updated: 2024/11/09 18:07:29
+dnl CF_XOPEN_SOURCE version: 69 updated: 2025/07/26 14:09:49
 dnl ---------------
 dnl Try to get _XOPEN_SOURCE defined properly that we can use POSIX functions,
 dnl or adapt to the vendor's definitions to get equivalent functionality,
@@ -6736,7 +6774,7 @@ case "$host_os" in
 	cf_xopen_source="-D_SGI_SOURCE"
 	cf_XOPEN_SOURCE=
 	;;
-(linux*gnu|linux*gnuabi64|linux*gnuabin32|linux*gnueabi|linux*gnueabihf|linux*gnux32|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin|msys|mingw*|linux*uclibc)
+(linux*gnu|linux*gnuabi64|linux*gnuabin32|linux*gnuabielfv*|linux*gnueabi|linux*gnueabihf|linux*gnux32|uclinux*|gnu*|mint*|k*bsd*-gnu|cygwin|msys|mingw*|linux*uclibc)
 	CF_GNU_SOURCE($cf_XOPEN_SOURCE)
 	;;
 linux*musl)
@@ -6835,7 +6873,7 @@ fi
 fi # cf_cv_posix_visible
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_X_ATHENA version: 25 updated: 2023/01/11 04:05:23
+dnl CF_X_ATHENA version: 26 updated: 2025/06/14 06:46:23
 dnl -----------
 dnl Check for Xaw (Athena) libraries
 dnl
@@ -6905,8 +6943,6 @@ if test "$PKG_CONFIG" != none ; then
 			CF_UPPER(cf_x_athena_LIBS,HAVE_LIB_$cf_x_athena)
 			AC_DEFINE_UNQUOTED($cf_x_athena_LIBS)
 
-			CF_TRIM_X_LIBS
-
 AC_CACHE_CHECK(for usable $cf_x_athena/Xmu package,cf_cv_xaw_compat,[
 AC_TRY_LINK([
 $ac_includes_default
@@ -6932,7 +6968,6 @@ int check = XmuCompareISOLatin1("big", "small");
 						],[
 							CF_ADD_LIB_AFTER($cf_first_lib,-lXmu)
 						])
-					CF_TRIM_X_LIBS
 					;;
 				esac
 			fi
@@ -7066,12 +7101,12 @@ CF_TRY_PKG_CONFIG(Xext,,[
 		[CF_ADD_LIB(Xext)])])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_X_FONTCONFIG version: 8 updated: 2024/11/25 04:10:12
+dnl CF_X_FONTCONFIG version: 9 updated: 2025/04/18 20:15:05
 dnl ---------------
 dnl Check for fontconfig library, a dependency of the X FreeType library.
 AC_DEFUN([CF_X_FONTCONFIG],
 [
-AC_REQUIRE([CF_X_FREETYPE])
+AC_REQUIRE([CF_X_XFT])
 
 if test "$cf_cv_found_freetype" = yes ; then
 AC_CACHE_CHECK(for usable Xft/fontconfig package,cf_cv_xft_compat,[
@@ -7108,7 +7143,7 @@ fi
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_X_FREETYPE version: 28 updated: 2020/03/10 18:53:47
+dnl CF_X_FREETYPE version: 30 updated: 2025/04/20 17:58:12
 dnl -------------
 dnl Check for X FreeType headers and libraries (XFree86 4.x, etc).
 dnl
@@ -7157,14 +7192,13 @@ case $cf_cv_x_freetype_cfgs in
 	AC_MSG_RESULT($cf_cv_x_freetype_libs)
 	;;
 (auto)
-	if test "$PKG_CONFIG" != none && "$PKG_CONFIG" --exists xft; then
+	if test "$PKG_CONFIG" != none && "$PKG_CONFIG" --exists freetype2; then
 		FREETYPE_CONFIG=$PKG_CONFIG
-		FREETYPE_PARAMS=xft
+		FREETYPE_PARAMS=freetype2
 	else
 		AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, none)
 		if test "$FREETYPE_CONFIG" != none; then
-			FREETYPE_CONFIG=$FREETYPE_CONFIG
-			cf_extra_freetype_libs="-lXft"
+			cf_extra_freetype_libs="-lfreetype2"
 		else
 			AC_PATH_PROG(FREETYPE_OLD_CONFIG, xft-config, none)
 			if test "$FREETYPE_OLD_CONFIG" != none; then
@@ -7174,11 +7208,11 @@ case $cf_cv_x_freetype_cfgs in
 	fi
 	;;
 (pkg*)
-	if test "$PKG_CONFIG" != none && "$PKG_CONFIG" --exists xft; then
+	if test "$PKG_CONFIG" != none && "$PKG_CONFIG" --exists freetype2; then
 		FREETYPE_CONFIG=$cf_cv_x_freetype_cfgs
-		FREETYPE_PARAMS=xft
+		FREETYPE_PARAMS=freetype2
 	else
-		AC_MSG_WARN(cannot find pkg-config for Xft)
+		AC_MSG_WARN(cannot find pkg-config for freetype2)
 	fi
 	;;
 (*)
@@ -7186,7 +7220,7 @@ case $cf_cv_x_freetype_cfgs in
 	if test "$FREETYPE_XFT_CONFIG" != none; then
 		FREETYPE_CONFIG=$FREETYPE_XFT_CONFIG
 	else
-		AC_MSG_WARN(cannot find config script for Xft)
+		AC_MSG_WARN(cannot find config script for freetype2)
 	fi
 	;;
 esac
@@ -7213,48 +7247,32 @@ if test "$cf_cv_x_freetype_incs" = no ; then
 fi
 
 if test "$cf_cv_x_freetype_libs" = no ; then
-	cf_cv_x_freetype_libs=-lXft
+	cf_cv_x_freetype_libs=-lfreetype2
 fi
 
-AC_MSG_CHECKING(if we can link with FreeType libraries)
+AC_MSG_CHECKING(if we can link with FreeType library)
 
-cf_save_LIBS="$LIBS"
-cf_save_INCS="$CPPFLAGS"
+cf_save_ft_LIBS="$LIBS"
+cf_save_ft_INCS="$CPPFLAGS"
 
 CF_ADD_LIBS($cf_cv_x_freetype_libs)
-CPPFLAGS="$CPPFLAGS $cf_cv_x_freetype_incs"
+CF_ADD_CFLAGS($cf_cv_x_freetype_incs)
 
 AC_TRY_LINK([
-#include <X11/Xlib.h>
-#include <X11/extensions/Xrender.h>
-#include <X11/Xft/Xft.h>],[
-	XftPattern  *pat = XftNameParse ("name"); (void)pat],
+#include <ft2build.h>
+#include FT_FREETYPE_H
+],[
+	FT_Library alibrary;
+	FT_Init_FreeType( &alibrary );],
 	[cf_cv_found_freetype=yes],
 	[cf_cv_found_freetype=no])
 AC_MSG_RESULT($cf_cv_found_freetype)
 
-LIBS="$cf_save_LIBS"
-CPPFLAGS="$cf_save_INCS"
-
-if test "$cf_cv_found_freetype" = yes ; then
-	CF_ADD_LIBS($cf_cv_x_freetype_libs)
-	CF_ADD_CFLAGS($cf_cv_x_freetype_incs)
-	AC_DEFINE(XRENDERFONT,1,[Define to 1 if we can/should link with FreeType libraries])
-
-AC_CHECK_FUNCS( \
-	XftDrawCharSpec \
-	XftDrawSetClip \
-	XftDrawSetClipRectangles \
-)
-
-else
+if test "$cf_cv_found_freetype" = no ; then
 	AC_MSG_WARN(No libraries found for FreeType)
-	CPPFLAGS=`echo "$CPPFLAGS" | sed -e s/-DXRENDERFONT//`
+	LIBS="$cf_save_ft_LIBS"
+	CPPFLAGS="$cf_save_ft_INCS"
 fi
-
-# FIXME: revisit this if needed
-AC_SUBST(HAVE_TYPE_FCCHAR32)
-AC_SUBST(HAVE_TYPE_XFTCHARSPEC)
 ])
 dnl ---------------------------------------------------------------------------
 dnl CF_X_MOTIF version: 3 updated: 2008/03/23 14:48:54
@@ -7380,6 +7398,55 @@ test program.  You will have to check and add the proper libraries by hand
 to makefile.])
 fi
 ])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_X_XFT version: 2 updated: 2025/04/20 17:58:12
+dnl --------
+AC_DEFUN([CF_X_XFT],
+[
+AC_REQUIRE([CF_PKG_CONFIG])
+AC_REQUIRE([CF_X_FREETYPE])
+
+if test "$cf_cv_found_freetype" = yes
+then
+
+	cf_save_xft_LIBS="$LIBS"
+	cf_save_xft_INCS="$CPPFLAGS"
+	CF_TRY_PKG_CONFIG(xft,,[AC_MSG_WARN(unable to find Xft library with $PKG_CONFIG)])
+
+	if test -z "$cf_pkgconfig_libs"
+	then
+		AC_CHECK_LIB(Xft, XftNameParse, LIBS="-lXft $LIBS")
+	fi
+
+	AC_MSG_CHECKING(if we can link with Xft and FreeType libraries)
+	AC_TRY_LINK([
+#include <X11/Xlib.h>
+#include <X11/extensions/Xrender.h>
+#include <X11/Xft/Xft.h>],[
+		XftPattern  *pat = XftNameParse ("name"); (void)pat],
+		[cf_cv_found_xft_libraries=yes],
+		[cf_cv_found_xft_libraries=no])
+	AC_MSG_RESULT($cf_cv_found_xft_libraries)
+
+	if test "$cf_cv_found_xft_libraries" = yes ; then
+		AC_DEFINE(XRENDERFONT,1,[Define to 1 if we can/should link with FreeType libraries])
+
+		AC_CHECK_FUNCS( \
+			XftDrawCharSpec \
+			XftDrawSetClip \
+			XftDrawSetClipRectangles )
+
+	else
+		LIBS="$cf_save_xft_LIBS"
+		CPPFLAGS="$cf_save_xft_INCS"
+	fi
+
+# FIXME: revisit this if needed
+AC_SUBST(HAVE_TYPE_FCCHAR32)
+AC_SUBST(HAVE_TYPE_XFTCHARSPEC)
+
+fi
+])
 dnl ---------------------------------------------------------------------------
 dnl CF__CURSES_HEAD version: 2 updated: 2010/10/23 15:54:49
 dnl ---------------

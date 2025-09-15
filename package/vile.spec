@@ -1,8 +1,8 @@
 Summary: VI Like Emacs editor
-# $Id: vile.spec,v 1.72 2024/07/07 09:05:20 tom Exp $
+# $Id: vile.spec,v 1.73 2025/09/15 21:09:02 tom Exp $
 Name: vile
 %define AppVersion 9.8
-Version: %{AppVersion}za
+Version: %{AppVersion}zb
 # each patch should update the version
 Release: dev
 License: GPLv2
@@ -36,6 +36,7 @@ Patch24: vile-9.8x.patch.gz
 Patch25: vile-9.8y.patch.gz
 Patch26: vile-9.8z.patch.gz
 Patch27: vile-9.8za.patch.gz
+Patch28: vile-9.8zb.patch.gz
 # each patch should add itself to this list
 Vendor: Thomas E. Dickey <dickey@invisible-island.net>
 Packager: Thomas E. Dickey <dickey@invisible-island.net>
@@ -105,6 +106,7 @@ Requires:	%{name}-common = %{version}-%{release}
 %patch 25 -p1
 %patch 26 -p1
 %patch 27 -p1
+%patch 28 -p1
 # each patch should add itself to this list
 
 rpm --version
@@ -276,6 +278,9 @@ rm -rf %{buildroot}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Mon Sep 15 2025 Thomas E. Dickey
+- added patch for 9.8zb
 
 * Sun Jul 07 2024 Thomas E. Dickey
 - modify patch syntax to work around regression in RPM version 4.19.91

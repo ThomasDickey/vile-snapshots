@@ -1,5 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20250915 (zb)
+	> Tom Dickey:
+	+ fix stricter gcc 15 warnings.
+
  20250128 (za)
 	> Tom Dickey:
 	+ update test-package files.
