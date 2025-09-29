@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.358 $)
+AC_REVISION($Revision: 1.359 $)
 AC_PREREQ(2.52.20231210)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Id: configure.in,v 1.358 2025/01/26 10:05:47 tom Exp $
+dnl $Id: configure.in,v 1.359 2025/09/29 08:05:57 tom Exp $
 
 define(MAKELIST, sh "$srcdir/filters/makelist.sh" "$srcdir/filters/genmake.mak")
 
@@ -52,7 +52,7 @@ fi
 
 ###	checks for alternative programs
 CF_MAKEFLAGS
-AC_PROG_INSTALL
+CF_PROG_INSTALL
 
 AC_PROG_MAKE_SET
 AC_PROG_AWK
